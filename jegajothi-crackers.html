@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="ta" class="dark">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ஜெகஜோதி கிராக்கர்ஸ் | Jegajothi Crackers – Sivakasi</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Tamil:wght@400;600;700;800;900&family=Noto+Serif:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+:root {
+  --gold: #e9c349;
+  --gold-dim: #af8d11;
+  --gold-light: #ffe088;
+  --maroon: #4A0404;
+  --maroon-deep: #2a0202;
+  --bg: #141400;
+  --surface: #1d1d03;
+  --surface-high: #2b2b0e;
+  --surface-highest: #363618;
+  --text: #e6e5b9;
+  --text-muted: rgba(230,229,185,0.6);
+  --tertiary: #ffb77d;
+  --red-accent: #ffb4aa;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  overflow-x: hidden;
+}
+
+/* SPARK CURSOR */
+#spark-canvas {
+  position: fixed; top:0; left:0;
+  width:100%; height:100%;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* KOLAM PATTERNS */
+.kolam-bg {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l10 20 20 10-20 10-10 20-10-20-20-10 20-10z' fill='%23363618' fill-opacity='0.12' fill-rule='evenodd'/%3E%3C/svg%3E");
+}
+
+.kolam-dots {
+  background-image: radial-gradient(#e9c349 0.5px, transparent 0.5px);
+  background-size: 24px 24px;
+}
+
+/* GRADIENT UTILS */
+.gold-gradient { background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dim) 100%); }
+.maroon-gradient { background: linear-gradient(135deg, #6b0606 0%, var(--maroon) 100%); }
+.hero-gradient { background: linear-gradient(135deg, #4A0404 0%, #1a1400 60%, #141400 100%); }
+
+/* GLASS CARD */
+.glass {
+  background: rgba(43,43,14,0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(233,195,73,0.15);
+}
+.glass:hover { border-color: rgba(233,195,73,0.4); }
+
+/* GLOW */
+.gold-glow { box-shadow: 0 0 30px rgba(233,195,73,0.2); }
+.gold-glow:hover { box-shadow: 0 0 50px rgba(233,195,73,0.35); }
+
+/* SCROLL REVEAL */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* NAV */
+nav {
+  position: fixed; top: 0; width: 100%; z-index: 100;
+  background: rgba(20,20,0,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(233,195,73,0.1);
+}
+
+/* PAGE SECTIONS */
+.page-section { display: none; }
+.page-section.active { display: block; }
+
+/* HERO FIRE PARTICLES */
+.fire-particle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: fireFloat 3s ease-in-out infinite;
+}
+@keyframes fireFloat {
+  0% { transform: translateY(0) scale(1); opacity:0.8; }
+  50% { opacity:1; }
+  100% { transform: translateY(-200px) scale(0); opacity:0; }
+}
+
+/* PRODUCT CARD */
+.product-card {
+  transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), box-shadow 0.4s ease;
+}
+.product-card:hover {
+  transform: translateY(-12px);
+  box-shadow: 0 30px 60px -15px rgba(233,195,73,0.25);
+}
+
+/* SPARKLER ANIMATION */
+@keyframes sparkle {
+  0% { transform: scale(0) rotate(0deg); opacity:1; }
+  100% { transform: scale(2) rotate(180deg); opacity:0; }
+}
+
+/* PRICE TAG */
+.price-badge {
+  background: linear-gradient(135deg, #e9c349 0%, #af8d11 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-family: 'Noto Serif', serif;
+  font-weight: 900;
+}
+
+/* ENQUIRY BADGE */
+.enquiry-count {
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+/* WHATSAPP BTN */
+.wa-btn {
+  animation: waBounce 2s ease-in-out infinite;
+}
+@keyframes waBounce {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* LANG TOGGLE */
+.lang-pill {
+  display: inline-flex;
+  background: rgba(233,195,73,0.1);
+  border: 1px solid rgba(233,195,73,0.3);
+  border-radius: 999px;
+  padding: 3px;
+}
+.lang-btn {
+  padding: 2px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.3s;
+  color: var(--gold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.lang-btn.active {
+  background: var(--gold);
+  color: #342800;
+}
+
+/* COMBO BADGE */
+.badge {
+  display: inline-block;
+  padding: 2px 12px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* TICKER */
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.ticker-inner { animation: ticker 30s linear infinite; }
+
+/* FIREWORK BURST */
+@keyframes burst {
+  0% { transform: scale(0); opacity:1; }
+  100% { transform: scale(40); opacity:0; }
+}
+
+/* MOBILE NAV */
+.mobile-menu {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(20,20,0,0.97);
+  z-index: 200;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+}
+.mobile-menu.open { display: flex; }
+
+/* SCROLL BAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 3px; }
+
+/* SAFETY TIP CARD */
+.safety-card { border-left: 4px solid var(--gold); }
+
+/* HOVER underline */
+.nav-link { position: relative; }
+.nav-link::after {
+  content: '';
+  position: absolute; bottom: -4px; left:0;
+  width: 0; height: 2px;
+  background: var(--gold);
+  transition: width 0.3s;
+}
+.nav-link:hover::after, .nav-link.active::after { width: 100%; }
+
+/* FLOAT ANIMATION */
+@keyframes floatMascot {
+  0%,100% { transform: translateY(0px); }
+  50% { transform: translateY(-18px); }
+}
+.mascot-float { animation: floatMascot 4s ease-in-out infinite; }
+
+/* TEXT SHIMMER */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.text-shimmer {
+  background: linear-gradient(90deg, #e9c349, #ffe088, #af8d11, #e9c349);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 4s linear infinite;
+}
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 100px; left: 50%;
+  transform: translateX(-50%) translateY(30px);
+  background: var(--surface-high);
+  border: 1px solid var(--gold);
+  padding: 12px 24px;
+  border-radius: 40px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--gold);
+  z-index: 500;
+  opacity: 0;
+  transition: all 0.4s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* FILTER BUTTON */
+.filter-btn {
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1.5px solid rgba(233,195,73,0.25);
+  color: rgba(230,229,185,0.7);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.filter-btn:hover, .filter-btn.active {
+  background: var(--gold);
+  color: #342800;
+  border-color: var(--gold);
+}
+
+/* LOGO SVG styling */
+.logo-text {
+  font-family: 'Noto Serif', serif;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ENQUIRY TABLE */
+.enquiry-row {
+  display: grid;
+  grid-template-columns: 80px 1fr auto auto auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px;
+  border-radius: 12px;
+  transition: background 0.2s;
+}
+.enquiry-row:hover { background: rgba(43,43,14,0.6); }
+
+/* TIMELINE DOT */
+.timeline-dot {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  box-shadow: 0 0 20px rgba(233,195,73,0.4);
+}
+
+@media (max-width: 768px) {
+  .enquiry-row { grid-template-columns: 60px 1fr auto; }
+  .enquiry-row .price-col { display: none; }
+}
+</style>
+</head>
+
+<body>
+<!-- SPARK CANVAS -->
+<canvas id="spark-canvas"></canvas>
+
+<!-- TOAST NOTIFICATION -->
+<div class="toast" id="toast">✓ Added to Enquiry List!</div>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <button onclick="closeMobileMenu()" style="position:absolute;top:24px;right:24px;color:var(--gold);font-size:32px;background:none;border:none;cursor:pointer;">✕</button>
+  <div class="logo-text" style="color:var(--gold);font-size:20px;margin-bottom:20px;">ஜெகஜோதி கிராக்கர்ஸ்</div>
+  <a onclick="navigate('home');closeMobileMenu();" class="nav-link" style="font-size:28px;font-family:'Noto Serif',serif;color:var(--text);cursor:pointer;">முகப்பு</a>
+  <a onclick="navigate('products');closeMobileMenu();" class="nav-link" style="font-size:28px;font-family:'Noto Serif',serif;color:var(--text);cursor:pointer;">பொருட்கள்</a>
+  <a onclick="navigate('combos');closeMobileMenu();" class="nav-link" style="font-size:28px;font-family:'Noto Serif',serif;color:var(--text);cursor:pointer;">கொம்போ பேக்</a>
+  <a onclick="navigate('safety');closeMobileMenu();" class="nav-link" style="font-size:28px;font-family:'Noto Serif',serif;color:var(--text);cursor:pointer;">பாதுகாப்பு</a>
+  <a onclick="navigate('enquiry');closeMobileMenu();" class="nav-link" style="font-size:28px;font-family:'Noto Serif',serif;color:var(--text);cursor:pointer;">விசாரணை</a>
+</div>
+
+<!-- TOP NAV -->
+<nav>
+  <div style="max-width:1400px;margin:0 auto;padding:0 24px;display:flex;justify-content:space-between;align-items:center;height:70px;">
+    <!-- LOGO -->
+    <div onclick="navigate('home')" style="cursor:pointer;display:flex;align-items:center;gap:14px;">
+      <!-- Flame logo SVG -->
+      <svg width="42" height="42" viewBox="0 0 42 42">
+        <defs>
+          <radialGradient id="flameG" cx="50%" cy="80%" r="60%">
+            <stop offset="0%" stop-color="#ffe088"/>
+            <stop offset="50%" stop-color="#e9c349"/>
+            <stop offset="100%" stop-color="#af8d11"/>
+          </radialGradient>
+        </defs>
+        <circle cx="21" cy="21" r="20" fill="#4A0404" stroke="#e9c349" stroke-width="1.5"/>
+        <path d="M21 32 C21 32 12 26 12 18 C12 12 17 8 21 6 C21 6 19 12 22 15 C24 17 26 14 24 10 C28 13 30 18 30 21 C30 27 25 31 21 32Z" fill="url(#flameG)"/>
+        <text x="21" y="39" text-anchor="middle" font-size="8" fill="#e9c349" font-family="serif" font-weight="900">JC</text>
+      </svg>
+      <div>
+        <div class="logo-text" style="color:var(--gold);font-size:15px;line-height:1;">Jegajothi Crackers</div>
+        <div style="font-size:9px;color:rgba(233,195,73,0.6);letter-spacing:0.25em;margin-top:1px;">SINCE 1984 • SIVAKASI</div>
+      </div>
+    </div>
+
+    <!-- DESKTOP NAV LINKS -->
+    <div style="display:none;gap:36px;" id="desktopNav">
+      <a onclick="navigate('home')" class="nav-link" id="nav-home" style="font-family:'Noto Serif',serif;font-size:14px;color:var(--text);cursor:pointer;transition:color 0.3s;letter-spacing:0.03em;">Home</a>
+      <a onclick="navigate('products')" class="nav-link" id="nav-products" style="font-family:'Noto Serif',serif;font-size:14px;color:var(--text);cursor:pointer;transition:color 0.3s;">Products</a>
+      <a onclick="navigate('combos')" class="nav-link" id="nav-combos" style="font-family:'Noto Serif',serif;font-size:14px;color:var(--text);cursor:pointer;transition:color 0.3s;">Combo Packs</a>
+      <a onclick="navigate('safety')" class="nav-link" id="nav-safety" style="font-family:'Noto Serif',serif;font-size:14px;color:var(--text);cursor:pointer;transition:color 0.3s;">Safety Tips</a>
+    </div>
+
+    <!-- RIGHT CONTROLS -->
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div class="lang-pill" id="langToggle">
+        <span class="lang-btn active" onclick="setLang('ta')">TAM</span>
+        <span class="lang-btn" onclick="setLang('en')">ENG</span>
+      </div>
+      <button onclick="navigate('enquiry')" style="position:relative;background:linear-gradient(135deg,#e9c349,#af8d11);color:#342800;padding:9px 20px;border-radius:999px;font-weight:800;font-size:13px;border:none;cursor:pointer;transition:transform 0.3s,box-shadow 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+        My Enquiry
+        <span class="enquiry-count" id="navBadge" style="position:absolute;top:-6px;right:-6px;background:#e84c3d;color:white;width:20px;height:20px;border-radius:50%;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:900;display:none;">0</span>
+      </button>
+      <!-- Hamburger -->
+      <button onclick="openMobileMenu()" id="hamburger" style="background:none;border:none;cursor:pointer;color:var(--gold);display:none;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ANNOUNCEMENT TICKER -->
+<div style="position:fixed;top:70px;width:100%;z-index:99;background:linear-gradient(90deg,#4A0404,#6b0808,#4A0404);padding:8px 0;overflow:hidden;">
+  <div class="ticker-inner" style="display:flex;width:max-content;white-space:nowrap;gap:80px;">
+    <span style="font-size:12px;color:var(--gold);letter-spacing:0.08em;">🎆 DIWALI SUPER SALE — UP TO 70% OFF &nbsp;|&nbsp; 🪔 FREE DELIVERY ON ORDERS ABOVE ₹2000 &nbsp;|&nbsp; ✨ SIVAKASI DIRECT — CERTIFIED QUALITY &nbsp;|&nbsp; 🎇 NEW ARRIVALS: GALAXY BURST SERIES &nbsp;|&nbsp; 🔥 BULK ORDERS: CALL +91 98765 43210</span>
+    <span style="font-size:12px;color:var(--gold);letter-spacing:0.08em;">🎆 DIWALI SUPER SALE — UP TO 70% OFF &nbsp;|&nbsp; 🪔 FREE DELIVERY ON ORDERS ABOVE ₹2000 &nbsp;|&nbsp; ✨ SIVAKASI DIRECT — CERTIFIED QUALITY &nbsp;|&nbsp; 🎇 NEW ARRIVALS: GALAXY BURST SERIES &nbsp;|&nbsp; 🔥 BULK ORDERS: CALL +91 98765 43210</span>
+  </div>
+</div>
+
+<!-- ===================== HOME PAGE ===================== -->
+<div id="page-home" class="page-section active" style="padding-top:104px;">
+
+  <!-- HERO SECTION -->
+  <section class="hero-gradient" style="min-height:calc(100vh - 104px);display:flex;align-items:center;position:relative;overflow:hidden;">
+    <!-- KOLAM OVERLAY -->
+    <div class="kolam-dots" style="position:absolute;inset:0;opacity:0.07;pointer-events:none;"></div>
+    <!-- GLOW ORBS -->
+    <div style="position:absolute;top:10%;right:10%;width:400px;height:400px;background:radial-gradient(circle,rgba(233,195,73,0.12) 0%,transparent 70%);border-radius:50%;pointer-events:none;"></div>
+    <div style="position:absolute;bottom:15%;left:5%;width:300px;height:300px;background:radial-gradient(circle,rgba(255,183,125,0.08) 0%,transparent 70%);border-radius:50%;pointer-events:none;"></div>
+    
+    <!-- FIRE PARTICLES -->
+    <div id="fireParticles" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;"></div>
+
+    <div style="max-width:1400px;margin:0 auto;padding:60px 24px;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;width:100%;" id="heroGrid">
+      
+      <!-- LEFT: MASCOT -->
+      <div style="display:flex;justify-content:center;" class="reveal">
+        <div style="position:relative;" class="mascot-float">
+          <div style="position:absolute;inset:-30px;background:radial-gradient(circle,rgba(233,195,73,0.2),transparent 70%);border-radius:50%;"></div>
+          <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxbUuxrFEKB3SaCkMx-kuZhraarFkB9r37TcHiTTdiaw4_Ma9wMCMZIt6kVHCd7rH3Qk_3zK_hXXjoSsyTu9hnQDmG7gb6FVKvKLg52YJY8YPkW2LzhIc-MVSjJpp27GaC29fXIB7l3F9gSWEBeofknXX0ce11UxFvUgKqeTCyqk_viScikTwPkSTYPomKJgmi2cFaFIdOsyEmbM6MzSB1TkxtNy_QSymCDNdw8ajINFzoCRRfEKsor-Ip-6Ia0-3f3dLhRRwcwONM"
+               alt="Jegajothi Crackers Mascot – Traditional Tamil Elder"
+               style="width:100%;max-width:480px;object-fit:contain;filter:drop-shadow(0 20px 60px rgba(233,195,73,0.35));position:relative;z-index:1;"
+          />
+          <!-- SPARKLER EFFECTS -->
+          <div style="position:absolute;top:20%;right:-20px;width:8px;height:8px;background:#ffe088;border-radius:50%;box-shadow:0 0 20px 8px rgba(255,224,136,0.6);animation:pulse 1.5s infinite;"></div>
+          <div style="position:absolute;top:35%;right:-40px;width:6px;height:6px;background:#e9c349;border-radius:50%;box-shadow:0 0 15px 6px rgba(233,195,73,0.5);animation:pulse 2s infinite 0.5s;"></div>
+          <div style="position:absolute;bottom:30%;left:-20px;width:7px;height:7px;background:#ffb77d;border-radius:50%;box-shadow:0 0 18px 7px rgba(255,183,125,0.5);animation:pulse 1.8s infinite 1s;"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: HERO TEXT -->
+      <div style="space-y:24px;" class="reveal" style="animation-delay:0.2s;">
+        <div style="display:inline-flex;align-items:center;gap:10px;background:rgba(233,195,73,0.1);border:1px solid rgba(233,195,73,0.25);padding:6px 18px;border-radius:999px;margin-bottom:20px;">
+          <span style="width:8px;height:8px;background:#e9c349;border-radius:50%;animation:pulse 1.5s infinite;display:inline-block;"></span>
+          <span style="font-size:12px;color:var(--gold);letter-spacing:0.15em;text-transform:uppercase;font-weight:700;">Sivakasi's Most Trusted Since 1984</span>
+        </div>
+        
+        <h1 id="heroHeading" style="font-family:'Noto Serif Tamil',serif;font-size:clamp(32px,5vw,64px);font-weight:900;line-height:1.1;color:var(--gold);margin-bottom:20px;text-shadow:0 4px 30px rgba(233,195,73,0.3);">
+          இந்த தீபாவளி<br/>பட்டாசு வாங்க<br/>நம்பிக்கையான இடம்<br/><span style="color:var(--tertiary);">ஜெகஜோதி கிராக்கர்ஸ்</span>
+        </h1>
+        
+        <p id="heroSub" style="font-size:18px;color:rgba(230,229,185,0.75);font-weight:300;line-height:1.7;max-width:500px;margin-bottom:36px;">
+          Sivakasi's finest crackers, safety-certified and delivered to your doorstep. Four decades of brilliance, now at your fingertips.
+        </p>
+
+        <div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:40px;">
+          <button onclick="navigate('products')" style="background:linear-gradient(135deg,#e9c349,#af8d11);color:#342800;padding:16px 36px;border-radius:999px;font-weight:800;font-size:16px;border:none;cursor:pointer;display:flex;align-items:center;gap:10px;transition:transform 0.3s,box-shadow 0.3s;box-shadow:0 8px 30px rgba(233,195,73,0.3);" onmouseover="this.style.transform='scale(1.05)';this.style.boxShadow='0 12px 40px rgba(233,195,73,0.5)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 8px 30px rgba(233,195,73,0.3)'">
+            🚀 View Crackers
+          </button>
+          <button onclick="sendWhatsApp('general')" style="background:transparent;border:2px solid rgba(233,195,73,0.4);color:var(--gold);padding:16px 36px;border-radius:999px;font-weight:700;font-size:16px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all 0.3s;" onmouseover="this.style.background='rgba(233,195,73,0.1)';this.style.borderColor='var(--gold)'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(233,195,73,0.4)'">
+            💬 WhatsApp Enquiry
+          </button>
+        </div>
+
+        <!-- TRUST STRIP -->
+        <div style="display:flex;flex-wrap:wrap;gap:20px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="color:var(--gold);font-size:20px;">🛡️</span>
+            <span style="font-size:13px;color:rgba(230,229,185,0.7);">100% Safety Tested</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="color:var(--gold);font-size:20px;">🏭</span>
+            <span style="font-size:13px;color:rgba(230,229,185,0.7);">Direct From Factory</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="color:var(--gold);font-size:20px;">🚚</span>
+            <span style="font-size:13px;color:rgba(230,229,185,0.7);">Free Delivery ₹2000+</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="color:var(--gold);font-size:20px;">🌿</span>
+            <span style="font-size:13px;color:rgba(230,229,185,0.7);">Eco-Friendly Range</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM WAVE -->
+    <div style="position:absolute;bottom:0;left:0;right:0;">
+      <svg viewBox="0 0 1440 80" preserveAspectRatio="none" style="width:100%;height:80px;">
+        <path d="M0,40 C360,80 1080,0 1440,40 L1440,80 L0,80 Z" fill="#141400"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- STATS BAR -->
+  <section style="background:var(--surface);padding:40px 24px;border-bottom:1px solid rgba(233,195,73,0.1);">
+    <div style="max-width:1400px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:20px;" id="statsGrid">
+      <div style="text-align:center;padding:20px;">
+        <div style="font-family:'Noto Serif',serif;font-size:42px;font-weight:900;" class="text-shimmer">40+</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.1em;">Years of Tradition</div>
+      </div>
+      <div style="text-align:center;padding:20px;border-left:1px solid rgba(233,195,73,0.1);">
+        <div style="font-family:'Noto Serif',serif;font-size:42px;font-weight:900;" class="text-shimmer">500+</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.1em;">Products</div>
+      </div>
+      <div style="text-align:center;padding:20px;border-left:1px solid rgba(233,195,73,0.1);">
+        <div style="font-family:'Noto Serif',serif;font-size:42px;font-weight:900;" class="text-shimmer">10K+</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.1em;">Happy Families</div>
+      </div>
+      <div style="text-align:center;padding:20px;border-left:1px solid rgba(233,195,73,0.1);">
+        <div style="font-family:'Noto Serif',serif;font-size:42px;font-weight:900;" class="text-shimmer">100%</div>
+        <div style="font-size:13px;color:var(--text-muted);margin-top:4px;text-transform:uppercase;letter-spacing:0.1em;">Certified Safe</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SMART BUDGET KITS -->
+  <section style="padding:80px 24px;position:relative;overflow:hidden;" class="kolam-bg">
+    <div style="max-width:1400px;margin:0 auto;">
+      <div class="reveal" style="margin-bottom:60px;">
+        <div style="font-size:12px;color:var(--gold);text-transform:uppercase;letter-spacing:0.2em;margin-bottom:12px;">Smart Curation</div>
+        <h2 style="font-family:'Noto Serif',serif;font-size:clamp(28px,4vw,48px);font-weight:900;color:var(--gold);">உங்கள் பட்ஜெட்டுக்கு ஏற்ற கிட்</h2>
+        <p style="font-size:16px;color:var(--text-muted);margin-top:8px;">Hand-picked combinations designed to maximize your celebration value.</p>
+      </div>
+      
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;" id="budgetGrid">
+        <!-- ESSENTIAL KIT -->
+        <div class="glass product-card reveal" style="padding:40px;border-radius:28px;cursor:pointer;" onclick="navigate('combos')">
+          <div style="width:56px;height:56px;background:rgba(74,4,4,0.5);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:24px;">🎇</div>
+          <h3 style="font-family:'Noto Serif',serif;font-size:26px;font-weight:800;margin-bottom:8px;">Essential Kit</h3>
+          <p style="color:var(--text-muted);font-size:14px;line-height:1.6;margin-bottom:24px;">Perfect for small family gatherings and balcony celebrations.</p>
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+            <span style="font-family:'Noto Serif',serif;font-size:36px;font-weight:900;color:var(--gold);">₹500</span>
+            <button style="color:var(--gold);font-weight:700;font-size:14px;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:6px;transition:gap 0.3s;" onmouseover="this.style.gap='14px'" onmouseout="this.style.gap='6px'">Explore →</button>
+          </div>
+        </div>
+        <!-- GRAND KIT (POPULAR) -->
+        <div class="product-card reveal" style="padding:40px;border-radius:28px;cursor:pointer;background:rgba(74,4,4,0.4);border:2px solid rgba(233,195,73,0.35);position:relative;overflow:hidden;transition-delay:0.1s;" onclick="navigate('combos')">
+          <div style="position:absolute;top:0;right:0;background:var(--gold);color:#342800;padding:6px 20px;border-radius:0 28px 0 16px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.1em;">⭐ Popular</div>
+          <div style="width:56px;height:56px;background:rgba(233,195,73,0.2);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:24px;">✨</div>
+          <h3 style="font-family:'Noto Serif',serif;font-size:26px;font-weight:800;margin-bottom:8px;">Grand Festival Kit</h3>
+          <p style="color:var(--text-muted);font-size:14px;line-height:1.6;margin-bottom:24px;">Our best-seller featuring a mix of aerial shots and colorful sparklers.</p>
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+            <span style="font-family:'Noto Serif',serif;font-size:36px;font-weight:900;color:var(--gold);">₹2000</span>
+            <button style="color:var(--gold);font-weight:700;font-size:14px;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:6px;transition:gap 0.3s;" onmouseover="this.style.gap='14px'" onmouseout="this.style.gap='6px'">Explore →</button>
+          </div>
+        </div>
+        <!-- ROYAL KIT -->
+        <div class="glass product-card reveal" style="padding:40px;border-radius:28px;cursor:pointer;transition-delay:0.2s;" onclick="navigate('combos')">
+          <div style="width:56px;height:56px;background:rgba(74,4,4,0.5);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:24px;">👑</div>
+          <h3 style="font-family:'Noto Serif',serif;font-size:26px;font-weight:800;margin-bottom:8px;">Royal Emperor Kit</h3>
+          <p style="color:var(--text-muted);font-size:14px;line-height:1.6;margin-bottom:24px;">Ultimate luxury collection for a spectacular neighborhood display.</p>
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+            <span style="font-family:'Noto Serif',serif;font-size:36px;font-weight:900;color:var(--gold);">₹5000</span>
+            <button style="color:var(--gold);font-weight:700;font-size:14px;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:6px;transition:gap 0.3s;" onmouseover="this.style.gap='14px'" onmouseout="this.style.gap='6px'">Explore →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEGACY SECTION -->
+  <section style="padding:80px 24px;background:var(--bg);">
+    <div style="max-width:1400px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;" id="legacyGrid">
+      <!-- IMAGE -->
+      <div class="reveal" style="position:relative;">
+        <div style="position:absolute;inset:-16px;background:rgba(233,195,73,0.06);border-radius:40px;"></div>
+        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbWS7QmxjNZ5ruaPfzKLdpY6APNXPz3MjS-Gks7cLTavv9434v7nQrnMHQPfZQLmti8lyU7hws6UEWIlS0fbn53kf3EFnXlFOMkIWSa3FFI7G0n9ie5kFxCH7re85Grcem8cOU9pPmAc8DGZnaoqIsmG-IFomA2QgxuaUMViljq57Y2S60KtUMEoth6SFwDA7-kgSrXKlL26bEU-F6ZMnUX3oIqiJ2D_AYkY42x6yhdAOLdYax-jM1XpI5jDQBo86pY-3uqTAaKGEt"
+             alt="Family Celebrating Diwali"
+             style="width:100%;border-radius:32px;box-shadow:0 40px 80px rgba(0,0,0,0.5);position:relative;z-index:1;"
+        />
+        <div style="position:absolute;bottom:-20px;right:-20px;background:var(--surface-high);padding:24px 32px;border-radius:24px;border:1px solid rgba(233,195,73,0.2);z-index:2;text-align:center;">
+          <div style="font-family:'Noto Serif',serif;font-size:40px;font-weight:900;color:var(--gold);">40+</div>
+          <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.15em;">Years of Tradition</div>
+        </div>
+      </div>
+      <!-- TEXT -->
+      <div class="reveal" style="animation-delay:0.2s;">
+        <div style="font-size:12px;color:var(--gold);text-transform:uppercase;letter-spacing:0.2em;margin-bottom:16px;">Legacy of Joy</div>
+        <h2 style="font-family:'Noto Serif',serif;font-size:clamp(28px,4vw,52px);font-weight:900;line-height:1.15;margin-bottom:24px;">Creating Memories<br/>Since <span class="text-shimmer">1984</span></h2>
+        <p style="font-size:17px;color:var(--text-muted);line-height:1.8;margin-bottom:36px;">
+          At Jegajothi Crackers, we believe every burst of light is a shared moment of happiness. For four decades, we've been the heart of Sivakasi, crafting safety-certified celebrations that bring families together under the starlit sky.
+        </p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+          <div>
+            <div style="font-size:28px;margin-bottom:8px;">🛡️</div>
+            <h4 style="font-weight:700;margin-bottom:4px;">100% Safety Tested</h4>
+            <p style="font-size:13px;color:var(--text-muted);">Rigorous quality checks for every cracker.</p>
+          </div>
+          <div>
+            <div style="font-size:28px;margin-bottom:8px;">🌿</div>
+            <h4 style="font-weight:700;margin-bottom:4px;">Eco-Friendly Range</h4>
+            <p style="font-size:13px;color:var(--text-muted);">Reduced smoke and sustainable materials.</p>
+          </div>
+          <div>
+            <div style="font-size:28px;margin-bottom:8px;">🏭</div>
+            <h4 style="font-weight:700;margin-bottom:4px;">Factory Direct</h4>
+            <p style="font-size:13px;color:var(--text-muted);">Zero middleman. Best Sivakasi prices.</p>
+          </div>
+          <div>
+            <div style="font-size:28px;margin-bottom:8px;">📦</div>
+            <h4 style="font-weight:700;margin-bottom:4px;">Secure Packaging</h4>
+            <p style="font-size:13px;color:var(--text-muted);">Delivered safely, always intact.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALLERY SECTION -->
+  <section style="padding:80px 24px;background:var(--surface);" class="kolam-bg">
+    <div style="max-width:1400px;margin:0 auto;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:48px;" class="reveal">
+        <div>
+          <div style="font-size:12px;color:var(--gold);text-transform:uppercase;letter-spacing:0.2em;margin-bottom:10px;">Jegajothi's Finest</div>
+          <h2 style="font-family:'Noto Serif',serif;font-size:clamp(28px,5vw,56px);font-weight:900;">Masterpieces of<br/>Light & Sound</h2>
+        </div>
+        <button onclick="navigate('products')" style="color:var(--gold);font-weight:700;font-size:15px;background:none;border:none;border-bottom:2px solid var(--gold);padding-bottom:4px;cursor:pointer;transition:opacity 0.3s;" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">View All Collections</button>
+      </div>
+      
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;height:600px;" id="galleryGrid">
+        <div class="reveal" style="position:relative;border-radius:40px;overflow:hidden;">
+          <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnLH_sCoRwEfJGwbKyBo6P4MyhzggvHqw_lMJeJ-_H4D2y40hcZpZj7l4EmAEUZajS3o-3Fp71xSUJn95DpA-f4nAp2TyX0qHVHB3uxnvng7TzHo3MdpncYsltlKWQdtkSvcfZ8Si1sN_bSLITvg8Cr5ZC-qWjmDyFSz1Yf1LVGE3ydhK5MLXSEOUgCIjMWEPP5GFUeRHrkEajlVW74MBkZaPJnZ9N64OqsgSCccJfqZ_mmPpqoBdA9klnawmeaOLMsv0KFjFNLvGR"
+               alt="Aerial Fireworks" style="width:100%;height:100%;object-fit:cover;transition:transform 0.7s;" onmouseover="this.style.transform='scale(1.06)'" onmouseout="this.style.transform='scale(1)'"/>
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,#141400 0%,transparent 50%);"></div>
+          <div style="position:absolute;bottom:32px;left:32px;">
+            <h4 style="font-family:'Noto Serif',serif;font-size:32px;font-weight:800;margin-bottom:12px;">Aerial Masterpieces</h4>
+            <div style="display:flex;gap:10px;">
+              <span style="background:rgba(255,255,255,0.12);backdrop-filter:blur(8px);padding:6px 16px;border-radius:999px;font-size:12px;">60 Shots</span>
+              <span style="background:rgba(255,255,255,0.12);backdrop-filter:blur(8px);padding:6px 16px;border-radius:999px;font-size:12px;">Multi-color</span>
+            </div>
+          </div>
+        </div>
+        <div class="reveal" style="position:relative;border-radius:40px;overflow:hidden;transition-delay:0.15s;">
+          <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuASh8IE3z5y8jk37m9yoMZmMSb2kpnojU1Mo3uDexzRRBug9KjxHFYo8NDH7uF2Wki7lCdrhB2iIQ2-d86_qkzg9tUHWSG0kcRckdd4ef4hc8qXs8vnUlCoGzPSNceEJjYgwMYeALEAFQfm2uif36IEzP_B3_JfL54clQWG-PIKeYQqbV-iYpgy30dcfAzvGlNSoKV5WuQR8twVbL3W2nqhS003Jze7CnSkJyJnC-baMIwciGWGakcLgjuXfTzpIdpjIapbzazArmjL"
+               alt="Premium Sparklers" style="width:100%;height:100%;object-fit:cover;transition:transform 0.7s;" onmouseover="this.style.transform='scale(1.06)'" onmouseout="this.style.transform='scale(1)'"/>
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,#141400 0%,transparent 50%);"></div>
+          <div style="position:absolute;bottom:32px;left:32px;">
+            <h4 style="font-family:'Noto Serif',serif;font-size:28px;font-weight:800;margin-bottom:8px;">Royal Sparklers</h4>
+            <p style="color:var(--text-muted);font-size:13px;">Long-lasting golden trails</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIAL SECTION -->
+  <section style="padding:80px 24px;background:var(--maroon);" class="kolam-bg">
+    <div style="max-width:1400px;margin:0 auto;text-align:center;">
+      <div class="reveal" style="margin-bottom:48px;">
+        <h2 style="font-family:'Noto Serif',serif;font-size:clamp(24px,4vw,42px);font-weight:900;color:var(--gold);">Our Customers Say</h2>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;" id="testiGrid">
+        <div class="glass product-card reveal" style="padding:32px;border-radius:24px;text-align:left;">
+          <div style="font-size:32px;margin-bottom:16px;">⭐⭐⭐⭐⭐</div>
+          <p style="font-size:15px;color:var(--text-muted);line-height:1.7;margin-bottom:20px;font-style:italic;">"Best crackers in Sivakasi! The Royal Emperor Kit was absolutely spectacular. My whole neighborhood was amazed."</p>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#e9c349,#af8d11);display:flex;align-items:center;justify-content:center;font-weight:800;color:#342800;">ர</div>
+            <div><div style="font-weight:700;">ராஜேஷ் குமார்</div><div style="font-size:12px;color:var(--text-muted);">Coimbatore</div></div>
+          </div>
+        </div>
+        <div class="glass product-card reveal" style="padding:32px;border-radius:24px;text-align:left;transition-delay:0.1s;">
+          <div style="font-size:32px;margin-bottom:16px;">⭐⭐⭐⭐⭐</div>
+          <p style="font-size:15px;color:var(--text-muted);line-height:1.7;margin-bottom:20px;font-style:italic;">"Quality is unmatched. Direct from Sivakasi means the best freshness and safety. Will order again next Diwali!"</p>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#ffb77d,#e9c349);display:flex;align-items:center;justify-content:center;font-weight:800;color:#342800;">ல</div>
+            <div><div style="font-weight:700;">லக்ஷ்மி சுந்தரம்</div><div style="font-size:12px;color:var(--text-muted);">Chennai</div></div>
+          </div>
+        </div>
+        <div class="glass product-card reveal" style="padding:32px;border-radius:24px;text-align:left;transition-delay:0.2s;">
+          <div style="font-size:32px;margin-bottom:16px;">⭐⭐⭐⭐⭐</div>
+          <p style="font-size:15px;color:var(--text-muted);line-height:1.7;margin-bottom:20px;font-style:italic;">"The Kids Special Pack was perfect — my children loved every sparkler. Safe, beautiful and affordable. Thank you!"</p>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#e9c349,#4A0404);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--gold);">ப</div>
+            <div><div style="font-weight:700;">பாலகிருஷ்ணன்</div><div style="font-size:12px;color:var(--text-muted);">Madurai</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+<!-- END HOME -->
+
+<!-- ===================== PRODUCTS PAGE ===================== -->
+<div id="page-products" class="page-section" style="padding-top:104px;min-height:100vh;">
+  <div style="max-width:1400px;margin:0 auto;padding:48px 24px;">
+    <div class="reveal" style="margin-bottom:48px;">
+      <div style="font-size:12px;color:var(--gold);text-transform:uppercase;letter-spacing:0.2em;margin-bottom:12px;">Sivakasi's Finest</div>
+      <h1 style="font-family:'Noto Serif',serif;font-size:clamp(32px,6vw,72px);font-weight:900;color:var(--gold);line-height:1.1;">Royal Tamil<br/>Festive Catalog</h1>
+      <p style="font-size:17px;color:var(--text-muted);max-width:600px;line-height:1.7;margin-top:12px;">Hand-crafted excellence from Sivakasi. Safety-certified brilliance for a celebration that echoes through the night.</p>
+    </div>
+
+    <!-- BUILD YOUR OWN BOX BANNER -->
+    <div class="reveal glass" style="border-radius:24px;padding:36px;margin-bottom:48px;border:2px solid rgba(233,195,73,0.2);cursor:pointer;transition:border-color 0.3s;" onmouseover="this.style.borderColor='rgba(233,195,73,0.5)'" onmouseout="this.style.borderColor='rgba(233,195,73,0.2)'" onclick="navigate('combos')">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;">
+        <div>
+          <span style="display:inline-block;background:var(--gold);color:#342800;padding:3px 14px;border-radius:999px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">🆕 New Experience</span>
+          <h2 style="font-family:'Noto Serif',serif;font-size:28px;font-weight:800;color:var(--gold);margin-bottom:8px;">Build Your Own Royal Box</h2>
+          <p style="color:var(--text-muted);font-size:15px;">Curate your perfect celebration — select your favorite crackers and we'll pack them in our signature heritage wooden crate.</p>
+        </div>
+        <button style="background:linear-gradient(135deg,#e9c349,#af8d11);color:#342800;padding:14px 32px;border-radius:999px;font-weight:800;font-size:15px;border:none;cursor:pointer;white-space:nowrap;transition:transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Start Customizing ✨</button>
+      </div>
+    </div>
+
+    <!-- FILTER BUTTONS -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:40px;" class="reveal">
+      <button class="filter-btn active" onclick="filterProducts('all',this)">All Products</button>
+      <button class="filter-btn" onclick="filterProducts('sparklers',this)">✨ Sparklers</button>
+      <button class="filter-btn" onclick="filterProducts('rockets',this)">🚀 Rockets</button>
+      <button class="filter-btn" onclick="filterProducts('flowerpots',this)">🌸 Flower Pots</button>
+      <button class="filter-btn" onclick="filterProducts('chakkars',this)">🌀 Chakkars</button>
+      <button class="filter-btn" onclick="filterProducts('aerial',this)">💥 Aerial Shots</button>
+      <button class="filter-btn" onclick="filterProducts('giftbox',this)">🎁 Gift Boxes</button>
+    </div>
+
+    <!-- PRODUCTS GRID -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;" id="productsGrid">
+      <!-- products injected by JS -->
+    </div>
+  </div>
+</div>
+<!-- END PRODUCTS -->
+
+<!-- ===================== COMBOS PAGE ===================== -->
+<div id="page-combos" class="page-section" style="padding-top:104px;min-height:100vh;">
+  <div style="max-width:1400px;margin:0 auto;padding:48px 24px;">
+    <!-- HERO -->
+    <div style="margin-bottom:64px;" class="reveal">
+      <h1 style="font-family:'Noto Serif',serif;font-size:clamp(40px,6vw,80px);font-weight:900;line-height:1.1;margin-bottom:16px;">The Royal <span style="color:var(--tertiary);">Tamil Bundles</span></h1>
+      <p style="font-size:18px;color:var(--text-muted);max-width:600px;line-height:1.7;">Curated selections of Sivakasi's finest pyrotechnics. From the gentle glow of family evenings to the thunderous grandeur of royal festivities.</p>
+      
+      <!-- MASCOT ENDORSEMENT -->
+      <div class="glass" style="display:inline-flex;align-items:center;gap:20px;padding:20px 28px;border-radius:20px;margin-top:32px;border-left:4px solid var(--gold);">
+        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpp3twbLjUGL04JjfUyXG_bUjE-obp3AI2wP9XYl-a9z86ZyEtLjItKh1vs3fxb4rNY_RKfa__ArYh9YqbXr4WGXr_bwW_Eb4fzuKTihCcvFgYsUkPKFjtWbAUfXsKDq0Z3wC7ZNeKll0WAxH-HqPdNvcdqCP1LF2D0iXY6J_-c86qOGBnSWPKd1UQo1ZTsqMeSd26o6sjiLAkQTcNPop0_h7M5aE5ze1s3NFaS3rn1MiaAGBwWs7agfQzdHHTuYW6ftWmdftx-BoX"
+             alt="Mascot" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);"/>
+        <div>
+          <p style="color:var(--tertiary);font-style:italic;font-family:'Noto Serif',serif;font-size:16px;">"ஜெகஜோதியின் சிறந்த தேர்வு!"</p>
+          <p style="color:var(--text-muted);font-size:11px;text-transform:uppercase;letter-spacing:0.12em;margin-top:4px;">Heritage Quality Guaranteed</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMBO CARDS -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-bottom:80px;" id="comboGrid">
+      <!-- injected by JS -->
+    </div>
+
+    <!-- CTA SECTION -->
+    <div class="maroon-gradient kolam-bg reveal" style="border-radius:32px;padding:64px;text-align:center;position:relative;overflow:hidden;">
+      <h2 style="font-family:'Noto Serif',serif;font-size:clamp(24px,4vw,44px);font-weight:900;color:var(--gold);margin-bottom:16px;">Bring Home the Royal Celebration</h2>
+      <p style="font-size:16px;color:rgba(230,229,185,0.8);max-width:600px;margin:0 auto 40px;line-height:1.7;">Enquire now for bulk orders and exclusive festival discounts on Sivakasi's most prestigious collections.</p>
+      <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+        <input type="tel" placeholder="📱 Your mobile number" style="background:rgba(255,255,255,0.1);border:1px solid rgba(233,195,73,0.3);color:var(--text);padding:14px 24px;border-radius:14px;font-size:15px;outline:none;width:280px;" id="ctaPhone"/>
+        <button onclick="sendBulkQuote()" style="background:linear-gradient(135deg,#e9c349,#af8d11);color:#342800;padding:14px 36px;border-radius:14px;font-weight:800;font-size:15px;border:none;cursor:pointer;transition:transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Get a Quote 🎆</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- END COMBOS -->
+
+<!-- ===================== SAFETY PAGE ===================== -->
+<div id="page-safety" class="page-section" style="padding-top:104px;min-height:100vh;">
+  <div style="max-width:1200px;margin:0 auto;padding:48px 24px;">
+    <div class="reveal" style="margin-bottom:56px;text-align:center;">
+      <div style="font-size:48px;margin-bottom:16px;">🛡️</div>
+      <h1 style="font-family:'Noto Serif',serif;font-size:clamp(28px,5vw,56px);font-weight:900;color:var(--gold);">பாதுகாப்பு வழிகாட்டுதல்கள்</h1>
+      <p style="font-size:18px;color:var(--text-muted);margin-top:12px;">Safety Guidelines for a Joyful & Safe Celebration</p>
+    </div>
+
+    <!-- SAFETY CARDS -->
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-bottom:56px;" id="safetyGrid">
+      <div class="glass safety-card reveal" style="padding:32px;border-radius:20px;">
+        <div style="font-size:36px;margin-bottom:16px;">👦</div>
+        <h3 style="font-family:'Noto Serif',serif;font-size:22px;font-weight:800;color:var(--gold);margin-bottom:12px;">Children Safety First</h3>
+        <ul style="color:var(--text-muted);font-size:14px;line-height:2;padding-left:20px;">
+          <li>Never allow children under 12 to handle crackers alone</li>
+          <li>Keep a responsible adult present at all times</li>
+          <li>Keep children away from lit crackers by at least 5 meters</li>
+          <li>Never let children point crackers at other people</li>
+        </ul>
+      </div>
+      <div class="glass safety-card reveal" style="padding:32px;border-radius:20px;transition-delay:0.1s;">
+        <div style="font-size:36px;margin-bottom:16px;">🔥</div>
+        <h3 style="font-family:'Noto Serif',serif;font-size:22px;font-weight:800;color:var(--gold);margin-bottom:12px;">Lighting Instructions</h3>
+        <ul style="color:var(--text-muted);font-size:14px;line-height:2;padding-left:20px;">
+          <li>Use an agarbatti (incense stick) or sparkler to light</li>
+          <li>Never use a match or hand directly to light</li>
+          <li>Light one cracker at a time — never bundles</li>
+          <li>Stand back immediately after lighting</li>
+        </ul>
+      </div>
+      <div class="glass safety-card reveal" style="padding:32px;border-radius:20px;transition-delay:0.2s;">
+        <div style="font-size:36px;margin-bottom:16px;">🪣</div>
+        <h3 style="font-family:'Noto Serif',serif;font-size:22px;font-weight:800;color:var(--gold);margin-bottom:12px;">Keep Water Ready</h3>
+        <ul style="color:var(--text-muted);font-size:14px;line-height:2;padding-left:20px;">
+          <li>Always keep a bucket of water or fire extinguisher nearby</li>
+          <li>Have a first aid kit ready at all times</li>
+          <li>Douse used crackers in water before disposal</li>
+          <li>Never try to relight a dud cracker</li>
+        </ul>
+      </div>
+      <div class="glass safety-card reveal" style="padding:32px;border-radius:20px;transition-delay:0.3s;">
+        <div style="font-size:36px;margin-bottom:16px;">👁️</div>
+        <h3 style="font-family:'Noto Serif',serif;font-size:22px;font-weight:800;color:var(--gold);margin-bottom:12px;">Eye & Ear Protection</h3>
+        <ul style="color:var(--text-muted);font-size:14px;line-height:2;padding-left:20px;">
+          <li>Wear safety glasses near aerial crackers</li>
+          <li>Use ear protection for children near loud crackers</li>
+          <li>Never lean over crackers while lighting</li>
+          <li>Never look directly into a flower pot while it's burning</li>
+        </ul>
+      </div>
+      <div class="glass safety-card reveal" style="padding:32px;border-radius:20px;">
+        <div style="font-size:36px;margin-bottom:16px;">📦</div>
+        <h3 style="font-family:'Noto Serif',serif;font-size:22px;font-weight:800;color:var(--gold);margin-bottom:12px;">Storage Guidelines</h3>
+        <ul style="color:var(--text-muted);font-size:14px;line-height:2;padding-left:20px;">
+          <li>Store crackers in a cool, dry place away from sunlight</li>
+          <li>Keep away from electricity, open flames, and heat</li>
+          <li>Never store near petroleum or flammable materials</li>
+          <li>Keep out of reach of children when in storage</li>
+        </ul>
+      </div>
+      <div class="glass safety-card reveal" style="padding:32px;border-radius:20px;transition-delay:0.1s;">
+        <div style="font-size:36px;margin-bottom:16px;">🌿</div>
+        <h3 style="font-family:'Noto Serif',serif;font-size:22px;font-weight:800;color:var(--gold);margin-bottom:12px;">Eco-Conscious Celebration</h3>
+        <ul style="color:var(--text-muted);font-size:14px;line-height:2;padding-left:20px;">
+          <li>Choose green crackers from our eco-friendly range</li>
+          <li>Follow local government timing guidelines</li>
+          <li>Dispose of waste responsibly after celebrations</li>
+          <li>Prefer low-smoke options in residential areas</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- EMERGENCY BOX -->
+    <div style="background:linear-gradient(135deg,#4A0404,#6b0606);border-radius:24px;padding:40px;text-align:center;" class="reveal">
+      <h3 style="font-family:'Noto Serif',serif;font-size:24px;font-weight:800;color:var(--gold);margin-bottom:16px;">🚨 Emergency Contacts</h3>
+      <div style="display:flex;justify-content:center;flex-wrap:wrap;gap:32px;margin-bottom:24px;">
+        <div><div style="font-size:28px;font-weight:900;color:var(--gold);">108</div><div style="font-size:13px;color:var(--text-muted);">Ambulance</div></div>
+        <div><div style="font-size:28px;font-weight:900;color:var(--gold);">101</div><div style="font-size:13px;color:var(--text-muted);">Fire Service</div></div>
+        <div><div style="font-size:28px;font-weight:900;color:var(--gold);">100</div><div style="font-size:13px;color:var(--text-muted);">Police</div></div>
+        <div><div style="font-size:20px;font-weight:800;color:var(--gold);">+91 98765 43210</div><div style="font-size:13px;color:var(--text-muted);">Jegajothi Support</div></div>
+      </div>
+      <p style="color:rgba(230,229,185,0.7);font-size:14px;line-height:1.6;max-width:500px;margin:0 auto;">In case of any cracker-related emergency, please act quickly and call the appropriate services immediately.</p>
+    </div>
+  </div>
+</div>
+<!-- END SAFETY -->
+
+<!-- ===================== ENQUIRY PAGE ===================== -->
+<div id="page-enquiry" class="page-section" style="padding-top:104px;min-height:100vh;">
+  <div style="max-width:1200px;margin:0 auto;padding:48px 24px;">
+    <div class="reveal" style="margin-bottom:48px;">
+      <h1 style="font-family:'Noto Serif',serif;font-size:clamp(32px,6vw,68px);font-weight:900;color:var(--gold);">Enquiry Summary</h1>
+      <p style="font-size:16px;color:var(--text-muted);max-width:600px;line-height:1.7;margin-top:12px;">Review your selection and send your enquiry directly to our royal concierge via WhatsApp for final pricing and availability.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:40px;" id="enquiryMainGrid">
+      <!-- LEFT: ITEMS LIST -->
+      <div>
+        <div id="emptyEnquiry" style="display:none;text-align:center;padding:80px 24px;">
+          <div style="font-size:64px;margin-bottom:16px;">🧺</div>
+          <h3 style="font-family:'Noto Serif',serif;font-size:24px;color:var(--gold);margin-bottom:8px;">Your enquiry list is empty</h3>
+          <p style="color:var(--text-muted);margin-bottom:24px;">Add products from our catalog to get started</p>
+          <button onclick="navigate('products')" style="background:linear-gradient(135deg,#e9c349,#af8d11);color:#342800;padding:12px 28px;border-radius:999px;font-weight:800;border:none;cursor:pointer;">Browse Products →</button>
+        </div>
+
+        <div id="enquiryItems">
+          <div class="glass" style="border-radius:20px;overflow:hidden;margin-bottom:20px;">
+            <div style="padding:20px 24px;border-bottom:1px solid rgba(233,195,73,0.1);display:flex;justify-content:space-between;align-items:center;">
+              <span style="color:var(--gold);text-transform:uppercase;letter-spacing:0.12em;font-size:13px;font-weight:700;">Selected Items</span>
+              <button onclick="clearEnquiry()" style="color:rgba(230,229,185,0.4);font-size:12px;background:none;border:none;cursor:pointer;text-decoration:underline;">Clear All</button>
+            </div>
+            <div id="enquiryList" style="padding:16px;"></div>
+          </div>
+
+          <!-- TOTAL BAR -->
+          <div class="glass" style="border-radius:20px;padding:24px 32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;margin-bottom:16px;">
+            <div>
+              <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.15em;">Estimated Grand Total</div>
+              <div id="enquiryTotal" style="font-family:'Noto Serif',serif;font-size:52px;font-weight:900;color:var(--gold);">₹0</div>
+            </div>
+            <button onclick="sendWhatsApp('enquiry')" style="background:linear-gradient(135deg,#25D366,#128C7E);color:white;padding:18px 36px;border-radius:18px;font-weight:800;font-size:16px;border:none;cursor:pointer;display:flex;align-items:center;gap:12px;box-shadow:0 10px 30px rgba(37,211,102,0.3);transition:transform 0.3s;flex-direction:column;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'">
+              <span>⚡ Quick Order in 1 Click</span>
+              <span style="font-size:11px;font-weight:400;opacity:0.8;">Connect via WhatsApp</span>
+            </button>
+          </div>
+
+          <!-- WHATSAPP PREVIEW -->
+          <div id="waPreview" class="glass" style="border-radius:16px;padding:24px;border-left:4px solid #25D366;">
+            <div style="font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:12px;">👁️ WhatsApp Preview Message</div>
+            <div style="background:#0b141a;padding:20px;border-radius:12px;font-family:monospace;font-size:13px;color:#d1d7db;line-height:1.8;" id="waPreviewText"></div>
+          </div>
+
+          <p style="font-size:13px;color:var(--text-muted);font-style:italic;margin-top:16px;padding:16px;border-radius:12px;background:rgba(255,255,255,0.03);">ℹ️ Prices are indicative. Festive discounts and final invoice will be shared on WhatsApp. Stock subject to availability.</p>
+        </div>
+      </div>
+
+      <!-- RIGHT: TRUST BADGES + CONTACT -->
+      <div style="display:flex;flex-direction:column;gap:20px;">
+        <div class="glass" style="border-radius:20px;padding:32px;">
+          <h3 style="font-family:'Noto Serif',serif;font-size:20px;font-weight:800;color:var(--gold);margin-bottom:28px;border-bottom:1px solid rgba(233,195,73,0.15);padding-bottom:16px;">The Jegajothi Standard</h3>
+          <div style="display:flex;flex-direction:column;gap:24px;">
+            <div style="display:flex;gap:16px;">
+              <div style="width:44px;height:44px;border-radius:12px;background:rgba(233,195,73,0.1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🛡️</div>
+              <div><h4 style="font-weight:700;margin-bottom:4px;font-size:14px;">Sivakasi Heritage</h4><p style="font-size:12px;color:var(--text-muted);line-height:1.5;">40 years of expertise from India's fireworks hub.</p></div>
+            </div>
+            <div style="display:flex;gap:16px;">
+              <div style="width:44px;height:44px;border-radius:12px;background:rgba(233,195,73,0.1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">✅</div>
+              <div><h4 style="font-weight:700;margin-bottom:4px;font-size:14px;">Safety Tested</h4><p style="font-size:12px;color:var(--text-muted);line-height:1.5;">Rigorous multi-point protocols on every product.</p></div>
+            </div>
+            <div style="display:flex;gap:16px;">
+              <div style="width:44px;height:44px;border-radius:12px;background:rgba(233,195,73,0.1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🏭</div>
+              <div><h4 style="font-weight:700;margin-bottom:4px;font-size:14px;">Direct Factory Price</h4><p style="font-size:12px;color:var(--text-muted);line-height:1.5;">Zero middleman. Transparent, honest pricing.</p></div>
+            </div>
+          </div>
+        </div>
+        <div class="glass" style="border-radius:20px;padding:32px;text-align:center;">
+          <div style="font-size:40px;margin-bottom:12px;">🎧</div>
+          <h3 style="font-family:'Noto Serif',serif;font-size:18px;font-weight:800;margin-bottom:8px;">Need Assistance?</h3>
+          <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Our display consultants will help you curate the perfect show.</p>
+          <a href="tel:+919876543210" style="display:block;color:var(--gold);font-size:20px;font-weight:800;text-decoration:none;margin-bottom:12px;">+91 98765 43210</a>
+          <button onclick="sendWhatsApp('support')" style="width:100%;background:rgba(37,211,102,0.15);border:1px solid rgba(37,211,102,0.3);color:#25D366;padding:10px;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer;">Chat on WhatsApp 💬</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- END ENQUIRY -->
+
+<!-- STICKY BOTTOM BAR -->
+<div id="stickyBar" style="position:fixed;bottom:0;left:0;width:100%;z-index:90;padding:12px 24px;display:none;">
+  <div style="max-width:1200px;margin:0 auto;background:rgba(43,43,14,0.97);backdrop-filter:blur(20px);border-radius:20px;border:1px solid rgba(233,195,73,0.2);padding:14px 24px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <span style="font-size:20px;">🛒</span>
+      <div>
+        <div style="font-weight:700;" id="barCount">0 Items in Enquiry</div>
+        <div style="font-size:13px;color:var(--gold);" id="barTotal">Total Estimate: ₹0</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <button onclick="navigate('enquiry')" style="background:rgba(255,255,255,0.08);border:1px solid rgba(233,195,73,0.2);color:var(--text);padding:10px 20px;border-radius:999px;font-weight:600;font-size:13px;cursor:pointer;">Review List</button>
+      <button onclick="sendWhatsApp('enquiry')" style="background:linear-gradient(135deg,#25D366,#128C7E);color:white;padding:10px 24px;border-radius:999px;font-weight:800;font-size:13px;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;">💬 WhatsApp Enquiry</button>
+    </div>
+  </div>
+</div>
+
+<!-- WHATSAPP FLOAT BTN -->
+<a id="waFloat" href="#" onclick="sendWhatsApp('general');return false;" style="position:fixed;bottom:80px;right:20px;z-index:95;">
+  <div class="wa-btn" style="position:relative;width:56px;height:56px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 30px rgba(37,211,102,0.4);cursor:pointer;">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    <span style="position:absolute;top:-6px;right:-6px;background:#e84c3d;color:white;width:20px;height:20px;border-radius:50%;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:900;" id="waNotif" class="enquiry-count">1</span>
+  </div>
+  <div style="position:absolute;right:68px;top:50%;transform:translateY(-50%);background:var(--surface-high);padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;white-space:nowrap;border:1px solid rgba(233,195,73,0.2);color:var(--gold);opacity:0;transition:opacity 0.3s;pointer-events:none;" id="waTooltip">Enquire via WhatsApp</div>
+</a>
+
+<!-- FOOTER -->
+<footer style="background:var(--maroon);padding:60px 24px 0;" class="kolam-bg">
+  <div style="max-width:1400px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:48px;padding-bottom:48px;">
+    <div>
+      <!-- LOGO IN FOOTER -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <svg width="36" height="36" viewBox="0 0 42 42">
+          <circle cx="21" cy="21" r="20" fill="#2a0202" stroke="#e9c349" stroke-width="1.5"/>
+          <path d="M21 32 C21 32 12 26 12 18 C12 12 17 8 21 6 C21 6 19 12 22 15 C24 17 26 14 24 10 C28 13 30 18 30 21 C30 27 25 31 21 32Z" fill="url(#flameG)"/>
+          <text x="21" y="39" text-anchor="middle" font-size="8" fill="#e9c349" font-family="serif" font-weight="900">JC</text>
+        </svg>
+        <div>
+          <div style="color:var(--gold);font-family:'Noto Serif',serif;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;font-size:14px;">Jegajothi Crackers</div>
+          <div style="font-size:10px;color:rgba(233,195,73,0.5);letter-spacing:0.2em;">Since 1984 • Sivakasi</div>
+        </div>
+      </div>
+      <p style="color:rgba(255,255,255,0.7);font-size:14px;line-height:1.7;max-width:280px;margin-bottom:24px;">Crafting memories with light since 1984. Sivakasi's premier destination for safety-certified festive fireworks.</p>
+      <div style="display:flex;gap:14px;">
+        <span style="width:36px;height:36px;background:rgba(233,195,73,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;border:1px solid rgba(233,195,73,0.2);transition:all 0.3s;" onmouseover="this.style.background='rgba(233,195,73,0.25)'" onmouseout="this.style.background='rgba(233,195,73,0.1)'">📘</span>
+        <span style="width:36px;height:36px;background:rgba(233,195,73,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;border:1px solid rgba(233,195,73,0.2);transition:all 0.3s;" onmouseover="this.style.background='rgba(233,195,73,0.25)'" onmouseout="this.style.background='rgba(233,195,73,0.1)'">📸</span>
+        <span style="width:36px;height:36px;background:rgba(233,195,73,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;border:1px solid rgba(233,195,73,0.2);transition:all 0.3s;" onmouseover="this.style.background='rgba(233,195,73,0.25)'" onmouseout="this.style.background='rgba(233,195,73,0.1)'">▶️</span>
+      </div>
+    </div>
+    <div>
+      <h4 style="color:var(--gold);font-weight:700;text-transform:uppercase;letter-spacing:0.12em;font-size:12px;margin-bottom:24px;">Quick Links</h4>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <a onclick="navigate('home')" style="color:rgba(255,255,255,0.75);font-size:14px;cursor:pointer;transition:color 0.3s;" onmouseover="this.style.color=var('--tertiary')" onmouseout="this.style.color='rgba(255,255,255,0.75)'">முகப்பு – Home</a>
+        <a onclick="navigate('products')" style="color:rgba(255,255,255,0.75);font-size:14px;cursor:pointer;transition:color 0.3s;" onmouseover="this.style.color='#ffb77d'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">பொருட்கள் – Products</a>
+        <a onclick="navigate('combos')" style="color:rgba(255,255,255,0.75);font-size:14px;cursor:pointer;transition:color 0.3s;">கொம்போ – Combo Packs</a>
+        <a onclick="navigate('safety')" style="color:rgba(255,255,255,0.75);font-size:14px;cursor:pointer;transition:color 0.3s;">பாதுகாப்பு – Safety Tips</a>
+        <a style="color:rgba(255,255,255,0.75);font-size:14px;cursor:pointer;transition:color 0.3s;text-decoration:underline;">Privacy Policy</a>
+      </div>
+    </div>
+    <div>
+      <h4 style="color:var(--gold);font-weight:700;text-transform:uppercase;letter-spacing:0.12em;font-size:12px;margin-bottom:24px;">Our Heritage Office</h4>
+      <div style="background:rgba(0,0,0,0.25);border-radius:16px;padding:20px;border:1px solid rgba(233,195,73,0.1);">
+        <div style="display:flex;gap:12px;margin-bottom:14px;">
+          <span>📍</span>
+          <p style="color:rgba(255,255,255,0.7);font-size:13px;line-height:1.6;">Jegajothi Works Compound,<br/>Vilampatti Road, Sivakasi,<br/>Tamil Nadu 626 123</p>
+        </div>
+        <div style="display:flex;gap:12px;margin-bottom:14px;">
+          <span>📧</span>
+          <p style="color:rgba(255,255,255,0.7);font-size:13px;">sales@jegajothicrackers.com</p>
+        </div>
+        <div style="display:flex;gap:12px;">
+          <span>📞</span>
+          <p style="color:rgba(255,255,255,0.7);font-size:13px;">+91 98765 43210</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="border-top:1px solid rgba(233,195,73,0.1);padding:20px 0;text-align:center;">
+    <p style="color:rgba(233,195,73,0.35);font-size:12px;letter-spacing:0.05em;">© 2024 Jegajothi Crackers – Sivakasi's Royal Heritage. All Rights Reserved.</p>
+  </div>
+</footer>
+
+<script>
+// ============================================================
+// DATA: PRODUCTS
+// ============================================================
+const PRODUCTS = [
+  { id:1, name:'Golden Crown Sparklers', nameTa:'தங்க கிரீட மினுக்குகள்', cat:'sparklers', img:'https://lh3.googleusercontent.com/aida-public/AB6AXuDSK23nENScLH-tIokL9fy09rGmh_tG3mlWFrlvjdIVbwVJ9tEn4w2D1AiuMGoGDtTpIVHxxyrPJlSq0W-NmWSWawH-WLVyso5stq6gCCyXf4RtjmS82pY26cFby_eZR65gkt2Hrf9ASyJua8nFdzSc7sEh95lO2EP7edj1O3EptVxgWQ1DE8xJsJzXN0HUSLl-CxNWexhLjy9NK8chDCCsZjGHNgN-MvJYyRxgrebR7ajT9rSDYJnfOf3Cx5wJ5iAuc2OplS2GqqPq', price:499, mrp:1249, badge:'🔥 Best Seller', off:60 },
+  { id:2, name:'Temple Grandeur Flower Pot', nameTa:'கோவில் மலர் பாத்திரம்', cat:'flowerpots', img:'https://lh3.googleusercontent.com/aida-public/AB6AXuAjVVLR4kBqji_DOXp5akZ55p-Qx5zcd21gCYiWTnbVIflZy9kVac5eLlBPAVWFJM5jJKTstzm-kw5mkk55JB0ekLd1n6NtCJithSs25u5ko7krHxLMR-a4jcZ-DbKpiX6ClaUr4729Gh5QEaUYcf5AEnE5QkuJ9it6J6RFAE8y8q-Gzo8IY5g27PHIKjDlLFxvY_3rZXxZ7zspYoY5HRWDod2fCu_2l9nrQcCpQJCXRLDaVwQw9XBxHhmeTIMCwtLfRWQOyMvmfcvU', price:850, mrp:1890, badge:'✨ Festival Offer', off:55 },
+  { id:3, name:'Maratha Sky Rockets (10pcs)', nameTa:'மராட்டா வானவேடு (10)', cat:'rockets', img:'https://lh3.googleusercontent.com/aida-public/AB6AXuAW4Zu0EWFNDkKgzBJYQZS_zxCdM2oJ1Jwhg8cYfEmskk6VZc3TUDduBQXvMUxz0bJVJjqIN5iOsvIqQrKkIHXsVq1cUWNuLAQKlH0L5BLOjiUAgMf5bHHBsjWMDvHy0oC071_A3_Opa9phEFXGbNhxwhABfaadQWxshaUGqAhRsR76jOSxwxku0tLmhXm4a21Fr5sg2ecAc3JY4pJIazleqJGXeIPzyzBZ6mXmZSoXBzzHgAecqOQL5zUeDyEmfQ2VCwbxQCvSAoJl', price:1199, mrp:3999, badge:'70% OFF', off:70 },
+  { id:4, name:'Imperial Diwali Gift Box', nameTa:'இம்பீரியல் தீபாவளி பெட்டி', cat:'giftbox', img:'https://lh3.googleusercontent.com/aida-public/AB6AXuADcRqFJ2ZzkoE0ipkahUTQy5rXYbgTmf0Z5gGBU2P4m1DUoyT5JdmIDR5n2jEvXXW8uvESOMOE3k-RpYPgF0ypwfRiOi8JTcRbyjy6qyxEwdfK6kOKcCR1LxA_sy8p__E0aVRRxy3MHmWbJIS2DJGC8qp1kMka46MN-iKNmwklB7U7wHrHzPYv9UGqkjzQKSB-A7Xv2muBNLeTRjifIIJCN8RKml2a1JR6fxen-M3iHFKnPKJw0I7ztmZxXqpBWnHht-sExtBhy-4T', price:2450, mrp:4100, badge:'🔥 Selling Fast', off:40 },
+  { id:5, name:'Royal Chakra Whirls', nameTa:'ராஜ சக்கர சுழல்கள்', cat:'chakkars', img:'https://lh3.googleusercontent.com/aida-public/AB6AXuAXWvBPYJXd4dtEkubNBpBfLJyvaDopXzoc6Pom7lB5WUOC9ndD2ZsEBz-r291jj7ZeWPhAiwFlZ-KRRtabxoZoB9xkuZ08Zhaxc9t9MkGGO1sxbfsdwdo7JSLfnHESCAEEfscp7fBWSjxnkpEUl3MDcu05Vkz6BeYWvISleFDmaEFV68XiLw5xtif8vr-VzLJLqrN9SqM2hkktqCZBjiXRNVnU3K1RjRExr5BLTwt1BZSHGv_QQdKOpUhQdLwXTkfXqHqRpz7qrxcd', price:320, mrp:920, badge:'65% OFF', off:65 },
+  { id:6, name:'Celestial Sky Bursts', nameTa:'வான் வெடிகள்', cat:'aerial', img:'https://lh3.googleusercontent.com/aida-public/AB6AXuCO1Uq9ZNPwauWOeRIK-VGqHIwwB4WVM3-SsOUV-4DAxuyaGi089chZ9X54gEG4vCZ6TBVwAoEWqI387oXQXoCB2X7ZEPcTaZSlh1ook-LBbYff4Gyld7v93PnEbNNhDu7cBTwbfJuo2V2_cjdNP5bZqw-ZAqVosnlaAUhCRFlokDZq_woUyyl_jFfke-esrnZY0Hxmq3ix70ktdhvLI14-d6q_B-PCOk_G7O8jyFcd0RlzrDgn_vna4CXCcWdpsUeUqbMmJjFr2hBO', price:1550, mrp:3100, badge:'👑 Premium', off:50 },
+  { id:7, name:'Magic Color Sparklers (50pcs)', nameTa:'வண்ண மினுக்குகள் (50)', cat:'sparklers', img:'https://lh3.googleusercontent.com/aida-public/AB6AXuBcoV02Op0NH6UraDao75RzJTbXWfad_9wgQJrVoJ7BzjgQCuhwz_zntMxOX2t-5vyWHpo_6gX3BIt5tuAs_K8Ye7IcOG8Ejo5fDYICjlSb39aSFtAx-V1chQuSUiOjbLyHjdfq4-K2A_7KfqQdtrK1d_xG4cnVJZd_PLnMBWSq4ihe3SI0V6reyJXh6FKJdKPbm_TVtBja1yf7XEaLs9mIlQiiH1wwP5LITqO4oOZROdsLDx_0qmNRcL50wKUhmUkrVLzDUYzHUNtM', price:180, mrp:400, badge:'45% OFF', off:45 },
+  { id:8, name:'Majestic Aerial Shells (12-shot)', nameTa:'மகிமையான வான் குண்டுகள்', cat:'aerial', img:'https://lh3.googleusercontent.com/aida-public/AB6AXuBzJiHuIvjEyJgZHlplI9FRZu760k0GpYEV4WcQSc4m-nFZawaQQcoHcKkfmHGFV54ISzv4v4JIw801vrmKqOQrDpnQg6Ua0xh7JsJkPGqXOLvrb6pRpoTV1Y49QoP3pgaYj32tiqFCwj5G80IPj5fU45BvwLsU8Y2GcPMvoFKBeWByzueqmYMgwCABJe5lKsGJGACxc3_lqpF1wuOr-b9k-9oqRyYcO7fs1scIPEtFFna8RiK8yWXxbZfPUNUy7mEgu24Q6SBtTFjq', price:1250, mrp:2500, badge:'50% OFF', off:50 },
+  { id:9, name:'Royal Chakkars – Big Box', nameTa:'ராஜ சக்கரம் – பெரிய பெட்டி', cat:'chakkars', img:'https://lh3.googleusercontent.com/aida-public/AB6AXuARi73NAmYWZa5oDdHwQhH3XOvyo-03805Yb10Bbu9aIqSNN2fQZ7sYs8PsbMrvuXYS6Grcm87kIYbEGZeGtYkBh9inqNEDOjt-5a5mgQhgOBmXLA7mNnKQ5XgUx-Mb_MDoiG2dg4ufJDX9MxDO9BCwdi2FIc3N81J2ew_6j-vffXV3-PtBzw-Dk6_vZ56D4Nyh9RSt7tSkV4zs94NqB2WspUG2VZacdvZhrYbLozNe5bzl3en7ksmYais1Kggj8yTolbWhD1XVFXJL', price:450, mrp:900, badge:'50% OFF', off:50 },
+];
+
+const COMBOS = [
+  {
+    id:'kids', name:'Kids Special Pack', nameTa:'குழந்தைகள் சிறப்பு பேக்',
+    img:'https://lh3.googleusercontent.com/aida-public/AB6AXuDMqbPbOZfzR_JukquW1AvwEWnQpnTDYiDTKNgUkr7eywM306SM6GgDYNy3MYPiAixCNM0ZjPzAJIt43dTga3TjtMD3E1Bg-UR-elpJu034NZL9FaS5OMKP4-WJFFKli22agPwzReiaijSRuS-cbhx-G0SnW9DU9z6lOthDQ4H-oL_deGVCn4G3yKyicpS7IkcCXc0Sy8qNz5S5HTFDeSbqEEhmF4NfbhcDz6Psqlo3uXPmfM-spq4BzZ49Dvqr9r0pcVIL_-7TMSbc',
+    desc:'Low-smoke, low-noise, maximum visual delight with a rainbow of colors. Perfect for the little ones.',
+    items:['20 Magic Sparklers (Multi-color)','10 Flower Pots (Mini Glow)','5 Spinning Ground Chakras'],
+    price:'₹699', badge1:'Safety First', badge2:'Sivakasi Original',
+    badgeColor1:'#ffb77d', badgeTextColor1:'#4d2600', popular:false
+  },
+  {
+    id:'family', name:'Family Celebration Box', nameTa:'குடும்ப கொண்டாட்ட பெட்டி',
+    img:'https://lh3.googleusercontent.com/aida-public/AB6AXuCbWS7QmxjNZ5ruaPfzKLdpY6APNXPz3MjS-Gks7cLTavv9434v7nQrnMHQPfZQLmti8lyU7hws6UEWIlS0fbn53kf3EFnXlFOMkIWSa3FFI7G0n9ie5kFxCH7re85Grcem8cOU9pPmAc8DGZnaoqIsmG-IFomA2QgxuaUMViljq57Y2S60KtUMEoth6SFwDA7-kgSrXKlL26bEU-F6ZMnUX3oIqiJ2D_AYkY42x6yhdAOLdYax-jM1XpI5jDQBo86pY-3uqTAaKGEt',
+    desc:'The perfect balance for a memorable evening. A curated mix of floor wonders and sky-high bursts.',
+    items:['12 Aerial Comets (Multi-effect)','15 Mega Flower Pots','8 Deluxe Ground Wheels'],
+    price:'₹2,000', badge1:'⭐ Most Popular', badge2:'Family Choice',
+    badgeColor1:'#e9c349', badgeTextColor1:'#342800', popular:true
+  },
+  {
+    id:'royal', name:'Premium Royal Grandeur', nameTa:'பிரீமியம் ராஜ தீபாவளி',
+    img:'https://lh3.googleusercontent.com/aida-public/AB6AXuClcJwxoNn90jbMQthZryrb9s9GDklndH4sFtYydtfzPFAvouz4AYwPe_etDA0OopixhvxP-_S4B5E7v6gm3crpJRJZiHdK_kBaH7j2hboTDzanxQevBCbzGsRK4jzNFZWNDmlAuFqI3RI49vOGKUIFykaLSIHjLbUJVcEfyxGw3uSy-Ljx-nue5nDCSPrwziSRPQNrbU3F1y_pT4jT9FMz0-YkLWBiBzkIRgNB7UHOljwzhYqCgrHHTDExGZ5CNproGjNW93PbV3SB',
+    desc:'Command the sky with Sivakasi\'s elite collection. Massive shells and professional-grade multi-shots.',
+    items:['5 Massive Rocket Launchers','2 Multi-Shot 50-Flower Pots','10 Premium Gold Crackers'],
+    price:'₹5,000', badge1:'👑 Luxury Tier', badge2:'Limited Edition',
+    badgeColor1:'#4A0404', badgeTextColor1:'#e9c349', popular:false
+  }
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let enquiryItems = [];
+let currentLang = 'ta';
+let currentFilter = 'all';
+let currentPage = 'home';
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function navigate(page) {
+  document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  currentPage = page;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // Update nav active states
+  document.querySelectorAll('[id^="nav-"]').forEach(el => {
+    el.style.color = 'rgba(230,229,185,0.7)';
+  });
+  const navEl = document.getElementById('nav-' + page);
+  if (navEl) navEl.style.color = 'var(--gold)';
+
+  if (page === 'enquiry') renderEnquiry();
+  if (page === 'products') renderProducts(currentFilter);
+  if (page === 'combos') renderCombos();
+  triggerReveal();
+}
+
+// ============================================================
+// LANGUAGE
+// ============================================================
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+
+  // Update hero heading
+  const heroHeading = document.getElementById('heroHeading');
+  const heroSub = document.getElementById('heroSub');
+  if (heroHeading) {
+    if (lang === 'en') {
+      heroHeading.innerHTML = 'This Diwali,<br/>Buy Crackers From<br/>The Most Trusted Place –<br/><span style="color:var(--tertiary);">Jegajothi Crackers</span>';
+      heroSub.textContent = "Sivakasi's finest crackers, safety-certified and delivered to your doorstep. Four decades of brilliance.";
+    } else {
+      heroHeading.innerHTML = 'இந்த தீபாவளி<br/>பட்டாசு வாங்க<br/>நம்பிக்கையான இடம்<br/><span style="color:var(--tertiary);">ஜெகஜோதி கிராக்கர்ஸ்</span>';
+      heroSub.textContent = "Sivakasi's finest crackers, safety-certified and delivered to your doorstep. Four decades of brilliance.";
+    }
+  }
+}
+
+// ============================================================
+// RENDER PRODUCTS
+// ============================================================
+function renderProducts(filter) {
+  const grid = document.getElementById('productsGrid');
+  if (!grid) return;
+  const filtered = filter === 'all' ? PRODUCTS : PRODUCTS.filter(p => p.cat === filter);
+  grid.innerHTML = filtered.map(p => `
+    <div class="glass product-card reveal" style="border-radius:24px;overflow:hidden;cursor:pointer;">
+      <div style="height:280px;overflow:hidden;position:relative;">
+        <img src="${p.img}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;transition:transform 0.7s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"/>
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,#1d1d03 0%,transparent 60%);"></div>
+        <div style="position:absolute;top:14px;left:14px;background:rgba(20,20,0,0.8);backdrop-filter:blur(8px);padding:4px 12px;border-radius:999px;font-size:10px;font-weight:800;color:var(--gold);border:1px solid rgba(233,195,73,0.2);">${p.badge}</div>
+        <div style="position:absolute;top:14px;right:14px;background:var(--maroon);color:var(--gold);padding:4px 10px;border-radius:999px;font-size:10px;font-weight:900;">${p.off}% OFF</div>
+      </div>
+      <div style="padding:24px;">
+        <h3 style="font-family:'Noto Serif',serif;font-size:20px;font-weight:800;margin-bottom:4px;line-height:1.3;">${p.name}</h3>
+        ${currentLang === 'ta' ? `<div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">${p.nameTa}</div>` : ''}
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:20px;">
+          <span style="font-family:'Noto Serif',serif;font-size:28px;font-weight:900;color:var(--gold);">₹${p.price.toLocaleString('en-IN')}</span>
+          <span style="font-size:13px;color:rgba(230,229,185,0.35);text-decoration:line-through;">₹${p.mrp.toLocaleString('en-IN')}</span>
+        </div>
+        <button onclick='addToEnquiry(${JSON.stringify(p)})' style="width:100%;background:linear-gradient(135deg,#e9c349,#af8d11);color:#342800;padding:14px;border-radius:999px;font-weight:800;font-size:14px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:box-shadow 0.3s;" onmouseover="this.style.boxShadow='0 0 30px rgba(233,195,73,0.4)'" onmouseout="this.style.boxShadow='none'">
+          🛒 Add to Enquiry
+        </button>
+      </div>
+    </div>
+  `).join('');
+  setTimeout(triggerReveal, 100);
+}
+
+function filterProducts(cat, btn) {
+  currentFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderProducts(cat);
+}
+
+// ============================================================
+// RENDER COMBOS
+// ============================================================
+function renderCombos() {
+  const grid = document.getElementById('comboGrid');
+  if (!grid) return;
+  grid.innerHTML = COMBOS.map(c => `
+    <div class="glass product-card reveal" style="border-radius:28px;overflow:hidden;display:flex;flex-direction:column;${c.popular ? 'border:2px solid rgba(233,195,73,0.4);box-shadow:0 20px 60px rgba(233,195,73,0.15);' : ''}">
+      <div style="height:320px;overflow:hidden;position:relative;flex-shrink:0;">
+        <img src="${c.img}" alt="${c.name}" style="width:100%;height:100%;object-fit:cover;transition:transform 0.7s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'"/>
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,#141400 0%,transparent 55%);"></div>
+        <div style="position:absolute;top:16px;left:16px;display:flex;flex-direction:column;gap:6px;">
+          <span style="background:${c.badgeColor1};color:${c.badgeTextColor1};padding:4px 12px;border-radius:999px;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.08em;">${c.badge1}</span>
+          <span style="background:rgba(20,20,0,0.8);color:var(--gold);padding:4px 12px;border-radius:999px;font-size:10px;font-weight:800;border:1px solid rgba(233,195,73,0.2);">${c.badge2}</span>
+        </div>
+      </div>
+      <div style="padding:28px;flex:1;display:flex;flex-direction:column;">
+        <h3 style="font-family:'Noto Serif',serif;font-size:24px;font-weight:900;color:var(--gold);margin-bottom:4px;">${c.name}</h3>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">${c.nameTa}</p>
+        <p style="font-size:14px;color:rgba(230,229,185,0.7);line-height:1.6;margin-bottom:20px;">${c.desc}</p>
+        <div style="flex:1;margin-bottom:24px;">
+          ${c.items.map(item => `
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+              <span style="color:var(--gold);font-size:14px;">✅</span>
+              <span style="font-size:14px;color:var(--text-muted);">${item}</span>
+            </div>
+          `).join('')}
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <span style="font-family:'Noto Serif',serif;font-size:36px;font-weight:900;color:var(--gold);">${c.price}</span>
+        </div>
+        <button onclick='addComboToEnquiry("${c.id}","${c.name}","${c.price}")' style="width:100%;background:${c.popular ? 'linear-gradient(135deg,#e9c349,#af8d11)' : 'transparent'};color:${c.popular ? '#342800' : 'var(--gold)'};padding:16px;border-radius:14px;font-weight:800;font-size:15px;border:2px solid ${c.popular ? 'transparent' : 'rgba(233,195,73,0.3)'};cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.3s;" onmouseover="this.style.background='linear-gradient(135deg,#e9c349,#af8d11)';this.style.color='#342800';this.style.border='2px solid transparent'" onmouseout="${c.popular ? '' : 'this.style.background=\'transparent\';this.style.color=\'var(--gold)\';this.style.border=\'2px solid rgba(233,195,73,0.3)\''}">
+          🛒 Add to Enquiry
+        </button>
+      </div>
+    </div>
+  `).join('');
+  setTimeout(triggerReveal, 100);
+}
+
+// ============================================================
+// ENQUIRY CART
+// ============================================================
+function addToEnquiry(product) {
+  const existing = enquiryItems.find(i => i.id === product.id);
+  if (existing) {
+    existing.qty++;
+  } else {
+    enquiryItems.push({ ...product, qty: 1 });
+  }
+  updateEnquiryUI();
+  showToast('✨ ' + product.name + ' added!');
+  burstEffect(event);
+}
+
+function addComboToEnquiry(id, name, price) {
+  const priceNum = parseInt(price.replace(/[₹,]/g, ''));
+  const existing = enquiryItems.find(i => i.id === 'combo_' + id);
+  if (existing) { existing.qty++; }
+  else { enquiryItems.push({ id: 'combo_' + id, name, price: priceNum, mrp: priceNum, qty: 1, cat: 'combo', img:'', badge:'Combo Pack', off: 0 }); }
+  updateEnquiryUI();
+  showToast('🎁 ' + name + ' added!');
+}
+
+function removeFromEnquiry(id) {
+  enquiryItems = enquiryItems.filter(i => i.id !== id);
+  updateEnquiryUI();
+  if (currentPage === 'enquiry') renderEnquiry();
+}
+
+function updateQty(id, delta) {
+  const item = enquiryItems.find(i => i.id === id);
+  if (!item) return;
+  item.qty = Math.max(1, item.qty + delta);
+  updateEnquiryUI();
+  if (currentPage === 'enquiry') renderEnquiry();
+}
+
+function clearEnquiry() {
+  enquiryItems = [];
+  updateEnquiryUI();
+  renderEnquiry();
+}
+
+function getTotal() {
+  return enquiryItems.reduce((sum, i) => sum + i.price * i.qty, 0);
+}
+
+function updateEnquiryUI() {
+  const count = enquiryItems.reduce((sum, i) => sum + i.qty, 0);
+  const total = getTotal();
+
+  // Nav badge
+  const navBadge = document.getElementById('navBadge');
+  if (count > 0) { navBadge.textContent = count; navBadge.style.display = 'flex'; }
+  else { navBadge.style.display = 'none'; }
+
+  // WA notif
+  const waNotif = document.getElementById('waNotif');
+  if (count > 0) { waNotif.textContent = count; waNotif.style.display = 'flex'; }
+  else { waNotif.style.display = 'none'; }
+
+  // Sticky bar
+  const stickyBar = document.getElementById('stickyBar');
+  if (count > 0) {
+    stickyBar.style.display = 'block';
+    document.getElementById('barCount').textContent = count + ' Item' + (count > 1 ? 's' : '') + ' in Enquiry';
+    document.getElementById('barTotal').textContent = 'Total Estimate: ₹' + total.toLocaleString('en-IN');
+  } else {
+    stickyBar.style.display = 'none';
+  }
+}
+
+function renderEnquiry() {
+  const listEl = document.getElementById('enquiryList');
+  const emptyEl = document.getElementById('emptyEnquiry');
+  const itemsEl = document.getElementById('enquiryItems');
+  const totalEl = document.getElementById('enquiryTotal');
+  const waPreviewText = document.getElementById('waPreviewText');
+
+  if (enquiryItems.length === 0) {
+    emptyEl.style.display = 'block';
+    itemsEl.style.display = 'none';
+    return;
+  }
+  emptyEl.style.display = 'none';
+  itemsEl.style.display = 'block';
+
+  listEl.innerHTML = enquiryItems.map(item => `
+    <div style="display:flex;align-items:center;gap:16px;padding:14px;border-radius:12px;transition:background 0.2s;margin-bottom:8px;" onmouseover="this.style.background='rgba(43,43,14,0.6)'" onmouseout="this.style.background='transparent'">
+      ${item.img ? `<img src="${item.img}" alt="${item.name}" style="width:72px;height:72px;border-radius:10px;object-fit:cover;flex-shrink:0;"/>` : `<div style="width:72px;height:72px;border-radius:10px;background:var(--surface-high);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;">🎁</div>`}
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Noto Serif',serif;font-size:16px;font-weight:800;">${item.name}</div>
+        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;">${item.cat}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button onclick="updateQty('${item.id}',-1)" style="width:28px;height:28px;border-radius:50%;border:1px solid rgba(233,195,73,0.3);background:none;color:var(--gold);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">−</button>
+        <span style="font-weight:700;min-width:20px;text-align:center;">${item.qty}</span>
+        <button onclick="updateQty('${item.id}',1)" style="width:28px;height:28px;border-radius:50%;border:1px solid rgba(233,195,73,0.3);background:none;color:var(--gold);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">+</button>
+      </div>
+      <div style="text-align:right;min-width:80px;">
+        <div style="font-size:13px;color:var(--text-muted);">₹${item.price.toLocaleString('en-IN')} x ${item.qty}</div>
+        <div style="font-family:'Noto Serif',serif;font-size:18px;font-weight:800;color:var(--gold);">₹${(item.price * item.qty).toLocaleString('en-IN')}</div>
+      </div>
+      <button onclick="removeFromEnquiry('${item.id}')" style="background:none;border:none;color:rgba(230,229,185,0.35);cursor:pointer;font-size:18px;padding:4px;transition:color 0.2s;" onmouseover="this.style.color='#ffb4aa'" onmouseout="this.style.color='rgba(230,229,185,0.35)'">✕</button>
+    </div>
+  `).join('');
+
+  const total = getTotal();
+  totalEl.textContent = '₹' + total.toLocaleString('en-IN');
+
+  // WhatsApp preview
+  const itemLines = enquiryItems.map(i => `• ${i.qty} x ${i.name} – ₹${(i.price * i.qty).toLocaleString('en-IN')}`).join('<br/>');
+  waPreviewText.innerHTML = `"நமஸ்காரம் Jegajothi Crackers!<br/><br/>I would like to enquire about:<br/>${itemLines}<br/><br/>Estimated Total: ₹${total.toLocaleString('en-IN')}<br/><br/>Please confirm availability and final pricing. Thank you! 🙏"`;
+}
+
+// ============================================================
+// WHATSAPP
+// ============================================================
+function sendWhatsApp(type) {
+  let msg = '';
+  const phone = '919876543210';
+  if (type === 'general') {
+    msg = 'நமஸ்காரம் Jegajothi Crackers! I would like to know more about your cracker products and pricing. Please guide me. Thank you!';
+  } else if (type === 'enquiry') {
+    if (enquiryItems.length === 0) { showToast('🛒 Add products first!'); return; }
+    const lines = enquiryItems.map(i => `• ${i.qty} x ${i.name} – ₹${(i.price*i.qty).toLocaleString('en-IN')}`).join('\n');
+    msg = `நமஸ்காரம் Jegajothi Crackers!\n\nI would like to place an enquiry:\n\n${lines}\n\nEstimated Total: ₹${getTotal().toLocaleString('en-IN')}\n\nPlease confirm availability. Thank you 🙏`;
+  } else if (type === 'support') {
+    msg = 'நமஸ்காரம்! I need help with my cracker order.';
+  }
+  window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+}
+
+function sendBulkQuote() {
+  const phone = document.getElementById('ctaPhone').value;
+  const msg = 'நமஸ்காரம் Jegajothi Crackers! I am interested in bulk order enquiry. My mobile: ' + (phone || 'Not provided') + '. Please call me. Thank you!';
+  window.open('https://wa.me/919876543210?text=' + encodeURIComponent(msg), '_blank');
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ============================================================
+// BURST CLICK EFFECT
+// ============================================================
+function burstEffect(e) {
+  const colors = ['#e9c349','#ffe088','#ffb77d','#ffb4aa','#ffffff'];
+  for (let i = 0; i < 12; i++) {
+    const spark = document.createElement('div');
+    spark.style.cssText = `
+      position:fixed;left:${e.clientX}px;top:${e.clientY}px;
+      width:5px;height:5px;border-radius:50%;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      pointer-events:none;z-index:9998;
+      transition:all 0.8s ease-out;
+    `;
+    document.body.appendChild(spark);
+    const angle = (Math.PI * 2 * i) / 12;
+    const dist = 40 + Math.random() * 60;
+    setTimeout(() => {
+      spark.style.transform = `translate(${Math.cos(angle)*dist}px,${Math.sin(angle)*dist}px) scale(0)`;
+      spark.style.opacity = '0';
+    }, 10);
+    setTimeout(() => spark.remove(), 850);
+  }
+}
+
+// ============================================================
+// SPARK CURSOR TRAIL
+// ============================================================
+const canvas = document.getElementById('spark-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+class Spark {
+  constructor(x, y) {
+    this.x = x; this.y = y;
+    this.size = Math.random() * 3 + 1;
+    this.vx = (Math.random()-0.5) * 2;
+    this.vy = (Math.random()-0.5) * 2;
+    this.life = 1;
+    const hue = 35 + Math.random() * 25;
+    this.color = `hsla(${hue},100%,65%,`;
+  }
+  update() { this.x+=this.vx; this.y+=this.vy; this.life-=0.04; }
+  draw() {
+    ctx.globalAlpha = this.life;
+    ctx.fillStyle = this.color + this.life + ')';
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+    ctx.fill();
+  }
+}
+
+window.addEventListener('mousemove', e => {
+  if (Math.random() > 0.6) {
+    for (let i=0;i<3;i++) particles.push(new Spark(e.clientX, e.clientY));
+  }
+});
+
+function animateCanvas() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  particles = particles.filter(p => p.life > 0.02);
+  particles.forEach(p => { p.update(); p.draw(); });
+  requestAnimationFrame(animateCanvas);
+}
+animateCanvas();
+
+// ============================================================
+// WA TOOLTIP
+// ============================================================
+document.getElementById('waFloat').addEventListener('mouseenter', () => {
+  document.getElementById('waTooltip').style.opacity = '1';
+});
+document.getElementById('waFloat').addEventListener('mouseleave', () => {
+  document.getElementById('waTooltip').style.opacity = '0';
+});
+
+// ============================================================
+// FIRE PARTICLES IN HERO
+// ============================================================
+function spawnFireParticle() {
+  const container = document.getElementById('fireParticles');
+  if (!container) return;
+  const p = document.createElement('div');
+  const colors = ['#e9c349','#ffb77d','#ffe088','#af8d11'];
+  const x = Math.random() * 100;
+  const size = Math.random() * 6 + 2;
+  const dur = Math.random() * 3 + 2;
+  p.style.cssText = `
+    position:absolute;left:${x}%;bottom:0;
+    width:${size}px;height:${size}px;
+    background:${colors[Math.floor(Math.random()*colors.length)]};
+    border-radius:50%;
+    box-shadow:0 0 ${size*3}px ${colors[0]};
+    animation:fireFloat ${dur}s ease-in-out forwards;
+  `;
+  container.appendChild(p);
+  setTimeout(() => p.remove(), dur*1000);
+}
+setInterval(spawnFireParticle, 400);
+
+// ============================================================
+// SCROLL REVEAL
+// ============================================================
+function triggerReveal() {
+  setTimeout(() => {
+    document.querySelectorAll('.reveal:not(.visible)').forEach(el => {
+      const r = el.getBoundingClientRect();
+      if (r.top < window.innerHeight * 0.92) el.classList.add('visible');
+    });
+  }, 50);
+}
+window.addEventListener('scroll', triggerReveal);
+triggerReveal();
+
+// ============================================================
+// RESPONSIVE LAYOUT FIXES
+// ============================================================
+function checkResponsive() {
+  const w = window.innerWidth;
+  const desktopNav = document.getElementById('desktopNav');
+  const hamburger = document.getElementById('hamburger');
+  if (w < 900) {
+    desktopNav.style.display = 'none';
+    hamburger.style.display = 'block';
+  } else {
+    desktopNav.style.display = 'flex';
+    hamburger.style.display = 'none';
+  }
+  // Grid adjustments
+  const heroGrid = document.getElementById('heroGrid');
+  const statsGrid = document.getElementById('statsGrid');
+  const budgetGrid = document.getElementById('budgetGrid');
+  const legacyGrid = document.getElementById('legacyGrid');
+  const testiGrid = document.getElementById('testiGrid');
+  const comboGrid = document.getElementById('comboGrid');
+  const safetyGrid = document.getElementById('safetyGrid');
+  const enquiryMainGrid = document.getElementById('enquiryMainGrid');
+  const galleryGrid = document.getElementById('galleryGrid');
+
+  if (w < 768) {
+    if (heroGrid) heroGrid.style.gridTemplateColumns = '1fr';
+    if (statsGrid) statsGrid.style.gridTemplateColumns = '1fr 1fr';
+    if (budgetGrid) budgetGrid.style.gridTemplateColumns = '1fr';
+    if (legacyGrid) legacyGrid.style.gridTemplateColumns = '1fr';
+    if (testiGrid) testiGrid.style.gridTemplateColumns = '1fr';
+    if (comboGrid) comboGrid.style.gridTemplateColumns = '1fr';
+    if (safetyGrid) safetyGrid.style.gridTemplateColumns = '1fr';
+    if (enquiryMainGrid) enquiryMainGrid.style.gridTemplateColumns = '1fr';
+    if (galleryGrid) galleryGrid.style.gridTemplateColumns = '1fr';
+  } else if (w < 1100) {
+    if (heroGrid) heroGrid.style.gridTemplateColumns = '1fr 1fr';
+    if (statsGrid) statsGrid.style.gridTemplateColumns = '1fr 1fr';
+    if (budgetGrid) budgetGrid.style.gridTemplateColumns = '1fr 1fr';
+    if (legacyGrid) legacyGrid.style.gridTemplateColumns = '1fr 1fr';
+    if (testiGrid) testiGrid.style.gridTemplateColumns = '1fr 1fr';
+    if (comboGrid) comboGrid.style.gridTemplateColumns = '1fr 1fr';
+    if (safetyGrid) safetyGrid.style.gridTemplateColumns = '1fr 1fr';
+    if (enquiryMainGrid) enquiryMainGrid.style.gridTemplateColumns = '2fr 1fr';
+    if (galleryGrid) galleryGrid.style.gridTemplateColumns = '2fr 1fr';
+  } else {
+    if (heroGrid) heroGrid.style.gridTemplateColumns = '1fr 1fr';
+    if (statsGrid) statsGrid.style.gridTemplateColumns = 'repeat(4,1fr)';
+    if (budgetGrid) budgetGrid.style.gridTemplateColumns = 'repeat(3,1fr)';
+    if (legacyGrid) legacyGrid.style.gridTemplateColumns = '1fr 1fr';
+    if (testiGrid) testiGrid.style.gridTemplateColumns = 'repeat(3,1fr)';
+    if (comboGrid) comboGrid.style.gridTemplateColumns = 'repeat(3,1fr)';
+    if (safetyGrid) safetyGrid.style.gridTemplateColumns = 'repeat(2,1fr)';
+    if (enquiryMainGrid) enquiryMainGrid.style.gridTemplateColumns = '2fr 1fr';
+    if (galleryGrid) galleryGrid.style.gridTemplateColumns = '2fr 1fr';
+  }
+}
+window.addEventListener('resize', checkResponsive);
+checkResponsive();
+
+// ============================================================
+// MOBILE MENU
+// ============================================================
+function openMobileMenu() { document.getElementById('mobileMenu').classList.add('open'); }
+function closeMobileMenu() { document.getElementById('mobileMenu').classList.remove('open'); }
+
+// ============================================================
+// INIT
+// ============================================================
+renderProducts('all');
+renderCombos();
+navigate('home');
+triggerReveal();
+
+// Initial reveal with delay
+setTimeout(triggerReveal, 300);
+</script>
+</body>
+</html>

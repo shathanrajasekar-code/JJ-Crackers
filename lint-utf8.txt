@@ -1,0 +1,67 @@
+﻿
+> jegajothi-crackers@0.1.0 lint
+> eslint
+
+
+C:\Users\ragul\.gemini\antigravity\scratch\JJ CRACKERS\jegajothi-crackers\scripts\gen-products.mjs
+  1:10  warning  'readFileSync' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\ragul\.gemini\antigravity\scratch\JJ CRACKERS\jegajothi-crackers\src\app\[locale]\combos\page.tsx
+    4:10   warning  'useTranslations' is defined but never used                      @typescript-eslint/no-unused-vars
+   82:45   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+   91:78   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+   91:105  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  171:89   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\ragul\.gemini\antigravity\scratch\JJ CRACKERS\jegajothi-crackers\src\app\[locale]\enquiry\page.tsx
+   5:10  warning  'ShoppingCart' is defined but never used                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+   5:24  warning  'Trash2' is defined but never used                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+   5:32  warning  'Minus' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+   5:39  warning  'Plus' is defined but never used                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+   5:45  warning  'MessageCircle' is defined but never used                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+   5:60  warning  'Phone' is defined but never used                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  13:9   warning  't' is assigned a value but never used                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+  88:25  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\ragul\.gemini\antigravity\scratch\JJ CRACKERS\jegajothi-crackers\src\app\[locale]\products\page.tsx
+  12:9   warning  't' is assigned a value but never used                           @typescript-eslint/no-unused-vars
+  31:92  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  52:91  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\ragul\.gemini\antigravity\scratch\JJ CRACKERS\jegajothi-crackers\src\app\[locale]\safety\page.tsx
+  53:54  error  Parsing error: ',' expected
+
+C:\Users\ragul\.gemini\antigravity\scratch\JJ CRACKERS\jegajothi-crackers\src\app\api\enquiries\route.ts
+  4:27  warning  'request' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\ragul\.gemini\antigravity\scratch\JJ CRACKERS\jegajothi-crackers\src\app\api\whatsapp\route.ts
+  28:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  32:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  33:56  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\ragul\.gemini\antigravity\scratch\JJ CRACKERS\jegajothi-crackers\src\components\effects\ScrollReveal.tsx
+  16:7  warning  'defaultVariants' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\ragul\.gemini\antigravity\scratch\JJ CRACKERS\jegajothi-crackers\src\components\home\BudgetKits.tsx
+  4:10  warning  'motion' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\ragul\.gemini\antigravity\scratch\JJ CRACKERS\jegajothi-crackers\src\components\home\LegacySection.tsx
+  6:10  warning  'GlassCard' is defined but never used  @typescript-eslint/no-unused-vars
+  8:10  warning  'Badge' is defined but never used      @typescript-eslint/no-unused-vars
+
+C:\Users\ragul\.gemini\antigravity\scratch\JJ CRACKERS\jegajothi-crackers\src\components\home\TestimonialSection.tsx
+   4:10  warning  'motion' is defined but never used                               @typescript-eslint/no-unused-vars
+  70:19  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  70:39  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\Users\ragul\.gemini\antigravity\scratch\JJ CRACKERS\jegajothi-crackers\src\components\layout\Navbar.tsx
+  6:16  warning  'ShoppingCart' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\ragul\.gemini\antigravity\scratch\JJ CRACKERS\jegajothi-crackers\src\components\products\ProductCard.tsx
+   5:10  warning  'ShoppingCart' is defined but never used                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+   9:10  warning  'cn' is defined but never used                                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+  39:11  warning  'rect' is assigned a value but never used                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+  67:11  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+Γ£û 34 problems (12 errors, 22 warnings)
+
