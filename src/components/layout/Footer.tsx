@@ -1,133 +1,159 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
-import { Link } from '@/i18n/navigation';
-import { Mail, Phone, MapPin } from 'lucide-react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { motion } from 'framer-motion';
+import { MessageCircle, Globe, Share2, Mail, Phone, MapPin, ArrowUp, Sparkles, Send } from 'lucide-react';
+import { useState } from 'react';
+
+const footerLinks = {
+  shop: [
+    { label: 'All Products', href: '/products' },
+    { label: 'Combo Packs', href: '/combos' },
+    { label: 'New Arrivals', href: '/products?category=new' },
+    { label: 'Best Sellers', href: '/products?category=best' },
+  ],
+  company: [
+    { label: 'About Us', href: '/about' },
+    { label: 'Contact Us', href: '/contact' },
+    { label: 'Safety Guidelines', href: '/safety' },
+    { label: 'Enquiry Cart', href: '/enquiry' },
+  ],
+  legal: [
+    { label: 'Privacy Policy', href: '/privacy' },
+    { label: 'Terms of Service', href: '/terms' },
+    { label: 'Shipping Info', href: '/contact' },
+  ]
+};
+
+const socialLinks = [
+  { icon: MessageCircle, label: 'WhatsApp', href: 'https://wa.me/917092300252', color: 'hover:text-[#25D366] hover:border-[#25D366]' },
+  { icon: Globe, label: 'Website', href: '#', color: 'hover:text-[#E4405F] hover:border-[#E4405F]' },
+  { icon: Share2, label: 'Share', href: '#', color: 'hover:text-[#1877F2] hover:border-[#1877F2]' },
+  { icon: Mail, label: 'Email', href: 'mailto:jjcrackersworld@gmail.com', color: 'hover:text-[var(--color-gold)] hover:border-[var(--color-gold)]' },
+];
 
 export function Footer() {
-  const t = useTranslations('footer');
-
   const currentYear = new Date().getFullYear();
+  const [email, setEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
 
-  const quickLinks = [
-    { href: '/', label: 'Home' },
-    { href: '/products', label: 'Products' },
-    { href: '/combos', label: 'Combo Packs' },
-    { href: '/safety', label: 'Safety Tips' },
-    { href: '/enquiry', label: 'My Enquiry' },
-  ];
+  const scrollToTop = () => { window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
-  const socialLinks = [
-    { label: 'FB', href: '#', name: 'Facebook' },
-    { label: 'IG', href: '#', name: 'Instagram' },
-    { label: 'TW', href: '#', name: 'Twitter' },
-  ];
+  const handleNewsletter = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    try {
+      await fetch('/api/newsletter', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+      setSubscribed(true); setEmail('');
+    } catch { /* ignore */ }
+  };
 
   return (
-    <footer className="relative bg-maroon border-t border-gold/12">
-      {/* Kolam pattern background */}
-      <div className="absolute inset-0 kolam-dots opacity-30" />
+    <footer suppressHydrationWarning className="relative bg-[var(--surface)] border-t border-[var(--border)] overflow-hidden" id="footer">
+      <div className="gold-divider" />
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[var(--color-gold)]/5 rounded-full blur-[150px] pointer-events-none" />
 
-      <div className="relative mx-auto max-w-[1400px] px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Brand */}
-          <div className="md:col-span-2">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-gold to-gold-dim">
-                <span className="text-2xl">🎆</span>
+      <div className="relative max-w-[1400px] mx-auto px-6 pt-20 pb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
+          <div className="lg:col-span-2">
+            <Link href="/" suppressHydrationWarning className="inline-flex items-center gap-3 mb-6 group">
+              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[var(--color-gold)]/30 shadow-[0_0_20px_rgba(212,175,55,0.3)]">
+                <Image src="/jj-crackers-logo.png" alt="JJ Crackers" width={48} height={48} className="object-contain" />
               </div>
-              <div>
-                <h3 className="font-display text-xl font-bold text-gold">
-                  Jegajothi Crackers
-                </h3>
-                <p className="text-xs text-text-muted">
-                  Since 1984 • Sivakasi
-                </p>
+              <div className="flex flex-col">
+                <span className="font-display font-bold text-2xl tracking-tight leading-none">Jegajothi Crackers</span>
+                <span className="text-xs text-[var(--color-gold)] font-semibold uppercase tracking-wider mt-0.5">ஜெகஜோதி பட்டாசுகள்</span>
               </div>
-            </div>
-            <p className="text-text-muted mb-6 max-w-md">
-              {t('tagline')}
+            </Link>
+            <p className="text-[var(--text-muted)] max-w-sm mb-6 leading-relaxed">
+              Sivakasi&apos;s most trusted fireworks manufacturer since 1984. Lighting up millions of homes with uncompromising safety and premium quality.
             </p>
-            <div className="flex items-center gap-4">
+
+            {/* Newsletter */}
+            <div className="mb-6">
+              <h4 className="text-sm font-bold mb-3">Subscribe to Offers</h4>
+              {subscribed ? (
+                <p className="text-sm text-emerald-500 font-bold">✅ Subscribed! You&apos;ll get exclusive deals.</p>
+              ) : (
+                <form onSubmit={handleNewsletter} className="flex gap-2">
+                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Your email"
+                    className="flex-1 bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-sm focus:border-[var(--color-gold)] focus:outline-none" required />
+                  <button type="submit" className="px-4 py-2.5 rounded-xl bg-[var(--color-gold)] text-[#1a1400] font-bold"><Send size={16} /></button>
+                </form>
+              )}
+            </div>
+
+            <div className="flex gap-3">
               {socialLinks.map((social) => (
-                <a
-                  key={social.name}
-                  href={social.href}
-                  className="p-2 rounded-lg bg-surface-high/50 border border-gold/20 hover:border-gold/40 transition-colors text-gold font-bold text-xs"
-                  aria-label={social.name}
-                >
-                  {social.label}
-                </a>
+                <motion.a key={social.label} href={social.href} whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }}
+                  className={`w-10 h-10 rounded-xl border border-[var(--border)] flex items-center justify-center text-[var(--text-muted)] transition-all duration-300 ${social.color}`}
+                  aria-label={social.label} target={social.href.startsWith('http') ? '_blank' : undefined}>
+                  <social.icon size={18} />
+                </motion.a>
               ))}
             </div>
           </div>
 
-          {/* Quick Links */}
           <div>
-            <h4 className="font-display text-lg font-bold text-gold mb-4">
-              {t('quickLinks')}
+            <h4 className="font-bold text-[var(--text)] mb-6 uppercase text-xs tracking-[0.2em] flex items-center gap-2">
+              <Sparkles size={12} className="text-[var(--color-gold)]" /> Shop
             </h4>
-            <ul className="space-y-2">
-              {quickLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-text-muted hover:text-gold transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
+            <ul className="space-y-3">
+              {footerLinks.shop.map((link) => (
+                <li key={link.label}><Link href={link.href} className="text-[var(--text-muted)] hover:text-[var(--color-gold)] transition-colors text-sm inline-flex items-center gap-1 group">
+                  <span className="w-0 group-hover:w-2 h-px bg-[var(--color-gold)] transition-all duration-300" />{link.label}
+                </Link></li>
               ))}
             </ul>
           </div>
 
-          {/* Contact */}
           <div>
-            <h4 className="font-display text-lg font-bold text-gold mb-4">
-              {t('contact')}
+            <h4 className="font-bold text-[var(--text)] mb-6 uppercase text-xs tracking-[0.2em] flex items-center gap-2">
+              <Sparkles size={12} className="text-[var(--color-gold)]" /> Company
             </h4>
             <ul className="space-y-3">
-              <li className="flex items-center gap-3 text-text-muted">
-                <MapPin size={18} className="text-gold" />
-                <span>{t('address')}</span>
-              </li>
-              <li className="flex items-center gap-3 text-text-muted">
-                <Phone size={18} className="text-gold" />
-                <a href="tel:+917092300252" className="hover:text-gold transition-colors">
-                  +91 70923 00252
-                </a>
-              </li>
-              <li className="flex items-center gap-3 text-text-muted">
-                <Mail size={18} className="text-gold" />
-                <a href="mailto:jjcrackersworld@gmail.com" className="hover:text-gold transition-colors">
-                  jjcrackersworld@gmail.com
-                </a>
-              </li>
+              {footerLinks.company.map((link) => (
+                <li key={link.label}><Link href={link.href} className="text-[var(--text-muted)] hover:text-[var(--color-gold)] transition-colors text-sm inline-flex items-center gap-1 group">
+                  <span className="w-0 group-hover:w-2 h-px bg-[var(--color-gold)] transition-all duration-300" />{link.label}
+                </Link></li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-bold text-[var(--text)] mb-6 uppercase text-xs tracking-[0.2em] flex items-center gap-2">
+              <Sparkles size={12} className="text-[var(--color-gold)]" /> Contact
+            </h4>
+            <ul className="space-y-4">
+              <li className="flex gap-3 text-sm text-[var(--text-muted)]"><MapPin size={16} className="shrink-0 text-[var(--color-gold)] mt-0.5" /><span>1/406, Sivakasi-Vembakottai Main Road, Opp. EB Office, Vembakottai.</span></li>
+              <li><a href="tel:+917092300252" className="flex gap-3 text-sm text-[var(--text-muted)] hover:text-[var(--color-gold)]"><Phone size={16} className="shrink-0 text-[var(--color-gold)]" /><span>+91 70923 00252</span></a></li>
+              <li><a href="mailto:jjcrackersworld@gmail.com" className="flex gap-3 text-sm text-[var(--text-muted)] hover:text-[var(--color-gold)]"><Mail size={16} className="shrink-0 text-[var(--color-gold)]" /><span>jjcrackersworld@gmail.com</span></a></li>
             </ul>
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="mt-12 pt-8 border-t border-gold/12 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-text-muted text-sm">
-            {t('copyright').replace('{year}', String(currentYear))}
-          </p>
-          <div className="flex items-center gap-4">
-            <a
-              href="#"
-              className="text-text-muted hover:text-gold text-sm transition-colors"
-            >
-              Privacy Policy
-            </a>
-            <a
-              href="#"
-              className="text-text-muted hover:text-gold text-sm transition-colors"
-            >
-              Terms of Service
-            </a>
+        <div className="flex flex-wrap items-center justify-center gap-6 py-8 border-y border-[var(--border)] mb-8">
+          {['🛡️ 100% Safety Certified', '🌿 Eco-Friendly Options', '🏭 Direct Factory Price', '📦 Secure Packaging'].map((badge) => (
+            <span key={badge} className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">{badge}</span>
+          ))}
+        </div>
+
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-[var(--text-muted)] text-xs font-medium">
+          <p suppressHydrationWarning>© {currentYear} Jegajothi Crackers (JJ Crackers). All rights reserved.</p>
+          <div suppressHydrationWarning className="flex items-center gap-8">
+            {footerLinks.legal.map((link) => (
+              <Link key={link.label} href={link.href} className="hover:text-[var(--color-gold)] transition-colors">{link.label}</Link>
+            ))}
           </div>
         </div>
       </div>
+
+      <motion.button onClick={scrollToTop} whileHover={{ scale: 1.1, y: -2 }} whileTap={{ scale: 0.95 }}
+        className="absolute top-6 right-6 w-10 h-10 rounded-full bg-[var(--surface-high)] border border-[var(--border)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--color-gold)] hover:border-[var(--color-gold)]"
+        aria-label="Back to top">
+        <ArrowUp size={16} />
+      </motion.button>
     </footer>
   );
 }

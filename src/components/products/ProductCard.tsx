@@ -1,155 +1,125 @@
 'use client';
 
+import { motion } from 'framer-motion';
+import { Plus, Minus, ShoppingCart, Leaf, Check } from 'lucide-react';
 import { useState } from 'react';
-import { useTranslations, useLocale } from 'next-intl';
 import { useEnquiryStore } from '@/lib/store/enquiryStore';
-import { useToast } from '@/components/ui/Toast';
-import { FireworkBurst } from '@/components/effects/FireworkBurst';
-import { formatPrice, calculateDiscount } from '@/lib/utils';
-
-interface Product {
-  id: string;
-  name_en: string;
-  name_ta: string;
-  slug: string;
-  category: string;
-  price: number;
-  mrp: number;
-  discount_percent: number | null;
-  badge_text: string | null;
-  image_url: string | null;
-  in_stock: boolean;
-  is_featured: boolean;
-}
+import type { Product } from '@/lib/supabase/types';
 
 interface ProductCardProps {
   product: Product;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const t = useTranslations('products');
-  const locale = useLocale();
-  const { addItem } = useEnquiryStore();
-  const { addToast } = useToast();
-  const [burst, setBurst] = useState<{ x: number; y: number } | null>(null);
+  const [quantity, setQuantity] = useState(1);
+  const addItem = useEnquiryStore((state) => state.addItem);
+  const [isAdded, setIsAdded] = useState(false);
 
-  const handleAddToEnquiry = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.currentTarget.getBoundingClientRect();
-    setBurst({
-      x: e.clientX,
-      y: e.clientY,
-    });
-
-    addItem({
-      id: product.id,
-      name: product.name_en,
-      name_ta: product.name_ta,
-      price: product.price,
-      mrp: product.mrp,
-      image_url: product.image_url,
-      category: product.category,
-    });
-
-    addToast(`${product.name_en} added to enquiry!`, 'success');
-
-    setTimeout(() => setBurst(null), 850);
+  const handleAdd = () => {
+    addItem({ product, quantity });
+    setIsAdded(true);
+    setTimeout(() => setIsAdded(false), 2000);
+    setQuantity(1);
   };
 
-  const discount = calculateDiscount(product.price, product.mrp);
-
   return (
-    <div className="glass group rounded-[24px] overflow-hidden cursor-pointer transition-transform duration-500 hover:-translate-y-3 hover:shadow-[0_30px_60px_-15px_rgba(233,195,73,0.25)] flex flex-col h-full">
-      {/* Image Zone */}
-      <div className="relative h-[280px] overflow-hidden shrink-0 bg-surface-high">
+    <motion.div
+      whileHover={{ y: -8 }}
+      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      className="glass-card rounded-2xl overflow-hidden flex flex-col group relative"
+    >
+      {/* Badges */}
+      <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
+        {product.badge_text && (
+          <span className="bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] text-[10px] font-black px-2.5 py-1 rounded-full shadow-md uppercase tracking-wider">
+            {product.badge_text}
+          </span>
+        )}
+        {product.is_eco_friendly && (
+          <span className="bg-emerald-500/20 text-emerald-500 text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 backdrop-blur-sm border border-emerald-500/20">
+            <Leaf size={10} /> Eco
+          </span>
+        )}
+      </div>
+
+      {/* Discount badge */}
+      {product.discount_percent && product.discount_percent > 0 && (!product.badge_text || !product.badge_text.includes(`${product.discount_percent}%`)) && (
+        <div className="absolute top-3 right-3 z-10 bg-[#F43F5E] text-white text-[10px] font-black px-2 py-1 rounded-full shadow-md">
+          {product.discount_percent}% OFF
+        </div>
+      )}
+
+      {/* Image */}
+      <div className="relative w-full pt-[100%] bg-[var(--surface-high)] overflow-hidden">
         {product.image_url ? (
           <img
             src={product.image_url}
             alt={product.name_en}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center transition-transform duration-700 group-hover:scale-110">
-            <span className="text-6xl">
-              {product.category === 'sparklers' && '🎇'}
-              {product.category === 'rockets' && '🚀'}
-              {product.category === 'flowerpots' && '🌸'}
-              {product.category === 'chakkars' && '🌀'}
-              {product.category === 'aerial' && '💥'}
-              {product.category === 'giftbox' && '🎁'}
-              {!['sparklers', 'rockets', 'flowerpots', 'chakkars', 'aerial', 'giftbox'].includes(product.category) && '🎇'}
-            </span>
+          <div className="absolute inset-0 flex items-center justify-center shimmer">
+            <span className="text-5xl opacity-30">🎇</span>
           </div>
         )}
-
-        <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-80" />
-        
-        {product.badge_text && (
-          <div className="absolute top-[14px] left-[14px] bg-bg/80 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-extrabold text-gold border border-gold/20">
-            {product.badge_text}
-          </div>
-        )}
-        
-        {discount > 0 && (
-          <div className="absolute top-[14px] right-[14px] bg-maroon text-gold px-2.5 py-1 rounded-full text-[10px] font-black">
-            {discount}% OFF
-          </div>
-        )}
-
-        {/* Firework Burst Effect */}
-        {burst && (
-          <FireworkBurst
-            x={burst.x}
-            y={burst.y}
-            onComplete={() => setBurst(null)}
-          />
-        )}
+        {/* Gradient overlay on hover */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       </div>
 
-      {/* Content Zone */}
-      <div className="p-6 flex flex-col flex-grow">
-        <h3 className="font-display text-[20px] font-extrabold mb-1 leading-tight text-text">
+      {/* Content */}
+      <div className="p-4 flex flex-col flex-grow">
+        <div className="text-[10px] text-[var(--color-gold)] font-bold mb-1 uppercase tracking-[0.15em]">
+          {product.category}
+        </div>
+        <h3 className="text-sm font-bold text-[var(--text)] mb-3 leading-snug line-clamp-2 group-hover:text-[var(--color-gold)] transition-colors">
           {product.name_en}
         </h3>
-        
-        {locale === 'ta' && (
-          <div className="text-[12px] text-text-muted mb-3.5">
-            {product.name_ta}
-          </div>
-        )}
-        {!locale || locale === 'en' && (
-          <div className="text-[12px] text-text-muted mb-3.5 opacity-0">
-            -
-          </div>
-        )}
 
-        <div className="flex items-baseline gap-2.5 mb-5 mt-auto">
-          <span className="font-display text-[28px] font-black text-gold">
-            {formatPrice(product.price)}
-          </span>
-          {product.mrp > product.price && (
-            <span className="text-[13px] text-text-muted/60 line-through">
-              {formatPrice(product.mrp)}
-            </span>
-          )}
+        <div className="mt-auto">
+          <div className="flex items-end gap-2 mb-3">
+            <span className="text-xl font-bold text-[var(--text)]">₹{product.price}</span>
+            <span className="text-xs text-[var(--text-muted)] line-through mb-0.5">₹{product.mrp}</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* Quantity Selector */}
+            <div className="flex items-center bg-[var(--surface-high)] rounded-lg border border-[var(--border)] overflow-hidden h-9">
+              <button
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="w-7 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)]"
+              >
+                <Minus size={12} />
+              </button>
+              <div className="w-7 text-center text-xs font-bold text-[var(--text)] h-full flex items-center justify-center border-x border-[var(--border)]">
+                {quantity}
+              </div>
+              <button
+                onClick={() => setQuantity(quantity + 1)}
+                className="w-7 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)]"
+              >
+                <Plus size={12} />
+              </button>
+            </div>
+
+            {/* Add Button */}
+            <motion.button
+              onClick={handleAdd}
+              whileTap={{ scale: 0.95 }}
+              className={`flex-1 h-9 rounded-lg flex items-center justify-center gap-1.5 text-xs font-bold transition-all duration-300 ${
+                isAdded
+                  ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+                  : 'bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]'
+              }`}
+            >
+              {isAdded ? (
+                <><Check size={14} /> Added</>
+              ) : (
+                <><ShoppingCart size={14} /> Add</>
+              )}
+            </motion.button>
+          </div>
         </div>
-
-        {product.in_stock ? (
-          <button
-            onClick={handleAddToEnquiry}
-            className="w-full bg-gradient-to-br from-gold to-gold-dim text-[#342800] p-3.5 rounded-full font-extrabold text-[14px] border-none cursor-pointer flex items-center justify-center gap-2 transition-shadow duration-300 hover:shadow-[0_0_30px_rgba(233,195,73,0.4)]"
-          >
-            🛒 {t('addToEnquiry')}
-          </button>
-        ) : (
-          <button
-            disabled
-            className="w-full bg-surface-highest text-text-muted p-3.5 rounded-full font-extrabold text-[14px] border-none cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {t('outOfStock')}
-          </button>
-        )}
       </div>
-    </div>
+    </motion.div>
   );
 }

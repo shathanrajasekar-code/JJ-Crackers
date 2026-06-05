@@ -1,24 +1,20 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { Product } from '@/lib/supabase/types';
 
 export interface EnquiryItem {
-  id: string;
-  name: string;
-  name_ta: string;
-  price: number;
-  mrp: number;
-  image_url: string | null;
-  category: string;
-  qty: number;
+  product: Product;
+  quantity: number;
 }
 
 interface EnquiryState {
   items: EnquiryItem[];
-  addItem: (item: Omit<EnquiryItem, 'qty'>, qty?: number) => void;
+  addItem: (payload: { product: Product; quantity: number }) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, qty: number) => void;
   clearCart: () => void;
   getTotal: () => number;
+  getSavings: () => number;
   getItemCount: () => number;
 }
 
@@ -27,34 +23,34 @@ export const useEnquiryStore = create<EnquiryState>()(
     (set, get) => ({
       items: [],
 
-      addItem: (item, qty = 1) => {
+      addItem: ({ product, quantity }) => {
         set((state) => {
-          const existing = state.items.find((i) => i.id === item.id);
+          const existing = state.items.find((i) => i.product.id === product.id);
           if (existing) {
             return {
               items: state.items.map((i) =>
-                i.id === item.id ? { ...i, qty: i.qty + qty } : i
+                i.product.id === product.id ? { ...i, quantity: i.quantity + quantity } : i
               ),
             };
           }
-          return { items: [...state.items, { ...item, qty }] };
+          return { items: [...state.items, { product, quantity }] };
         });
       },
 
       removeItem: (id) => {
         set((state) => ({
-          items: state.items.filter((i) => i.id !== id),
+          items: state.items.filter((i) => i.product.id !== id),
         }));
       },
 
-      updateQuantity: (id, qty) => {
-        if (qty < 1) {
+      updateQuantity: (id, quantity) => {
+        if (quantity < 1) {
           get().removeItem(id);
           return;
         }
         set((state) => ({
           items: state.items.map((i) =>
-            i.id === id ? { ...i, qty: Math.min(qty, 50) } : i
+            i.product.id === id ? { ...i, quantity: Math.min(quantity, 100) } : i
           ),
         }));
       },
@@ -64,11 +60,15 @@ export const useEnquiryStore = create<EnquiryState>()(
       },
 
       getTotal: () => {
-        return get().items.reduce((sum, item) => sum + item.price * item.qty, 0);
+        return get().items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+      },
+
+      getSavings: () => {
+        return get().items.reduce((sum, item) => sum + ((item.product.mrp || item.product.price) - item.product.price) * item.quantity, 0);
       },
 
       getItemCount: () => {
-        return get().items.reduce((sum, item) => sum + item.qty, 0);
+        return get().items.reduce((sum, item) => sum + item.quantity, 0);
       },
     }),
     {

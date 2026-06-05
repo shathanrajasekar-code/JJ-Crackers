@@ -41,7 +41,7 @@ export const products: Product[] = [
     "mrp": 25,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/2-3-4-kuruvi-1.jpg",
     "in_stock": true,
     "is_featured": true,
     "excel_category": "SINGLE SOUND CRACKERS"
@@ -56,7 +56,7 @@ export const products: Product[] = [
     "mrp": 35,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/3-1-2-lakshmi-2.jpg",
     "in_stock": true,
     "is_featured": true,
     "excel_category": "SINGLE SOUND CRACKERS"
@@ -71,7 +71,7 @@ export const products: Product[] = [
     "mrp": 50,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/4-parrot-3.jpg",
     "in_stock": true,
     "is_featured": true,
     "excel_category": "SINGLE SOUND CRACKERS"
@@ -86,7 +86,7 @@ export const products: Product[] = [
     "mrp": 95,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/4-gold-lakshmi-4.jpg",
     "in_stock": true,
     "is_featured": true,
     "excel_category": "SINGLE SOUND CRACKERS"
@@ -101,7 +101,7 @@ export const products: Product[] = [
     "mrp": 98,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/4-lakshmi-deluxe-5.jpg",
     "in_stock": true,
     "is_featured": true,
     "excel_category": "SINGLE SOUND CRACKERS"
@@ -116,7 +116,7 @@ export const products: Product[] = [
     "mrp": 103,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/5-kumki-12-ply-6.jpg",
     "in_stock": true,
     "is_featured": true,
     "excel_category": "SINGLE SOUND CRACKERS"
@@ -131,7 +131,7 @@ export const products: Product[] = [
     "mrp": 120,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/5-bhakubali-16-ply-7.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "SINGLE SOUND CRACKERS"
@@ -146,7 +146,7 @@ export const products: Product[] = [
     "mrp": 150,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/5-jallikattu-20-ply-8.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "SINGLE SOUND CRACKERS"
@@ -161,7 +161,7 @@ export const products: Product[] = [
     "mrp": 200,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/6-lion-king-25-ply-9.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "SINGLE SOUND CRACKERS"
@@ -176,7 +176,7 @@ export const products: Product[] = [
     "mrp": 250,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/7-kompan-28-ply-10.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "SINGLE SOUND CRACKERS"
@@ -191,7 +191,7 @@ export const products: Product[] = [
     "mrp": 113,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/ground-chakkar-big-10-pcs-11.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "GROUND CHAKKARS"
@@ -206,7 +206,7 @@ export const products: Product[] = [
     "mrp": 255,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/ground-chakkar-big-25-pcs-12.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "GROUND CHAKKARS"
@@ -221,7 +221,7 @@ export const products: Product[] = [
     "mrp": 215,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/ground-chakkar-special-13.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "GROUND CHAKKARS"
@@ -236,7 +236,7 @@ export const products: Product[] = [
     "mrp": 375,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/ground-chakkar-deluxe-14.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "GROUND CHAKKARS"
@@ -251,7 +251,7 @@ export const products: Product[] = [
     "mrp": 550,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/win-wheel-max-super-dlx-15.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "GROUND CHAKKARS"
@@ -266,7 +266,7 @@ export const products: Product[] = [
     "mrp": 183,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/flower-pot-big-16.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "FLOWER POTS"
@@ -281,7 +281,7 @@ export const products: Product[] = [
     "mrp": 235,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/flower-pot-special-17.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "FLOWER POTS"
@@ -296,7 +296,7 @@ export const products: Product[] = [
     "mrp": 330,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/flower-pot-ashoka-18.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "FLOWER POTS"
@@ -311,7 +311,7 @@ export const products: Product[] = [
     "mrp": 585,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/flower-pot-colour-kotti-19.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "FLOWER POTS"
@@ -326,7 +326,7 @@ export const products: Product[] = [
     "mrp": 370,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/lunic-rocket-20.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "SKY JET"
@@ -341,7 +341,7 @@ export const products: Product[] = [
     "mrp": 405,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/2-sound-rocket-21.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "SKY JET"
@@ -356,7 +356,7 @@ export const products: Product[] = [
     "mrp": 450,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/whistling-rocket-22.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "SKY JET"
@@ -371,7 +371,7 @@ export const products: Product[] = [
     "mrp": 140,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/hydro-bomb-green-23.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "THUNDER SOUND BOMB"
@@ -386,7 +386,7 @@ export const products: Product[] = [
     "mrp": 315,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/classic-bomb-24.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "THUNDER SOUND BOMB"
@@ -401,7 +401,7 @@ export const products: Product[] = [
     "mrp": 525,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/zurazssic-bomb-25.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "THUNDER SOUND BOMB"
@@ -416,7 +416,7 @@ export const products: Product[] = [
     "mrp": 600,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/dts-26.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "THUNDER SOUND BOMB"
@@ -431,7 +431,7 @@ export const products: Product[] = [
     "mrp": 1000,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/adavadi-ayya-pandi-27.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "THUNDER SOUND BOMB"
@@ -446,7 +446,7 @@ export const products: Product[] = [
     "mrp": 128,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/paper-bomb-1-4-kg-28.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "THUNDER - PAPER BOMB"
@@ -461,7 +461,7 @@ export const products: Product[] = [
     "mrp": 205,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/colour-paper-bomb-29.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "THUNDER - PAPER BOMB"
@@ -476,7 +476,7 @@ export const products: Product[] = [
     "mrp": 253,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/paper-bomb-1-2-kg-30.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "THUNDER - PAPER BOMB"
@@ -491,7 +491,7 @@ export const products: Product[] = [
     "mrp": 158,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/selfie-sticks-31.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "SUPER SONIC- PENCIL"
@@ -506,7 +506,7 @@ export const products: Product[] = [
     "mrp": 333,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/nayagara-falls-32.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "SUPER SONIC- PENCIL"
@@ -521,7 +521,7 @@ export const products: Product[] = [
     "mrp": 73,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/1-1-2-twinkling-small-33.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "TWINKLING STAR"
@@ -536,7 +536,7 @@ export const products: Product[] = [
     "mrp": 198,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/4-twinkling-star-dlx-34.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "TWINKLING STAR"
@@ -551,7 +551,7 @@ export const products: Product[] = [
     "mrp": 45,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/red-bijili-50-pcs-35.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "BIJILI CRACKERS"
@@ -566,7 +566,7 @@ export const products: Product[] = [
     "mrp": 105,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/red-bijili-100-pcs-36.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "BIJILI CRACKERS"
@@ -581,7 +581,7 @@ export const products: Product[] = [
     "mrp": 115,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/striped-bijili-100-pcs-37.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "BIJILI CRACKERS"
@@ -596,7 +596,7 @@ export const products: Product[] = [
     "mrp": 400,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/1000-wala-38.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "RED CHAIN CRACKERS"
@@ -611,7 +611,7 @@ export const products: Product[] = [
     "mrp": 800,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/2000-wala-39.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "RED CHAIN CRACKERS"
@@ -626,7 +626,7 @@ export const products: Product[] = [
     "mrp": 2000,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/5000-wala-40.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "RED CHAIN CRACKERS"
@@ -641,7 +641,7 @@ export const products: Product[] = [
     "mrp": 4000,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/10000-wala-41.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "RED CHAIN CRACKERS"
@@ -656,7 +656,7 @@ export const products: Product[] = [
     "mrp": 515,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/red-sun-red-glittering-42.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "AMAZING FOUNTAIN"
@@ -671,7 +671,7 @@ export const products: Product[] = [
     "mrp": 520,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/blue-ice-white-glittering-43.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "AMAZING FOUNTAIN"
@@ -686,7 +686,7 @@ export const products: Product[] = [
     "mrp": 530,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/green-garden-green-44.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "AMAZING FOUNTAIN"
@@ -701,7 +701,7 @@ export const products: Product[] = [
     "mrp": 535,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/miss-butterfly-45.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "AMAZING FOUNTAIN"
@@ -716,7 +716,7 @@ export const products: Product[] = [
     "mrp": 538,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/gold-feast-gold-glitter-46.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "AMAZING FOUNTAIN"
@@ -731,7 +731,7 @@ export const products: Product[] = [
     "mrp": 158,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/snake-tablet-1-bundle-47.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "NANO FOUNTAINS"
@@ -746,7 +746,7 @@ export const products: Product[] = [
     "mrp": 110,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/pogo-white-48.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "NANO FOUNTAINS"
@@ -761,7 +761,7 @@ export const products: Product[] = [
     "mrp": 110,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/chit-put-krishna-49.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "NANO FOUNTAINS"
@@ -776,7 +776,7 @@ export const products: Product[] = [
     "mrp": 115,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/pogo-white-and-gold-50.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "NANO FOUNTAINS"
@@ -791,7 +791,7 @@ export const products: Product[] = [
     "mrp": 123,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/pogo-red-green-51.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "NANO FOUNTAINS"
@@ -806,7 +806,7 @@ export const products: Product[] = [
     "mrp": 128,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/pogo-white-red-52.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "NANO FOUNTAINS"
@@ -821,7 +821,7 @@ export const products: Product[] = [
     "mrp": 138,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/pogo-gold-green-53.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "NANO FOUNTAINS"
@@ -836,7 +836,7 @@ export const products: Product[] = [
     "mrp": 163,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/chit-put-big-krishna-54.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "NANO FOUNTAINS"
@@ -851,7 +851,7 @@ export const products: Product[] = [
     "mrp": 238,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/photo-flash-55.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "NANO FOUNTAINS"
@@ -866,7 +866,7 @@ export const products: Product[] = [
     "mrp": 248,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/pops-mix-56.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "NANO FOUNTAINS"
@@ -881,7 +881,7 @@ export const products: Product[] = [
     "mrp": 315,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/butterfly-57.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "NANO FOUNTAINS"
@@ -896,7 +896,7 @@ export const products: Product[] = [
     "mrp": 315,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/bambara-58.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "NANO FOUNTAINS"
@@ -911,7 +911,7 @@ export const products: Product[] = [
     "mrp": 168,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/angry-bird-gold-59.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "JOY FOUNTAINS"
@@ -926,7 +926,7 @@ export const products: Product[] = [
     "mrp": 190,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/angry-bird-green-60.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "JOY FOUNTAINS"
@@ -941,7 +941,7 @@ export const products: Product[] = [
     "mrp": 195,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/angry-bird-red-61.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "JOY FOUNTAINS"
@@ -956,7 +956,7 @@ export const products: Product[] = [
     "mrp": 205,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/angry-bird-red-green-62.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "JOY FOUNTAINS"
@@ -971,7 +971,7 @@ export const products: Product[] = [
     "mrp": 248,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/helicopter-63.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "JOY FOUNTAINS"
@@ -986,7 +986,7 @@ export const products: Product[] = [
     "mrp": 280,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/colour-rain-64.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "JOY FOUNTAINS"
@@ -1001,7 +1001,7 @@ export const products: Product[] = [
     "mrp": 285,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/golden-globe-65.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "JOY FOUNTAINS"
@@ -1016,7 +1016,7 @@ export const products: Product[] = [
     "mrp": 290,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/peacock-feather-66.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "JOY FOUNTAINS"
@@ -1031,7 +1031,7 @@ export const products: Product[] = [
     "mrp": 368,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/pub-g-gun-67.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "MEGA FOUNTAINS"
@@ -1046,7 +1046,7 @@ export const products: Product[] = [
     "mrp": 358,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/tin-beer-68.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "MEGA FOUNTAINS"
@@ -1061,7 +1061,7 @@ export const products: Product[] = [
     "mrp": 420,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/sing-pop-69.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "MEGA FOUNTAINS"
@@ -1076,7 +1076,7 @@ export const products: Product[] = [
     "mrp": 490,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/wire-chakkar-70.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "MEGA FOUNTAINS"
@@ -1091,7 +1091,7 @@ export const products: Product[] = [
     "mrp": 500,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/dance-pecock-71.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "MEGA FOUNTAINS"
@@ -1106,7 +1106,7 @@ export const products: Product[] = [
     "mrp": 500,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/siren-72.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "MEGA FOUNTAINS"
@@ -1121,7 +1121,7 @@ export const products: Product[] = [
     "mrp": 525,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/money-bank-73.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "MEGA FOUNTAINS"
@@ -1136,7 +1136,7 @@ export const products: Product[] = [
     "mrp": 770,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/tri-colour-74.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "MEGA FOUNTAINS"
@@ -1151,7 +1151,7 @@ export const products: Product[] = [
     "mrp": 1200,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/pada-peacock-75.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "MEGA FOUNTAINS"
@@ -1166,7 +1166,7 @@ export const products: Product[] = [
     "mrp": 333,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/lotus-76.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "PEARL FOUNTAINS"
@@ -1181,7 +1181,7 @@ export const products: Product[] = [
     "mrp": 348,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/sky-wala-77.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "PEARL FOUNTAINS"
@@ -1196,7 +1196,7 @@ export const products: Product[] = [
     "mrp": 410,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/h2o-free-fire-78.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "PEARL FOUNTAINS"
@@ -1211,7 +1211,7 @@ export const products: Product[] = [
     "mrp": 420,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/twix-79.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "PEARL FOUNTAINS"
@@ -1226,7 +1226,7 @@ export const products: Product[] = [
     "mrp": 473,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/magic-peacock-80.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "PEARL FOUNTAINS"
@@ -1241,7 +1241,7 @@ export const products: Product[] = [
     "mrp": 478,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/robo-mix-81.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "PEARL FOUNTAINS"
@@ -1256,7 +1256,7 @@ export const products: Product[] = [
     "mrp": 500,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/fog-smoke-82.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "PEARL FOUNTAINS"
@@ -1271,7 +1271,7 @@ export const products: Product[] = [
     "mrp": 500,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/fantasy-flash-83.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "PEARL FOUNTAINS"
@@ -1286,7 +1286,7 @@ export const products: Product[] = [
     "mrp": 715,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/merry-go-meery-84.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "PEARL FOUNTAINS"
@@ -1301,7 +1301,7 @@ export const products: Product[] = [
     "mrp": 285,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/7-shots-85.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "FANCY NOVELTIES"
@@ -1316,7 +1316,7 @@ export const products: Product[] = [
     "mrp": 110,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/1-chotta-86.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "FANCY NOVELTIES"
@@ -1331,7 +1331,7 @@ export const products: Product[] = [
     "mrp": 360,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/2-royal-87.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "FANCY NOVELTIES"
@@ -1346,7 +1346,7 @@ export const products: Product[] = [
     "mrp": 725,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/2-rock-star-3-pcs-88.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "FANCY NOVELTIES"
@@ -1361,7 +1361,7 @@ export const products: Product[] = [
     "mrp": 810,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/3-1-2-nayagara-falls-89.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "FANCY NOVELTIES"
@@ -1376,7 +1376,7 @@ export const products: Product[] = [
     "mrp": 810,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/3-1-2-digital-star-90.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "FANCY NOVELTIES"
@@ -1391,7 +1391,7 @@ export const products: Product[] = [
     "mrp": 810,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/3-1-2-xxx-seven-91.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "FANCY NOVELTIES"
@@ -1406,7 +1406,7 @@ export const products: Product[] = [
     "mrp": 810,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/3-1-2-king-fisher-92.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "FANCY NOVELTIES"
@@ -1421,7 +1421,7 @@ export const products: Product[] = [
     "mrp": 790,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/3-1-2-fancy-pipe-93.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "FANCY NOVELTIES"
@@ -1436,7 +1436,7 @@ export const products: Product[] = [
     "mrp": 1985,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/5-double-pcs-94.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "FANCY NOVELTIES"
@@ -1451,7 +1451,7 @@ export const products: Product[] = [
     "mrp": 2115,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/5-spl-avator-double-95.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "FANCY NOVELTIES"
@@ -1466,7 +1466,7 @@ export const products: Product[] = [
     "mrp": 1320,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/4-double-ball-96.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "FANCY NOVELTIES"
@@ -1481,7 +1481,7 @@ export const products: Product[] = [
     "mrp": 435,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/12-shots-97.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "FABULOUS MULTI SHOTS"
@@ -1496,7 +1496,7 @@ export const products: Product[] = [
     "mrp": 700,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/15-shots-multi-color-98.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "FABULOUS MULTI SHOTS"
@@ -1511,7 +1511,7 @@ export const products: Product[] = [
     "mrp": 1075,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/30-shots-multi-color-99.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "FABULOUS MULTI SHOTS"
@@ -1526,7 +1526,7 @@ export const products: Product[] = [
     "mrp": 2150,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/60-shots-multi-color-100.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "FABULOUS MULTI SHOTS"
@@ -1541,7 +1541,7 @@ export const products: Product[] = [
     "mrp": 4250,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/120-shots-multi-color-101.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "FABULOUS MULTI SHOTS"
@@ -1556,7 +1556,7 @@ export const products: Product[] = [
     "mrp": 8000,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/240-shots-multi-color-102.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "FABULOUS MULTI SHOTS"
@@ -1571,7 +1571,7 @@ export const products: Product[] = [
     "mrp": 1250,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/30-shots-103.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "SKY EXPO-MULTI SHOTS"
@@ -1586,7 +1586,7 @@ export const products: Product[] = [
     "mrp": 2500,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/60-shots-104.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "SKY EXPO-MULTI SHOTS"
@@ -1601,7 +1601,7 @@ export const products: Product[] = [
     "mrp": 30,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/7-cm-electric-sparkler-105.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "WONDERFUL SPARKLERS"
@@ -1616,7 +1616,7 @@ export const products: Product[] = [
     "mrp": 33,
     "discount_percent": 61,
     "badge_text": "🔥 61% OFF",
-    "image_url": null,
+    "image_url": "/products/7-cm-color-sparkler-106.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "WONDERFUL SPARKLERS"
@@ -1631,7 +1631,7 @@ export const products: Product[] = [
     "mrp": 35,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/7-cm-green-sparkler-107.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "WONDERFUL SPARKLERS"
@@ -1646,7 +1646,7 @@ export const products: Product[] = [
     "mrp": 38,
     "discount_percent": 61,
     "badge_text": "🔥 61% OFF",
-    "image_url": null,
+    "image_url": "/products/7-cm-red-sparkler-108.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "WONDERFUL SPARKLERS"
@@ -1661,7 +1661,7 @@ export const products: Product[] = [
     "mrp": 48,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/10-cm-electric-sparkler-109.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "WONDERFUL SPARKLERS"
@@ -1676,7 +1676,7 @@ export const products: Product[] = [
     "mrp": 58,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/10-cm-color-sparkler-110.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "WONDERFUL SPARKLERS"
@@ -1691,7 +1691,7 @@ export const products: Product[] = [
     "mrp": 70,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/10-cm-green-sparkler-111.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "WONDERFUL SPARKLERS"
@@ -1706,7 +1706,7 @@ export const products: Product[] = [
     "mrp": 80,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/10-cm-red-sparkler-112.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "WONDERFUL SPARKLERS"
@@ -1721,7 +1721,7 @@ export const products: Product[] = [
     "mrp": 65,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/12-cm-electric-sparkler-113.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "WONDERFUL SPARKLERS"
@@ -1736,7 +1736,7 @@ export const products: Product[] = [
     "mrp": 70,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/12-cm-color-sparkler-114.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "WONDERFUL SPARKLERS"
@@ -1751,7 +1751,7 @@ export const products: Product[] = [
     "mrp": 75,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/12-cm-green-sparkler-115.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "WONDERFUL SPARKLERS"
@@ -1766,7 +1766,7 @@ export const products: Product[] = [
     "mrp": 80,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/12-cm-red-sparkler-116.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "WONDERFUL SPARKLERS"
@@ -1781,7 +1781,7 @@ export const products: Product[] = [
     "mrp": 100,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/15-cm-electric-sparkler-117.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "WONDERFUL SPARKLERS"
@@ -1796,7 +1796,7 @@ export const products: Product[] = [
     "mrp": 108,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/15-cm-colour-sparkler-118.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "WONDERFUL SPARKLERS"
@@ -1811,7 +1811,7 @@ export const products: Product[] = [
     "mrp": 118,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/15-cm-green-sparkler-119.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "WONDERFUL SPARKLERS"
@@ -1826,7 +1826,7 @@ export const products: Product[] = [
     "mrp": 130,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/15-cm-red-sparkler-120.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "WONDERFUL SPARKLERS"
@@ -1841,7 +1841,7 @@ export const products: Product[] = [
     "mrp": 100,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/30-cm-electric-sparkler-121.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "WONDERFUL SPARKLERS"
@@ -1856,7 +1856,7 @@ export const products: Product[] = [
     "mrp": 108,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/30-cm-colour-sparkler-122.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "WONDERFUL SPARKLERS"
@@ -1871,7 +1871,7 @@ export const products: Product[] = [
     "mrp": 118,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/30-cm-green-sparkler-123.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "WONDERFUL SPARKLERS"
@@ -1886,7 +1886,7 @@ export const products: Product[] = [
     "mrp": 130,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/30-cm-red-sparkler-124.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "WONDERFUL SPARKLERS"
@@ -1901,7 +1901,7 @@ export const products: Product[] = [
     "mrp": 448,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/50-cm-electric-sparkler-125.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "WONDERFUL SPARKLERS"
@@ -1916,7 +1916,7 @@ export const products: Product[] = [
     "mrp": 650,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/umberla-sparkler-126.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "WONDERFUL SPARKLERS"
@@ -1931,7 +1931,7 @@ export const products: Product[] = [
     "mrp": 413,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/poke-mon-127.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "MATCHES"
@@ -1946,7 +1946,7 @@ export const products: Product[] = [
     "mrp": 203,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/super-deluxe-128.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "MATCHES"
@@ -1961,7 +1961,7 @@ export const products: Product[] = [
     "mrp": 205,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/roll-cap-129.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "ROLL CAP"
@@ -1976,7 +1976,7 @@ export const products: Product[] = [
     "mrp": 43,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/ring-cap-130.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "ROLL CAP"
@@ -1991,7 +1991,7 @@ export const products: Product[] = [
     "mrp": 650,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/21-items-131.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "GIFT BOXES"
@@ -2006,7 +2006,7 @@ export const products: Product[] = [
     "mrp": 1100,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/31-items-132.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "GIFT BOXES"
@@ -2021,7 +2021,7 @@ export const products: Product[] = [
     "mrp": 1700,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/41-items-133.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "GIFT BOXES"
@@ -2036,7 +2036,7 @@ export const products: Product[] = [
     "mrp": 2150,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/51-items-134.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "GIFT BOXES"
@@ -2051,7 +2051,7 @@ export const products: Product[] = [
     "mrp": 7500,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/children-pack-37-items-135.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "SPECIAL PACK (BROWN)"
@@ -2066,7 +2066,7 @@ export const products: Product[] = [
     "mrp": 10000,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/family-pack-38-items-136.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "SPECIAL PACK (BROWN)"
@@ -2081,7 +2081,7 @@ export const products: Product[] = [
     "mrp": 12500,
     "discount_percent": 60,
     "badge_text": "🔥 60% OFF",
-    "image_url": null,
+    "image_url": "/products/youngster-pack-23-items-137.jpg",
     "in_stock": true,
     "is_featured": false,
     "excel_category": "SPECIAL PACK (BROWN)"

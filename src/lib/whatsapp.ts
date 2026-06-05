@@ -5,15 +5,15 @@ export function buildEnquiryMessage(
   customerName?: string,
   customerCity?: string
 ): string {
-  const greeting = `நமஸ்காரம் Jegajothi Crackers! 🙏`;
+  const greeting = `Hello Jegajothi Crackers! 🙏`;
   const intro = `I would like to place a cracker enquiry:`;
 
   const itemLines = items.map((item) =>
-    `• ${item.qty} x ${item.name} — ₹${(item.price * item.qty).toLocaleString('en-IN')}`
+    `• ${item.quantity} x ${item.product.name_en} — ₹${(item.product.price * item.quantity).toLocaleString('en-IN')}`
   ).join('\n');
 
-  const total = items.reduce((sum, i) => sum + i.price * i.qty, 0);
-  const totalItems = items.reduce((sum, i) => sum + i.qty, 0);
+  const total = items.reduce((sum, i) => sum + i.product.price * i.quantity, 0);
+  const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
 
   return [
     greeting,
@@ -36,7 +36,7 @@ export function buildProductEnquiryMessage(product: {
   price: number;
 }): string {
   return [
-    `நமஸ்காரம் Jegajothi Crackers! 🙏`,
+    `Hello Jegajothi Crackers! 🙏`,
     '',
     `I'm interested in: ${product.name}`,
     `Price: ₹${product.price}`,

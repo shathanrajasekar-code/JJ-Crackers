@@ -25,15 +25,15 @@ export async function POST(request: Request) {
     // Build message if not provided
     let formattedMessage = message;
     if (!formattedMessage && items) {
-      const itemLines = items.map((item: { qty: number; name: string; price: number }) =>
-        `• ${item.qty} x ${item.name} — ₹${(item.price * item.qty).toLocaleString('en-IN')}`
+      const itemLines = items.map((item: { quantity: number; product: { name_en: string; price: number } }) =>
+        `• ${item.quantity} x ${item.product.name_en} — ₹${(item.product.price * item.quantity).toLocaleString('en-IN')}`
       ).join('\n');
 
-      const total = items.reduce((sum: number, i: { qty: number; price: number }) => sum + i.price * i.qty, 0);
-      const totalItems = items.reduce((sum: number, i: { qty: number }) => sum + i.qty, 0);
+      const total = items.reduce((sum: number, i: { quantity: number; product: { price: number } }) => sum + i.product.price * i.quantity, 0);
+      const totalItems = items.reduce((sum: number, i: { quantity: number }) => sum + i.quantity, 0);
 
       formattedMessage = [
-        'நமஸ்காரம் Jegajothi Crackers! 🙏',
+        'Hello Jegajothi Crackers! 🙏',
         '',
         'I would like to place a cracker enquiry:',
         '',

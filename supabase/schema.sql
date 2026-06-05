@@ -1,19 +1,19 @@
--- Jegajothi Crackers Database Schema
--- Run this in your Supabase SQL Editor
-
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- =============================================
+-- JJ CRACKERS - RUN THIS IN SUPABASE SQL EDITOR
+-- Go to: https://supabase.com/dashboard → Your Project → SQL Editor → New Query
+-- Paste this entire file and click "Run"
+-- =============================================
 
 -- Products Table
 CREATE TABLE IF NOT EXISTS products (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name_en TEXT NOT NULL,
-  name_ta TEXT NOT NULL,
+  name_ta TEXT DEFAULT '',
   slug TEXT UNIQUE NOT NULL,
   category TEXT NOT NULL,
   price INTEGER NOT NULL,
   mrp INTEGER NOT NULL,
-  discount_percent INTEGER,
+  discount_percent INTEGER DEFAULT 0,
   badge_text TEXT,
   image_url TEXT,
   images JSONB DEFAULT '[]'::jsonb,
@@ -23,6 +23,47 @@ CREATE TABLE IF NOT EXISTS products (
   is_featured BOOLEAN DEFAULT false,
   is_eco_friendly BOOLEAN DEFAULT false,
   sort_order INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Combo Packs Table
+CREATE TABLE IF NOT EXISTS combo_packs (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  combo_name TEXT NOT NULL,
+  total_items INTEGER NOT NULL,
+  original_price INTEGER NOT NULL,
+  offer_price INTEGER NOT NULL,
+  combo_type TEXT NOT NULL,
+  description TEXT,
+  image_url TEXT,
+  products JSONB NOT NULL DEFAULT '[]'::jsonb,
+  featured BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Orders Table
+CREATE TABLE IF NOT EXISTS orders (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  order_number TEXT UNIQUE NOT NULL,
+  customer_name TEXT NOT NULL,
+  customer_email TEXT,
+  customer_phone TEXT NOT NULL,
+  customer_address TEXT,
+  customer_city TEXT,
+  customer_pincode TEXT,
+  customer_state TEXT,
+  customer_district TEXT,
+  items JSONB NOT NULL,
+  subtotal INTEGER NOT NULL DEFAULT 0,
+  discount_total INTEGER NOT NULL DEFAULT 0,
+  total_amount INTEGER NOT NULL DEFAULT 0,
+  status TEXT DEFAULT 'confirmed',
+  payment_method TEXT DEFAULT 'bank_transfer',
+  payment_status TEXT DEFAULT 'pending',
+  notes TEXT,
+  confirmed_at TIMESTAMPTZ,
+  shipped_at TIMESTAMPTZ,
+  delivered_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -39,105 +80,91 @@ CREATE TABLE IF NOT EXISTS enquiries (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Admin Users Table (for Supabase Auth)
-CREATE TABLE IF NOT EXISTS admin_users (
+-- Contact Messages Table
+CREATE TABLE IF NOT EXISTS contact_messages (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  email TEXT UNIQUE NOT NULL,
-  role TEXT DEFAULT 'admin',
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  phone TEXT,
+  subject TEXT NOT NULL,
+  message TEXT NOT NULL,
+  is_read BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Indexes for performance
-CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
-CREATE INDEX IF NOT EXISTS idx_products_slug ON products(slug);
-CREATE INDEX IF NOT EXISTS idx_products_featured ON products(is_featured);
-CREATE INDEX IF NOT EXISTS idx_products_stock ON products(in_stock);
-CREATE INDEX IF NOT EXISTS idx_enquiries_status ON enquiries(status);
-CREATE INDEX IF NOT EXISTS idx_enquiries_created ON enquiries(created_at DESC);
+-- Newsletter Subscribers Table
+CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  name TEXT,
+  subscribed BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
 
--- Row Level Security (RLS)
+-- Enable RLS
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE combo_packs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE enquiries ENABLE ROW LEVEL SECURITY;
-ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE contact_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE newsletter_subscribers ENABLE ROW LEVEL SECURITY;
 
--- Products Policies
-CREATE POLICY "Anyone can view products"
-  ON products FOR SELECT
-  USING (true);
+-- Products: Anyone can read
+DROP POLICY IF EXISTS "Anyone can view products" ON products;
+CREATE POLICY "Anyone can view products" ON products FOR SELECT USING (true);
 
-CREATE POLICY "Only admins can modify products"
-  ON products FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM admin_users
-      WHERE admin_users.email = (auth.jwt() ->> 'email')
-    )
-  );
+DROP POLICY IF EXISTS "Anyone can insert products" ON products;
+CREATE POLICY "Anyone can insert products" ON products FOR INSERT WITH CHECK (true);
 
--- Enquiries Policies
-CREATE POLICY "Anyone can create enquiries"
-  ON enquiries FOR INSERT
-  WITH CHECK (true);
+DROP POLICY IF EXISTS "Anyone can update products" ON products;
+CREATE POLICY "Anyone can update products" ON products FOR UPDATE USING (true) WITH CHECK (true);
 
-CREATE POLICY "Only admins can view enquiries"
-  ON enquiries FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM admin_users
-      WHERE admin_users.email = (auth.jwt() ->> 'email')
-    )
-  );
+DROP POLICY IF EXISTS "Anyone can delete products" ON products;
+CREATE POLICY "Anyone can delete products" ON products FOR DELETE USING (true);
 
--- Admin Users Policies
-CREATE POLICY "Admins can view admin users"
-  ON admin_users FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM admin_users
-      WHERE admin_users.email = (auth.jwt() ->> 'email')
-    )
-  );
+-- Combo Packs: Anyone can read
+DROP POLICY IF EXISTS "Anyone can view combos" ON combo_packs;
+CREATE POLICY "Anyone can view combos" ON combo_packs FOR SELECT USING (true);
 
--- Seed Data
-INSERT INTO products (name_en, name_ta, slug, category, price, mrp, discount_percent, badge_text, in_stock, is_featured) VALUES
--- Sparklers
-('Golden Crown Sparklers', 'தங்க கிரீட மினுக்குகள்', 'golden-crown-sparklers', 'sparklers', 499, 1249, 60, '🔥 Best Seller', true, true),
-('Magic Color Sparklers (50pcs)', 'வண்ண மினுக்குகள் (50)', 'magic-color-sparklers', 'sparklers', 180, 400, 55, '55% OFF', true, false),
-('Silver Rain Sparklers', 'வெள்ளி மழை மினுக்குகள்', 'silver-rain-sparklers', 'sparklers', 350, 800, 56, '✨ Festival Offer', true, false),
+DROP POLICY IF EXISTS "Anyone can insert combos" ON combo_packs;
+CREATE POLICY "Anyone can insert combos" ON combo_packs FOR INSERT WITH CHECK (true);
 
--- Flower Pots
-('Temple Grandeur Flower Pot', 'கோவில் மலர் பாத்திரம்', 'temple-flower-pot', 'flowerpots', 850, 1890, 55, '✨ Festival Offer', true, true),
-('Mini Flower Pots (20pcs)', 'சிறிய மலர் பானைகள் (20)', 'mini-flower-pots', 'flowerpots', 220, 500, 56, '56% OFF', true, false),
-('Deluxe Ground Wheel', 'டீலக்ஸ் கிரவுண்ட் வீல்', 'deluxe-ground-wheel', 'flowerpots', 680, 1500, 55, '🔥 Selling Fast', true, false),
+DROP POLICY IF EXISTS "Anyone can update combos" ON combo_packs;
+CREATE POLICY "Anyone can update combos" ON combo_packs FOR UPDATE USING (true) WITH CHECK (true);
 
--- Rockets
-('Maratha Sky Rockets (10pcs)', 'மராட்டா வானவேடு (10)', 'maratha-sky-rockets', 'rockets', 1199, 3999, 70, '70% OFF', true, true),
-('Sky Dragon Rockets', 'வான் டிராகன் ராக்கெட்டுகள்', 'sky-dragon-rockets', 'rockets', 950, 2200, 57, '57% OFF', true, false),
-('Thunder Bolt Rockets (5pcs)', 'தண்டர் போல்ட் (5)', 'thunder-bolt-rockets', 'rockets', 750, 1800, 58, '🔥 Hot', true, false),
+DROP POLICY IF EXISTS "Anyone can delete combos" ON combo_packs;
+CREATE POLICY "Anyone can delete combos" ON combo_packs FOR DELETE USING (true);
 
--- Chakkars
-('Royal Chakra Whirls', 'ராஜ சக்கர சுழல்கள்', 'royal-chakra-whirls', 'chakkars', 320, 920, 65, '65% OFF', true, false),
-('Royal Chakkars Big Box', 'ராஜ சக்கரம் பெரிய பெட்டி', 'royal-chakkars-big', 'chakkars', 450, 900, 50, '50% OFF', true, false),
-('Color Wheel Chakkar', 'வண்ண சக்கரம்', 'color-wheel-chakkar', 'chakkars', 280, 600, 53, '53% OFF', true, false),
+-- Orders: Anyone can read/create
+DROP POLICY IF EXISTS "Anyone can view orders" ON orders;
+CREATE POLICY "Anyone can view orders" ON orders FOR SELECT USING (true);
 
--- Aerial
-('Celestial Sky Bursts', 'வான் வெடிகள்', 'celestial-sky-bursts', 'aerial', 1550, 3100, 50, '👑 Premium', true, true),
-('Majestic Aerial Shells 12-shot', 'மகிமையான வான் குண்டுகள்', 'majestic-aerial-shells', 'aerial', 1250, 2500, 50, '50% OFF', true, false),
-('Comet Tail Aerials (8pcs)', 'வால்மீன் வான் குண்டுகள் (8)', 'comet-tail-aerials', 'aerial', 890, 1800, 51, '51% OFF', true, false),
+DROP POLICY IF EXISTS "Anyone can create orders" ON orders;
+CREATE POLICY "Anyone can create orders" ON orders FOR INSERT WITH CHECK (true);
 
--- Gift Boxes
-('Imperial Diwali Gift Box', 'இம்பீரியல் தீபாவளி பெட்டி', 'imperial-gift-box', 'giftbox', 2450, 4100, 40, '🔥 Selling Fast', true, true),
-('Family Celebration Box', 'குடும்ப கொண்டாட்ட பெட்டி', 'family-celebration-box', 'giftbox', 1850, 3500, 47, '47% OFF', true, false),
-('Kids Joy Pack', 'குழந்தைகள் மகிழ்ச்சி பேக்', 'kids-joy-pack', 'giftbox', 550, 1200, 54, '🎁 Kids Special', true, false);
+DROP POLICY IF EXISTS "Anyone can update orders" ON orders;
+CREATE POLICY "Anyone can update orders" ON orders FOR UPDATE USING (true) WITH CHECK (true);
 
--- Create a function to add admin user
-CREATE OR REPLACE FUNCTION add_admin_user(user_email TEXT)
-RETURNS VOID AS $$
-BEGIN
-  INSERT INTO admin_users (email) VALUES (user_email)
-  ON CONFLICT (email) DO NOTHING;
-END;
-$$ LANGUAGE plpgsql;
+-- Enquiries: Anyone can read/create
+DROP POLICY IF EXISTS "Anyone can view enquiries" ON enquiries;
+CREATE POLICY "Anyone can view enquiries" ON enquiries FOR SELECT USING (true);
 
--- Example: Add your admin email (replace with your actual email)
--- SELECT add_admin_user('admin@jegajothicrackers.com');
+DROP POLICY IF EXISTS "Anyone can create enquiries" ON enquiries;
+CREATE POLICY "Anyone can create enquiries" ON enquiries FOR INSERT WITH CHECK (true);
+
+-- Contact Messages: Anyone can read/create
+DROP POLICY IF EXISTS "Anyone can view contact messages" ON contact_messages;
+CREATE POLICY "Anyone can view contact messages" ON contact_messages FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Anyone can create contact messages" ON contact_messages;
+CREATE POLICY "Anyone can create contact messages" ON contact_messages FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Anyone can update contact messages" ON contact_messages;
+CREATE POLICY "Anyone can update contact messages" ON contact_messages FOR UPDATE USING (true) WITH CHECK (true);
+
+-- Newsletter: Anyone can read/create
+DROP POLICY IF EXISTS "Anyone can subscribe" ON newsletter_subscribers;
+CREATE POLICY "Anyone can subscribe" ON newsletter_subscribers FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Anyone can view subscribers" ON newsletter_subscribers;
+CREATE POLICY "Anyone can view subscribers" ON newsletter_subscribers FOR SELECT USING (true);
