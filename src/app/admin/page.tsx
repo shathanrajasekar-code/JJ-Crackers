@@ -30,19 +30,19 @@ function ConfirmDialog({ isOpen, title, message, confirmLabel, cancelLabel = 'Ca
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto">
           <motion.div 
             initial={{ opacity: 0 }} 
             animate={{ opacity: 1 }} 
             exit={{ opacity: 0 }} 
-            className="fixed inset-0 bg-black/75 backdrop-blur-md z-[100]" 
+            className="fixed inset-0 bg-black/75 backdrop-blur-md z-0" 
             onClick={onCancel} 
           />
           <motion.div 
-            initial={{ opacity: 0, scale: 0.9, y: '-40%' }} 
-            animate={{ opacity: 1, scale: 1, y: '-50%' }} 
-            exit={{ opacity: 0, scale: 0.9, y: '-40%' }} 
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[101] w-[90vw] max-w-md bg-[#161614] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl"
+            initial={{ opacity: 0, scale: 0.9, y: 20 }} 
+            animate={{ opacity: 1, scale: 1, y: 0 }} 
+            exit={{ opacity: 0, scale: 0.9, y: 20 }} 
+            className="relative z-10 w-full max-w-md bg-[#161614] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl my-auto"
           >
             <div className="text-center">
               <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5 ${isDanger ? 'bg-rose-500/10 text-rose-400' : 'bg-[var(--color-gold)]/10 text-[var(--color-gold)]'}`}>
@@ -66,7 +66,7 @@ function ConfirmDialog({ isOpen, title, message, confirmLabel, cancelLabel = 'Ca
               </div>
             </div>
           </motion.div>
-        </>
+        </div>
       )}
     </AnimatePresence>
   );
@@ -2080,13 +2080,13 @@ export default function AdminPage() {
       {/* --- ADD / EDIT PRODUCT MODAL --- */}
       <AnimatePresence>
         {productFormOpen && currentProduct && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.6 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black z-[90]" onClick={() => setProductFormOpen(false)} />
+          <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 overflow-y-auto">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.6 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black z-0" onClick={() => setProductFormOpen(false)} />
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: '-40%' }} 
-              animate={{ opacity: 1, scale: 1, y: '-50%' }} 
-              exit={{ opacity: 0, scale: 0.95, y: '-40%' }} 
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[91] w-[90vw] max-w-lg bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }} 
+              animate={{ opacity: 1, scale: 1, y: 0 }} 
+              exit={{ opacity: 0, scale: 0.95, y: 20 }} 
+              className="relative z-10 w-full max-w-lg bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl my-auto"
             >
               <div className="flex justify-between items-center border-b border-[#2A2A24] pb-4 mb-6">
                 <h3 className="font-display font-bold text-sm text-[var(--color-gold)]">{currentProduct.id ? 'Edit Fireworks Product' : 'Add New Fireworks Product'}</h3>
@@ -2182,20 +2182,20 @@ export default function AdminPage() {
                 </div>
               </form>
             </motion.div>
-          </>
+          </div>
         )}
       </AnimatePresence>
 
       {/* --- ADD / EDIT COMBO MODAL --- */}
       <AnimatePresence>
         {comboFormOpen && currentCombo && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.6 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black z-[90]" onClick={() => setComboFormOpen(false)} />
+          <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 overflow-y-auto">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.6 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black z-0" onClick={() => setComboFormOpen(false)} />
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: '-40%' }} 
-              animate={{ opacity: 1, scale: 1, y: '-50%' }} 
-              exit={{ opacity: 0, scale: 0.95, y: '-40%' }} 
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[91] w-[90vw] max-w-lg bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }} 
+              animate={{ opacity: 1, scale: 1, y: 0 }} 
+              exit={{ opacity: 0, scale: 0.95, y: 20 }} 
+              className="relative z-10 w-full max-w-lg bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl my-auto"
             >
               <div className="flex justify-between items-center border-b border-[#2A2A24] pb-4 mb-6">
                 <h3 className="font-display font-bold text-sm text-[var(--color-gold)]">{currentCombo.id ? 'Edit Combo Pack' : 'Add New Combo Pack'}</h3>
@@ -2252,20 +2252,20 @@ export default function AdminPage() {
                 </div>
               </form>
             </motion.div>
-          </>
+          </div>
         )}
       </AnimatePresence>
 
       {/* --- ADD / EDIT BANK ACCOUNT MODAL --- */}
       <AnimatePresence>
         {bankFormOpen && currentBank && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.6 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black z-[90]" onClick={() => setBankFormOpen(false)} />
+          <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 overflow-y-auto">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.6 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black z-0" onClick={() => setBankFormOpen(false)} />
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: '-40%' }} 
-              animate={{ opacity: 1, scale: 1, y: '-50%' }} 
-              exit={{ opacity: 0, scale: 0.95, y: '-40%' }} 
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[91] w-[90vw] max-w-md bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }} 
+              animate={{ opacity: 1, scale: 1, y: 0 }} 
+              exit={{ opacity: 0, scale: 0.95, y: 20 }} 
+              className="relative z-10 w-full max-w-md bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl my-auto"
             >
               <div className="flex justify-between items-center border-b border-[#2A2A24] pb-4 mb-6">
                 <h3 className="font-display font-bold text-sm text-[var(--color-gold)]">{currentBank.id ? 'Edit Bank Account' : 'Add Bank Account'}</h3>
@@ -2317,20 +2317,20 @@ export default function AdminPage() {
                 </div>
               </form>
             </motion.div>
-          </>
+          </div>
         )}
       </AnimatePresence>
 
       {/* --- ADD / EDIT CATEGORY MODAL --- */}
       <AnimatePresence>
         {categoryFormOpen && currentCategory && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.6 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black z-[90]" onClick={() => setCategoryFormOpen(false)} />
+          <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 overflow-y-auto">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.6 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black z-0" onClick={() => setCategoryFormOpen(false)} />
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: '-40%' }} 
-              animate={{ opacity: 1, scale: 1, y: '-50%' }} 
-              exit={{ opacity: 0, scale: 0.95, y: '-40%' }} 
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[91] w-[90vw] max-w-sm bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }} 
+              animate={{ opacity: 1, scale: 1, y: 0 }} 
+              exit={{ opacity: 0, scale: 0.95, y: 20 }} 
+              className="relative z-10 w-full max-w-sm bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl my-auto"
             >
               <div className="flex justify-between items-center border-b border-[#2A2A24] pb-4 mb-6">
                 <h3 className="font-display font-bold text-sm text-[var(--color-gold)]">{currentCategory.isNew ? 'Add Category' : 'Edit Category'}</h3>
@@ -2367,20 +2367,20 @@ export default function AdminPage() {
                 </div>
               </form>
             </motion.div>
-          </>
+          </div>
         )}
       </AnimatePresence>
 
       {/* --- ADD / EDIT HOMEPAGE SLIDER BANNER MODAL --- */}
       <AnimatePresence>
         {sliderFormOpen && currentSlider && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.6 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black z-[90]" onClick={() => setSliderFormOpen(false)} />
+          <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 overflow-y-auto">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.6 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black z-0" onClick={() => setSliderFormOpen(false)} />
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: '-40%' }} 
-              animate={{ opacity: 1, scale: 1, y: '-50%' }} 
-              exit={{ opacity: 0, scale: 0.95, y: '-40%' }} 
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[91] w-[90vw] max-w-md bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl"
+              initial={{ opacity: 0, scale: 0.95, y: 20 }} 
+              animate={{ opacity: 1, scale: 1, y: 0 }} 
+              exit={{ opacity: 0, scale: 0.95, y: 20 }} 
+              className="relative z-10 w-full max-w-md bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl my-auto"
             >
               <div className="flex justify-between items-center border-b border-[#2A2A24] pb-4 mb-6">
                 <h3 className="font-display font-bold text-sm text-[var(--color-gold)]">{currentSlider.id ? 'Edit Slider Banner' : 'Add Slider Banner'}</h3>
@@ -2415,7 +2415,7 @@ export default function AdminPage() {
                 </div>
               </form>
             </motion.div>
-          </>
+          </div>
         )}
       </AnimatePresence>
 
