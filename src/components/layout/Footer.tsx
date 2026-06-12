@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { MessageCircle, Globe, Share2, Mail, Phone, MapPin, ArrowUp, Sparkles, Send } from 'lucide-react';
+import { MessageCircle, Mail, Phone, MapPin, ArrowUp, Sparkles, Send } from 'lucide-react';
 import { useState } from 'react';
 
 const footerLinks = {
@@ -28,8 +28,8 @@ const footerLinks = {
 
 const socialLinks = [
   { icon: MessageCircle, label: 'WhatsApp', href: 'https://wa.me/917092300252', color: 'hover:text-[#25D366] hover:border-[#25D366]' },
-  { icon: Globe, label: 'Website', href: '#', color: 'hover:text-[#E4405F] hover:border-[#E4405F]' },
-  { icon: Share2, label: 'Share', href: '#', color: 'hover:text-[#1877F2] hover:border-[#1877F2]' },
+  { icon: Phone, label: 'Call Us', href: 'tel:+917092300252', color: 'hover:text-[#E4405F] hover:border-[#E4405F]' },
+  { icon: MapPin, label: 'Visit Factory', href: 'https://maps.google.com/?q=1/406+Sivakasi-Vembakottai+Main+Road+Vembakottai', color: 'hover:text-[#1877F2] hover:border-[#1877F2]' },
   { icon: Mail, label: 'Email', href: 'mailto:jjcrackersworld@gmail.com', color: 'hover:text-[var(--color-gold)] hover:border-[var(--color-gold)]' },
 ];
 

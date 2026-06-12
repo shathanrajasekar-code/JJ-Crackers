@@ -605,8 +605,8 @@ export default function EnquiryPage() {
                   {items.map((item) => (
                     <motion.div key={item.product.id} exit={{ opacity: 0, x: -100, height: 0 }} className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 items-center">
                       <div className="col-span-1 md:col-span-5 flex items-center gap-4">
-                        <div className="w-14 h-14 rounded-xl bg-[var(--surface-high)] overflow-hidden flex-shrink-0 border border-[var(--border)] flex items-center justify-center">
-                          {item.product.image_url ? <img src={item.product.image_url} alt="" className="w-full h-full object-cover" /> : <span className="text-lg opacity-30">🎇</span>}
+                        <div className="w-14 h-14 rounded-xl bg-[var(--surface-high)] overflow-hidden flex-shrink-0 border border-[var(--border)] flex items-center justify-center relative">
+                          {item.product.image_url ? <Image src={item.product.image_url} alt={item.product.name_en} fill className="object-cover" sizes="56px" /> : <span className="text-lg opacity-30">🎇</span>}
                         </div>
                         <div><div className="text-[10px] text-[var(--color-gold)] font-bold uppercase tracking-[0.15em]">{item.product.category}</div><h3 className="font-bold text-sm">{item.product.name_en}</h3></div>
                       </div>

@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { Plus, Minus, ShoppingCart, Leaf, Check } from 'lucide-react';
 import { useState } from 'react';
+import Image from 'next/image';
 import { useEnquiryStore } from '@/lib/store/enquiryStore';
 import type { Product } from '@/lib/supabase/types';
 
@@ -52,10 +53,13 @@ export function ProductCard({ product }: ProductCardProps) {
       {/* Image */}
       <div className="relative w-full pt-[100%] bg-[var(--surface-high)] overflow-hidden">
         {product.image_url ? (
-          <img
+          <Image
             src={product.image_url}
             alt={product.name_en}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="object-cover transition-transform duration-700 group-hover:scale-110"
+            loading="lazy"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center shimmer">
