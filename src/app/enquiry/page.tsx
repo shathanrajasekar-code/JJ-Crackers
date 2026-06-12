@@ -24,12 +24,32 @@ export default function EnquiryPage() {
   const [whatsappStatus, setWhatsappStatus] = useState<'idle' | 'sending' | 'sent' | 'skipped' | 'failed'>('idle');
   const [whatsappErrorMessage, setWhatsappErrorMessage] = useState<string | null>(null);
 
-  // Monitor order total - if it drops below 2000, force return to Step 1
+  const [settings, setSettings] = useState<any>({
+    min_order_value: '2000',
+    whatsapp_number: '7092300252'
+  });
+  const [bankAccounts, setBankAccounts] = useState<any[]>([]);
+
   useEffect(() => {
-    if (getTotal() < 2000 && step > 1 && step < 4) {
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => { if (data) setSettings(data); })
+      .catch(err => console.error('Failed to load settings:', err));
+
+    fetch('/api/bank-accounts')
+      .then(res => res.json())
+      .then(data => { if (Array.isArray(data)) setBankAccounts(data); })
+      .catch(err => console.error('Failed to load bank accounts:', err));
+  }, []);
+
+  const minOrderValue = parseInt(settings.min_order_value) || 2000;
+
+  // Monitor order total - if it drops below minOrderValue, force return to Step 1
+  useEffect(() => {
+    if (getTotal() < minOrderValue && step > 1 && step < 4) {
       setStep(1);
     }
-  }, [items, getTotal, step]);
+  }, [items, getTotal, step, minOrderValue]);
 
   const goToStep = (nextStep: number) => {
     setSubmitError(null);
@@ -452,6 +472,22 @@ export default function EnquiryPage() {
                 const targetPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
                 
                 const receiptLink = `${window.location.origin}/receipt/${orderResult?.id || ''}`;
+                const bankText = bankAccounts.length > 0 
+                  ? bankAccounts.map(b => 
+                      `• *Name:* ${b.holder_name}\n` +
+                      `• *Bank:* ${b.bank_name}\n` +
+                      `• *A/C:* ${b.account_number}\n` +
+                      `• *IFSC:* ${b.ifsc_code}\n` +
+                      (b.gpay_number ? `• *GPay/PhonePe:* ${b.gpay_number}\n` : '')
+                    ).join('\n')
+                  : `• *Name:* Muthuganesa pandian C\n` +
+                    `• *Bank:* City Union Bank\n` +
+                    `• *A/C:* 500101012011879\n` +
+                    `• *IFSC:* CIUB0000162\n` +
+                    `• *GPay/PhonePe:* 7092300252\n`;
+
+                const supportNumber = settings.whatsapp_number || '7092300252';
+
                 const message = `🎆 *JJ CRACKERS — ORDER CONFIRMED* 🎆\n` +
                   `----------------------------------\n` +
                   `*Order Ref:* ${orderResult?.order_number || 'N/A'}\n` +
@@ -459,12 +495,8 @@ export default function EnquiryPage() {
                   `*Total Amount:* ₹${((orderResult?.total_amount || getTotal())).toLocaleString('en-IN')}\n\n` +
                   `📄 *Download Receipt PDF:* ${receiptLink}\n\n` +
                   `🏦 *PAYMENT DETAILS (BANK TRANSFER):*\n` +
-                  `• *Name:* Muthuganesa pandian C\n` +
-                  `• *Bank:* City Union Bank\n` +
-                  `• *A/C:* 500101012011879\n` +
-                  `• *IFSC:* CIUB0000162\n` +
-                  `• *GPay/PhonePe:* 7092300252\n\n` +
-                  `*Action Required:* Please transfer the total amount and send the payment screenshot to support (+91 70923 00252) to confirm dispatch. Thank you! 🎆`;
+                  bankText + `\n` +
+                  `*Action Required:* Please transfer the total amount and send the payment screenshot to support (+91 ${supportNumber}) to confirm dispatch. Thank you! 🎆`;
 
                 const url = targetPhone 
                   ? `https://api.whatsapp.com/send?phone=${targetPhone}&text=${encodeURIComponent(message)}`
@@ -487,16 +519,26 @@ export default function EnquiryPage() {
                 const cleanPhone = phone.replace(/[^0-9]/g, '');
                 
                 const receiptLink = `${window.location.origin}/receipt/${orderResult?.id || ''}`;
+                const bankTextSms = bankAccounts.length > 0 
+                  ? bankAccounts.map(b => 
+                      `Name: ${b.holder_name}\n` +
+                      `Bank: ${b.bank_name}\n` +
+                      `A/C: ${b.account_number}\n` +
+                      `IFSC: ${b.ifsc_code}\n` +
+                      (b.gpay_number ? `GPay/PhonePe: ${b.gpay_number}\n` : '')
+                    ).join('\n')
+                  : `Name: Muthuganesa pandian C\n` +
+                    `Bank: City Union Bank\n` +
+                    `A/C: 500101012011879\n` +
+                    `IFSC: CIUB0000162\n` +
+                    `GPay/PhonePe: 7092300252\n`;
+
                 const message = `🎆 JJ CRACKERS ORDER CONFIRMED! 🎆\n` +
                   `Order Ref: ${orderResult?.order_number || 'N/A'}\n` +
                   `Total: Rs. ${((orderResult?.total_amount || getTotal())).toLocaleString('en-IN')}\n\n` +
                   `Download Receipt PDF: ${receiptLink}\n\n` +
                   `🏦 BANK TRANSFER:\n` +
-                  `Name: Muthuganesa pandian C\n` +
-                  `Bank: City Union Bank\n` +
-                  `A/C: 500101012011879\n` +
-                  `IFSC: CIUB0000162\n` +
-                  `GPay/PhonePe: 7092300252\n\n` +
+                  bankTextSms + `\n` +
                   `Please transfer amount & share screenshot to support. Thank you!`;
 
                 const url = `sms:${cleanPhone}?body=${encodeURIComponent(message)}`;
@@ -594,19 +636,19 @@ export default function EnquiryPage() {
                   <span className="font-bold">Total</span><span className="text-2xl font-bold text-[var(--color-gold)]">₹{getTotal().toLocaleString('en-IN')}</span>
                 </div>
 
-                {getTotal() < 2000 && (
+                {getTotal() < minOrderValue && (
                   <div className="flex items-start gap-2.5 text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 mb-5 text-xs text-left">
                     <AlertCircle size={15} className="shrink-0 mt-0.5" />
                     <div>
                       <span className="font-bold">Minimum Order Required</span>
-                      <p className="mt-0.5 text-rose-300/80">Minimum order amount is ₹2,000. Please add ₹{(2000 - getTotal()).toLocaleString('en-IN')} more to proceed.</p>
+                      <p className="mt-0.5 text-rose-300/80">Minimum order amount is ₹{minOrderValue.toLocaleString('en-IN')}. Please add ₹{(minOrderValue - getTotal()).toLocaleString('en-IN')} more to proceed.</p>
                     </div>
                   </div>
                 )}
 
                 <motion.button 
-                  onClick={() => getTotal() >= 2000 && goToStep(2)} 
-                  disabled={getTotal() < 2000}
+                  onClick={() => getTotal() >= minOrderValue && goToStep(2)} 
+                  disabled={getTotal() < minOrderValue}
                   whileHover={getTotal() >= 2000 ? { scale: 1.02 } : {}} 
                   whileTap={getTotal() >= 2000 ? { scale: 0.98 } : {}}
                   className="w-full bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold rounded-xl py-3.5 text-sm shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">

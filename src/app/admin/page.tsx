@@ -9,7 +9,8 @@ import {
   BarChart3, LogOut, Search, RefreshCw, Trash2, CheckCircle2, Clock, 
   Truck, XCircle, Users, DollarSign, TrendingUp, Upload, Database, 
   Zap, Gift, FileText, Download, Send, ChevronRight, X, Eye, 
-  SlidersHorizontal, Calendar, MapPin, User, ArrowRight
+  SlidersHorizontal, Calendar, MapPin, User, ArrowRight, Settings, 
+  CreditCard, Tags, Sliders, Cpu, LineChart, Plus, Edit, Sparkles, Check
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -189,10 +190,27 @@ export default function AdminPage() {
   const [combos, setCombos] = useState<any[]>([]);
   const [errorLogs, setErrorLogs] = useState<any[]>([]);
   const [analyticsEvents, setAnalyticsEvents] = useState<any[]>([]);
+  
+  // Settings & Bank Account lists
+  const [settings, setSettings] = useState<any>({
+    global_discount: '60',
+    min_order_value: '2000',
+    company_name: 'JEGAJOTHI CRACKERS',
+    company_address: '1/406, SIVAKASI -VEMBAKOTAI MAIN ROAD, Opp to EB OFFICE,VEMBAKOTTAI.',
+    mobile_number_1: '7092300252',
+    mobile_number_2: '7092300252',
+    whatsapp_number: '7092300252',
+    email_address: 'jjcrackersworld@gmail.com',
+    marquee: '',
+  });
+  const [bankAccounts, setBankAccounts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [sliders, setSliders] = useState<any[]>([]);
+  
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
   
-  // States for search and filter
+  // Search and Filter states
   const [orderQuery, setOrderQuery] = useState('');
   const [productQuery, setProductQuery] = useState('');
   
@@ -212,7 +230,7 @@ export default function AdminPage() {
     action: () => {},
   });
 
-  // Selected Inspect Order (Flyout Panel)
+  // Inspected Order
   const [inspectedOrder, setInspectedOrder] = useState<any | null>(null);
   const [resendingEmailId, setResendingEmailId] = useState<string | null>(null);
   
@@ -224,6 +242,26 @@ export default function AdminPage() {
   const [seedComboStatus, setSeedComboStatus] = useState('');
   const [seedingCombos, setSeedingCombos] = useState(false);
 
+  // CRUD Forms States
+  const [productFormOpen, setProductFormOpen] = useState(false);
+  const [currentProduct, setCurrentProduct] = useState<any | null>(null);
+  
+  const [comboFormOpen, setComboFormOpen] = useState(false);
+  const [currentCombo, setCurrentCombo] = useState<any | null>(null);
+
+  const [bankFormOpen, setBankFormOpen] = useState(false);
+  const [currentBank, setCurrentBank] = useState<any | null>(null);
+
+  const [categoryFormOpen, setCategoryFormOpen] = useState(false);
+  const [currentCategory, setCurrentCategory] = useState<any | null>(null);
+
+  const [sliderFormOpen, setSliderFormOpen] = useState(false);
+  const [currentSlider, setCurrentSlider] = useState<any | null>(null);
+
+  // Settings Save loading state
+  const [savingSettings, setSavingSettings] = useState(false);
+  const [settingsStatus, setSettingsStatus] = useState('');
+
   useEffect(() => { 
     setMounted(true); 
     checkSession(); 
@@ -232,13 +270,17 @@ export default function AdminPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [o, p, e, m, c, t] = await Promise.all([
+      const [o, p, e, m, c, t, s, b, cats, slds] = await Promise.all([
         fetch('/api/orders').then(r => r.json()).catch(() => []),
-        fetch('/api/products').then(r => r.json()).catch(() => ({ products: [] })),
+        fetch('/api/products?admin=true&limit=500').then(r => r.json()).catch(() => ({ products: [] })),
         fetch('/api/enquiries').then(r => r.json()).catch(() => []),
         fetch('/api/contact').then(r => r.json()).catch(() => []),
         fetch('/api/combos').then(r => r.json()).catch(() => []),
         fetch('/api/admin/tracking').then(r => r.json()).catch(() => ({ error_logs: [], analytics_events: [] })),
+        fetch('/api/settings').then(r => r.json()).catch(() => ({})),
+        fetch('/api/bank-accounts').then(r => r.json()).catch(() => []),
+        fetch('/api/categories').then(r => r.json()).catch(() => []),
+        fetch('/api/sliders').then(r => r.json()).catch(() => []),
       ]);
       setOrders(Array.isArray(o) ? o : []);
       setProducts(Array.isArray(p) ? p : (p.products || []));
@@ -247,6 +289,10 @@ export default function AdminPage() {
       setCombos(Array.isArray(c) ? c : []);
       setErrorLogs(t.error_logs || []);
       setAnalyticsEvents(t.analytics_events || []);
+      if (s && Object.keys(s).length > 0) setSettings(s);
+      setBankAccounts(Array.isArray(b) ? b : []);
+      setCategories(Array.isArray(cats) ? cats : []);
+      setSliders(Array.isArray(slds) ? slds : []);
     } catch (err) { 
       console.error(err); 
     }
@@ -257,7 +303,7 @@ export default function AdminPage() {
     if (isAuthenticated) fetchData(); 
   }, [isAuthenticated]);
 
-  // Sync selected inspected order when list refreshes
+  // Sync inspected order when list refreshes
   useEffect(() => {
     if (inspectedOrder && orders.length > 0) {
       const updated = orders.find(o => o.id === inspectedOrder.id);
@@ -309,6 +355,25 @@ export default function AdminPage() {
         setConfirmConfig(prev => ({ ...prev, isOpen: false }));
         try {
           await fetch(`/api/products/${id}`, { method: 'DELETE' });
+          fetchData();
+        } catch (err) { console.error(err); }
+      }
+    });
+  };
+
+  const handleDeleteOrder = (id: string, code: string) => {
+    setConfirmConfig({
+      isOpen: true,
+      title: 'Delete Order Record?',
+      message: `Are you sure you want to delete order "${code}"? This will erase it from database permanently.`,
+      confirmLabel: 'Delete Record',
+      isDanger: true,
+      action: async () => {
+        setConfirmConfig(prev => ({ ...prev, isOpen: false }));
+        try {
+          // DELETE endpoints for orders
+          await fetch(`/api/orders/${id}`, { method: 'DELETE' });
+          setInspectedOrder(null);
           fetchData();
         } catch (err) { console.error(err); }
       }
@@ -441,21 +506,231 @@ export default function AdminPage() {
     }
   };
 
+  // CRUD: Save settings
+  const handleSaveSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingSettings(true);
+    setSettingsStatus('Saving settings...');
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings)
+      });
+      if (res.ok) {
+        setSettingsStatus('✅ Settings saved successfully!');
+        fetchData();
+      } else {
+        const d = await res.json();
+        setSettingsStatus(`❌ Save failed: ${d.error}`);
+      }
+    } catch {
+      setSettingsStatus('❌ Connection failed saving settings');
+    }
+    setSavingSettings(false);
+  };
+
+  // CRUD: Products Add / Edit
+  const handleSaveProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const method = currentProduct.id ? 'PATCH' : 'POST';
+      const endpoint = currentProduct.id ? `/api/products/${currentProduct.id}` : '/api/products';
+      const res = await fetch(endpoint, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(currentProduct)
+      });
+      if (res.ok) {
+        setProductFormOpen(false);
+        fetchData();
+      } else {
+        alert('Failed to save product');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // CRUD: Combos Add / Edit
+  const handleSaveCombo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const method = currentCombo.id ? 'PATCH' : 'POST';
+      const endpoint = currentCombo.id ? `/api/combos/${currentCombo.id}` : '/api/combos';
+      const res = await fetch(endpoint, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(currentCombo)
+      });
+      if (res.ok) {
+        setComboFormOpen(false);
+        fetchData();
+      } else {
+        alert('Failed to save combo');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // CRUD: Bank Accounts Add / Edit / Delete
+  const handleSaveBank = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const method = currentBank.id ? 'PUT' : 'POST';
+      const res = await fetch('/api/bank-accounts', {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(currentBank)
+      });
+      if (res.ok) {
+        setBankFormOpen(false);
+        fetchData();
+      } else {
+        alert('Failed to save bank details');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteBank = (id: string, bankName: string) => {
+    setConfirmConfig({
+      isOpen: true,
+      title: 'Delete Bank Account?',
+      message: `Are you sure you want to delete bank details for "${bankName}"?`,
+      confirmLabel: 'Delete Bank',
+      isDanger: true,
+      action: async () => {
+        setConfirmConfig(prev => ({ ...prev, isOpen: false }));
+        try {
+          await fetch(`/api/bank-accounts?id=${id}`, { method: 'DELETE' });
+          fetchData();
+        } catch (err) { console.error(err); }
+      }
+    });
+  };
+
+  // CRUD: Categories Add / Edit / Delete
+  const handleSaveCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const method = currentCategory.isNew ? 'POST' : 'PUT';
+      const res = await fetch('/api/categories', {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(currentCategory)
+      });
+      if (res.ok) {
+        setCategoryFormOpen(false);
+        fetchData();
+      } else {
+        alert('Failed to save category');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteCategory = (id: string, label: string) => {
+    setConfirmConfig({
+      isOpen: true,
+      title: 'Delete Category?',
+      message: `Are you sure you want to delete the category "${label}"?`,
+      confirmLabel: 'Delete Category',
+      isDanger: true,
+      action: async () => {
+        setConfirmConfig(prev => ({ ...prev, isOpen: false }));
+        try {
+          await fetch(`/api/categories?id=${id}`, { method: 'DELETE' });
+          fetchData();
+        } catch (err) { console.error(err); }
+      }
+    });
+  };
+
+  // CRUD: Sliders Add / Edit / Delete
+  const handleSaveSlider = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const method = currentSlider.id ? 'PUT' : 'POST';
+      const res = await fetch('/api/sliders', {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(currentSlider)
+      });
+      if (res.ok) {
+        setSliderFormOpen(false);
+        fetchData();
+      } else {
+        alert('Failed to save slider image');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteSlider = (id: string) => {
+    setConfirmConfig({
+      isOpen: true,
+      title: 'Delete Slider?',
+      message: 'Are you sure you want to delete this homepage slider banner?',
+      confirmLabel: 'Delete Banner',
+      isDanger: true,
+      action: async () => {
+        setConfirmConfig(prev => ({ ...prev, isOpen: false }));
+        try {
+          await fetch(`/api/sliders?id=${id}`, { method: 'DELETE' });
+          fetchData();
+        } catch (err) { console.error(err); }
+      }
+    });
+  };
+
   if (!mounted) return <div className="min-h-screen bg-[#0A0A08]" />;
   if (!isAuthenticated) return <AdminLogin onLogin={login} />;
 
+  // Compiled Statistics
   const totalRevenue = orders.reduce((s: number, o: any) => s + (o.total_amount || 0), 0);
   const pendingOrders = orders.filter((o: any) => o.status === 'pending').length;
   const confirmedOrders = orders.filter((o: any) => o.status === 'confirmed' || o.status === 'delivered').length;
+  
+  // Distilled Unique Customers Base
+  const customerMap = new Map();
+  orders.forEach((o: any) => {
+    if (!o.customer_phone) return;
+    const phone = o.customer_phone;
+    if (!customerMap.has(phone)) {
+      customerMap.set(phone, {
+        name: o.customer_name,
+        email: o.customer_email || 'N/A',
+        phone: o.customer_phone,
+        city: o.customer_city || 'N/A',
+        ordersCount: 1,
+        totalSpent: o.total_amount || 0,
+      });
+    } else {
+      const existing = customerMap.get(phone);
+      existing.ordersCount += 1;
+      existing.totalSpent += (o.total_amount || 0);
+    }
+  });
+  const customersList = Array.from(customerMap.values());
 
   const tabs = [
     { id: 'overview', label: 'Command Hub', icon: LayoutDashboard },
+    { id: 'analytics', label: 'Data Intelligence', icon: LineChart },
     { id: 'orders', label: 'Orders Log', icon: ShoppingCart },
-    { id: 'products', label: 'Inventory', icon: Package },
+    { id: 'products', label: 'Inventory Desk', icon: Package },
     { id: 'combos', label: 'Combos & Packs', icon: Gift },
-    { id: 'enquiries', label: 'Enquiries', icon: MessageCircle },
+    { id: 'categories', label: 'Categories Desk', icon: Tags },
+    { id: 'enquiries', label: 'Order Enquiries', icon: MessageCircle },
     { id: 'messages', label: 'Inbox', icon: Mail },
-    { id: 'analytics', label: 'Market Analytics', icon: BarChart3 },
+    { id: 'customers', label: 'Customer Base', icon: Users },
+    { id: 'bank-accounts', label: 'Bank Accounts', icon: CreditCard },
+    { id: 'sliders', label: 'Homepage Banners', icon: Sliders },
+    { id: 'settings', label: 'Settings & Config', icon: Settings },
     { id: 'diagnostics', label: 'System Logs', icon: Database },
   ];
 
@@ -471,38 +746,112 @@ export default function AdminPage() {
     p.category?.toLowerCase().includes(productQuery.toLowerCase())
   );
 
+  // AI Growth recommendation algorithm
+  const generateAIRecommendation = () => {
+    const advices = [];
+    if (orders.length === 0) {
+      return ["⚠️ Low order data. Promote your website on WhatsApp to receive customer cart orders."];
+    }
+    
+    // 1. Geography recommendations
+    const cities: Record<string, number> = {};
+    orders.forEach(o => {
+      if (o.customer_city) {
+        cities[o.customer_city] = (cities[o.customer_city] || 0) + 1;
+      }
+    });
+    const topCity = Object.entries(cities).sort((a, b) => b[1] - a[1])[0];
+    if (topCity) {
+      advices.push(`🔥 Demand Density: **${topCity[0]}** accounts for **${Math.round((topCity[1]/orders.length)*100)}%** of sales volume. Target local promos here.`);
+    }
+
+    // 2. Conversion recommendations
+    const totalRequests = orders.length + enquiries.length;
+    const conversion = totalRequests > 0 ? Math.round((orders.length / totalRequests) * 100) : 0;
+    if (conversion < 40) {
+      advices.push(`📉 Conversion alert: Only **${conversion}%** of visitors check out. Try reducing your minimum order value from ₹${settings.min_order_value} to ₹1,500 to lower barriers.`);
+    } else {
+      advices.push(`📈 Healthy Conversion: Checkout conversion rate is at a strong **${conversion}%**.`);
+    }
+
+    // 3. Category recommendations
+    const categoriesSales: Record<string, number> = {};
+    orders.forEach(o => {
+      if (Array.isArray(o.items)) {
+        o.items.forEach((item: any) => {
+          const cat = item.category || 'general';
+          categoriesSales[cat] = (categoriesSales[cat] || 0) + item.quantity;
+        });
+      }
+    });
+    const topCat = Object.entries(categoriesSales).sort((a, b) => b[1] - a[1])[0];
+    if (topCat) {
+      advices.push(`🎇 Category Driver: **${topCat[0].replace('-', ' ').toUpperCase()}** is your best-selling product category. Ensure you have high inventory stock.`);
+    }
+
+    // 4. Cart Value recommendation
+    const averageOrderValue = Math.round(totalRevenue / orders.length);
+    if (averageOrderValue < 4000) {
+      advices.push(`💰 Average Order Value: ₹${averageOrderValue.toLocaleString('en-IN')}. Introduce premium curated Combo Giftboxes (e.g. ₹5,000 package) to encourage bulk orders.`);
+    }
+
+    return advices;
+  };
+
+  const aiGrowthAdvices = generateAIRecommendation();
+
+  // Custom SVG Chart points calculation for total sales over time
+  const getChartPoints = () => {
+    if (orders.length === 0) return '0,100 100,100';
+    const sorted = [...orders].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    let cumulative = 0;
+    const dataPoints = sorted.map((o, index) => {
+      cumulative += o.total_amount || 0;
+      return {
+        x: (index / (sorted.length - 1)) * 500,
+        y: 150 - (cumulative / totalRevenue) * 120
+      };
+    });
+    // Fallback if single order
+    if (dataPoints.length === 1) {
+      return `0,150 500,${dataPoints[0].y}`;
+    }
+    return dataPoints.map(p => `${p.x},${p.y}`).join(' ');
+  };
+
   return (
-    <div className="min-h-screen bg-[#0A0A08] text-[#F5F5F0] flex flex-col md:flex-row">
+    <div className="min-h-screen bg-[#0A0A08] text-[#F5F5F0] flex flex-col md:flex-row font-sans selection:bg-[var(--color-gold)] selection:text-black">
+      
       {/* SIDEBAR */}
       <aside className="w-full md:w-64 bg-[#141412] border-b md:border-b-0 md:border-r border-[#2A2A24] flex flex-col shrink-0">
         <div className="p-6 border-b border-[#2A2A24] flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl overflow-hidden border border-[#2A2A24] relative bg-[#1C1C18]">
-            <Image src="/jj-crackers-logo.png" alt="Logo" fill className="object-contain p-1" sizes="40px" />
+          <div className="w-10 h-10 rounded-xl overflow-hidden border border-[#2A2A24] relative bg-[#1C1C18] flex items-center justify-center font-display font-black text-xl text-[var(--color-gold)]">
+            JJ
           </div>
           <div>
-            <h1 className="font-display font-bold text-sm tracking-tight">JJ COMMAND</h1>
-            <p className="text-[10px] text-[var(--color-gold)] font-bold tracking-widest uppercase">Admin Desk</p>
+            <h1 className="font-display font-bold text-sm tracking-tight text-[#F5F5F0]">JJ COMMAND</h1>
+            <p className="text-[9px] text-[var(--color-gold)] font-bold tracking-widest uppercase">BI Console Hub</p>
           </div>
         </div>
 
         {/* Tab Navigation */}
-        <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto max-h-[75vh] md:max-h-none scrollbar-thin">
           {tabs.map(t => (
             <button 
               key={t.id} 
-              onClick={() => setActiveTab(t.id)}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all ${
+              onClick={() => { setActiveTab(t.id); setInspectedOrder(null); }}
+              className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
                 activeTab === t.id 
                   ? 'bg-gradient-to-r from-[var(--color-gold)]/10 to-[var(--color-gold-dark)]/5 text-[var(--color-gold)] border border-[var(--color-gold)]/20 shadow-[0_2px_10px_rgba(212,175,55,0.02)]' 
                   : 'text-[#A0A090] hover:text-[#F5F5F0] hover:bg-[#1C1C18] border border-transparent'
               }`}
             >
-              <span className="flex items-center gap-3">
-                <t.icon size={18} className={activeTab === t.id ? 'text-[var(--color-gold)]' : ''} />
+              <span className="flex items-center gap-2.5">
+                <t.icon size={15} className={activeTab === t.id ? 'text-[var(--color-gold)]' : ''} />
                 {t.label}
               </span>
               {t.id === 'orders' && pendingOrders > 0 && (
-                <span className="bg-rose-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+                <span className="bg-rose-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full">
                   {pendingOrders}
                 </span>
               )}
@@ -511,23 +860,23 @@ export default function AdminPage() {
         </nav>
 
         {/* Footer info in sidebar */}
-        <div className="p-4 border-t border-[#2A2A24] flex items-center justify-between">
+        <div className="p-4 border-t border-[#2A2A24] flex items-center justify-between shrink-0">
           <button 
             onClick={logout} 
-            className="flex items-center gap-2 text-xs font-bold text-rose-400 hover:text-rose-300 bg-rose-500/5 hover:bg-rose-500/10 px-3 py-2 rounded-lg border border-rose-500/15 transition-all w-full justify-center"
+            className="flex items-center gap-2 text-[10px] font-bold text-rose-400 hover:text-rose-350 bg-rose-500/5 hover:bg-rose-500/10 px-3 py-2.5 rounded-xl border border-rose-500/15 transition-all w-full justify-center"
           >
-            <LogOut size={13} /> End Admin Session
+            <LogOut size={12} /> End Admin Session
           </button>
         </div>
       </aside>
 
       {/* MAIN CONTAINER */}
-      <main className="flex-grow flex flex-col min-w-0">
+      <main className="flex-grow flex flex-col min-w-0 bg-[#0A0A08]">
         {/* TOP BAR */}
-        <header className="h-16 border-b border-[#2A2A24] bg-[#141412]/50 backdrop-blur-md px-6 flex items-center justify-between shrink-0">
+        <header className="h-16 border-b border-[#2A2A24] bg-[#141412]/50 backdrop-blur-md px-6 flex items-center justify-between shrink-0 z-10">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs text-[#A0A090] font-semibold">Active Session &bull; Secured Connection</span>
+            <span className="text-[10px] text-[#A0A090] font-bold tracking-wider uppercase">Active Session &bull; Secured Connection</span>
           </div>
 
           <div className="flex items-center gap-3">
@@ -550,15 +899,15 @@ export default function AdminPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard icon={ShoppingCart} label="Total Orders" value={orders.length} color="bg-blue-500/10 text-blue-400" />
                 <StatCard icon={DollarSign} label="Total Revenue" value={`₹${totalRevenue.toLocaleString('en-IN')}`} color="bg-emerald-500/10 text-emerald-400" />
-                <StatCard icon={Clock} label="Pending Enquiries" value={pendingOrders} color="bg-amber-500/10 text-amber-400" />
-                <StatCard icon={Package} label="Products Catalog" value={products.length} color="bg-purple-500/10 text-purple-400" />
+                <StatCard icon={Clock} label="Enquiries Pipeline" value={enquiries.length} color="bg-amber-500/10 text-amber-400" />
+                <StatCard icon={Package} label="Inventory Items" value={products.length} color="bg-purple-500/10 text-purple-400" />
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Recent Orders Card */}
                 <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl p-6 flex flex-col">
                   <div className="flex items-center justify-between mb-5">
-                    <h3 className="font-display font-bold text-base text-[#F5F5F0]">Recent Sales Orders</h3>
+                    <h3 className="font-display font-bold text-sm text-[#F5F5F0]">Recent Sales Orders</h3>
                     <button onClick={() => setActiveTab('orders')} className="text-xs text-[var(--color-gold)] font-bold hover:underline flex items-center gap-1">
                       View Log <ChevronRight size={12} />
                     </button>
@@ -568,21 +917,21 @@ export default function AdminPage() {
                     {orders.slice(0, 5).map((o: any) => (
                       <div 
                         key={o.id} 
-                        onClick={() => setInspectedOrder(o)}
+                        onClick={() => { setInspectedOrder(o); setActiveTab('orders'); }}
                         className="flex items-center justify-between py-3.5 hover:bg-[#1C1C18]/40 px-2 rounded-xl transition-all cursor-pointer group"
                       >
                         <div>
-                          <div className="font-bold text-sm text-[var(--color-gold)] group-hover:text-[var(--color-gold-light)] transition-colors">{o.order_number}</div>
-                          <div className="text-xs text-[#A0A090] mt-0.5">{o.customer_name}</div>
+                          <div className="font-bold text-xs text-[var(--color-gold)] group-hover:text-[var(--color-gold-light)] transition-colors">{o.order_number}</div>
+                          <div className="text-[10px] text-[#A0A090] mt-0.5">{o.customer_name}</div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className="font-bold text-sm">₹{o.total_amount?.toLocaleString('en-IN')}</span>
+                          <span className="font-bold text-xs">₹{o.total_amount?.toLocaleString('en-IN')}</span>
                           <StatusBadge status={o.status} />
                         </div>
                       </div>
                     ))}
                     {orders.length === 0 && (
-                      <div className="text-[#A0A090] text-sm text-center py-12">No orders recorded yet</div>
+                      <div className="text-[#A0A090] text-xs text-center py-12">No orders recorded yet</div>
                     )}
                   </div>
                 </div>
@@ -590,26 +939,26 @@ export default function AdminPage() {
                 {/* Recent Messages Card */}
                 <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl p-6 flex flex-col">
                   <div className="flex items-center justify-between mb-5">
-                    <h3 className="font-display font-bold text-base text-[#F5F5F0]">Recent Inquiry Messages</h3>
+                    <h3 className="font-display font-bold text-sm text-[#F5F5F0]">Recent Inquiry Messages</h3>
                     <button onClick={() => setActiveTab('messages')} className="text-xs text-[var(--color-gold)] font-bold hover:underline flex items-center gap-1">
                       Open Inbox <ChevronRight size={12} />
                     </button>
                   </div>
 
-                  <div className="divide-y divide-[#2A2A24]/60 flex-grow">
+                  <div className="divide-y divide-[#2A2A24]/60 flex-grow border-b border-[#2A2A24]/30 mb-3">
                     {messages.slice(0, 5).map((m: any) => (
                       <div key={m.id} className="py-3.5 px-2">
                         <div className="flex justify-between mb-1">
-                          <span className="font-bold text-sm text-[#F5F5F0]">{m.name}</span>
-                          <span className="text-[10px] text-[#A0A090] font-semibold">{new Date(m.created_at).toLocaleDateString()}</span>
+                          <span className="font-bold text-xs text-[#F5F5F0]">{m.name}</span>
+                          <span className="text-[9px] text-[#A0A090] font-semibold">{new Date(m.created_at).toLocaleDateString()}</span>
                         </div>
-                        <div className="text-xs text-[#A0A090] line-clamp-2 leading-relaxed">
+                        <div className="text-[10px] text-[#A0A090] line-clamp-2 leading-relaxed">
                           <span className="text-[var(--color-gold)] font-semibold">{m.subject}:</span> {m.message}
                         </div>
                       </div>
                     ))}
                     {messages.length === 0 && (
-                      <div className="text-[#A0A090] text-sm text-center py-12">No messages in inbox</div>
+                      <div className="text-[#A0A090] text-xs text-center py-12">No messages in inbox</div>
                     )}
                   </div>
                 </div>
@@ -617,7 +966,143 @@ export default function AdminPage() {
             </motion.div>
           )}
 
-          {/* ORDERS TAB */}
+          {/* FUTURISTIC DATA INTELLIGENCE TAB */}
+          {activeTab === 'analytics' && (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+              <div>
+                <h2 className="text-xl font-bold font-display text-[#F5F5F0]">Futuristic Business Growth & Analytics</h2>
+                <p className="text-xs text-[#A0A090] mt-1">Deep analysis metrics, geographical demand trends, and AI-driven growth parameters</p>
+              </div>
+
+              {/* Top AI Advisor HUD */}
+              <div className="bg-gradient-to-r from-[var(--color-gold)]/10 to-[#141412] border border-[var(--color-gold)]/30 rounded-2xl p-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--color-gold)]/5 blur-xl rounded-full" />
+                <h3 className="font-bold text-xs uppercase tracking-widest text-[var(--color-gold)] flex items-center gap-2 mb-4">
+                  <Cpu size={16} className="text-[var(--color-gold)] animate-pulse" />
+                  AI Business Growth Engine Recommendations
+                </h3>
+                <div className="space-y-3 font-mono text-xs">
+                  {aiGrowthAdvices.map((advice, i) => (
+                    <div key={i} className="flex gap-2 items-start border-l border-[var(--color-gold)]/30 pl-3">
+                      <span className="text-[var(--color-gold)]">&gt;</span>
+                      <p className="text-[#A0A090] leading-relaxed" dangerouslySetInnerHTML={{ __html: advice.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>') }} />
+                    </div>
+                  ))}
+                  {aiGrowthAdvices.length === 0 && (
+                    <p className="text-[#A0A090]">&gt; Analyzing database metrics...</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Custom SVG Line Chart for revenue timeline */}
+                <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl p-6 lg:col-span-2 flex flex-col justify-between">
+                  <div className="mb-4">
+                    <h3 className="font-display font-bold text-sm text-[#F5F5F0]">Total Cumulative Sales Growth</h3>
+                    <p className="text-[10px] text-[#A0A090]">Historical transaction volume progression curve</p>
+                  </div>
+                  
+                  {/* SVG Chart */}
+                  <div className="w-full h-44 bg-[#0A0A08]/40 border border-[#2A2A24]/40 rounded-xl p-3 relative flex items-center justify-center overflow-hidden">
+                    <svg viewBox="0 0 500 150" className="w-full h-full">
+                      <defs>
+                        <linearGradient id="chartGlow" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#D4AF37" stopOpacity="0.3" />
+                          <stop offset="100%" stopColor="#D4AF37" stopOpacity="0" />
+                        </linearGradient>
+                      </defs>
+                      
+                      {/* Grid Lines */}
+                      <line x1="0" y1="30" x2="500" y2="30" stroke="#2A2A24" strokeWidth="0.5" strokeDasharray="3 3" />
+                      <line x1="0" y1="75" x2="500" y2="75" stroke="#2A2A24" strokeWidth="0.5" strokeDasharray="3 3" />
+                      <line x1="0" y1="120" x2="500" y2="120" stroke="#2A2A24" strokeWidth="0.5" strokeDasharray="3 3" />
+                      
+                      {/* Gradient Fill under line */}
+                      <path d={`M0,150 L${getChartPoints()} L500,150 Z`} fill="url(#chartGlow)" />
+                      
+                      {/* Chart Line */}
+                      <polyline
+                        fill="none"
+                        stroke="#D4AF37"
+                        strokeWidth="2.5"
+                        points={getChartPoints()}
+                        className="drop-shadow-[0_0_10px_rgba(212,175,55,0.4)]"
+                      />
+                    </svg>
+                    <div className="absolute top-2 right-4 text-[9px] font-bold text-[var(--color-gold)]">Cumulative Net Revenue</div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center text-[10px] font-bold text-[#A0A090] mt-3 uppercase tracking-wider">
+                    <span>First Order</span>
+                    <span>Recent Date</span>
+                  </div>
+                </div>
+
+                {/* Sales Geography Density */}
+                <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl p-6 flex flex-col justify-between">
+                  <div>
+                    <h3 className="font-display font-bold text-sm text-[#F5F5F0]">Geographic Hub Density</h3>
+                    <p className="text-[10px] text-[#A0A090] mb-4">Location segmentation of placing customers</p>
+                  </div>
+
+                  <div className="space-y-4 max-h-48 overflow-y-auto pr-1 scrollbar-thin flex-grow">
+                    {Object.entries(orders.reduce((acc: any, o: any) => {
+                      const city = o.customer_city || 'Unknown';
+                      acc[city] = (acc[city] || 0) + (o.total_amount || 0);
+                      return acc;
+                    }, {})).sort((a: any, b: any) => b[1] - a[1]).slice(0, 5).map(([city, amt]: any) => {
+                      const percent = totalRevenue > 0 ? Math.round((amt / totalRevenue) * 100) : 0;
+                      return (
+                        <div key={city} className="space-y-1">
+                          <div className="flex justify-between text-[10px] font-bold">
+                            <span className="capitalize">{city}</span>
+                            <span>₹{amt.toLocaleString('en-IN')} ({percent}%)</span>
+                          </div>
+                          <div className="h-1.5 bg-[#1C1C18] border border-[#2A2A24] rounded-full overflow-hidden">
+                            <div className="h-full bg-[var(--color-gold)] rounded-full" style={{ width: `${percent}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {orders.length === 0 && (
+                      <div className="text-center py-12 text-[#A0A090] text-xs">No geography metrics available</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Progress bars categories */}
+              <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl p-6">
+                <h3 className="font-display font-bold text-sm mb-6 text-[#F5F5F0]">Product Segment sales distribution</h3>
+                <div className="space-y-4">
+                  {Object.entries(products.reduce((acc: any, p: any) => { 
+                    acc[p.category] = (acc[p.category] || 0) + 1; 
+                    return acc; 
+                  }, {})).map(([cat, count]) => {
+                    const percentage = products.length > 0 ? Math.round(((count as number) / products.length) * 100) : 0;
+                    return (
+                      <div key={cat} className="space-y-2">
+                        <div className="flex justify-between items-center text-xs font-semibold">
+                          <span className="capitalize text-[#F5F5F0]">{cat.replace('-', ' ')}</span>
+                          <span className="text-[#A0A090]">{count as number} products ({percentage}%)</span>
+                        </div>
+                        <div className="h-2 bg-[#1C1C18] border border-[#2A2A24] rounded-full overflow-hidden">
+                          <motion.div 
+                            initial={{ width: 0 }} 
+                            animate={{ width: `${percentage}%` }} 
+                            transition={{ duration: 1, ease: 'easeOut' }}
+                            className="h-full bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] rounded-full" 
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ORDERS LOG TAB */}
           {activeTab === 'orders' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -634,7 +1119,7 @@ export default function AdminPage() {
                     placeholder="Search by order ID, name..." 
                     value={orderQuery}
                     onChange={(e) => setOrderQuery(e.target.value)}
-                    className="w-full bg-[#141412] border border-[#2A2A24] rounded-xl py-2 pl-10 pr-4 text-xs text-[#F5F5F0] placeholder-[#A0A090]/40 focus:border-[var(--color-gold)] focus:outline-none transition-colors"
+                    className="w-full bg-[#141412] border border-[#2A2A24] rounded-xl py-2.5 pl-10 pr-4 text-xs text-[#F5F5F0] placeholder-[#A0A090]/40 focus:border-[var(--color-gold)] focus:outline-none transition-colors"
                   />
                 </div>
               </div>
@@ -649,7 +1134,7 @@ export default function AdminPage() {
                         <th className="p-4">Products count</th>
                         <th className="p-4 text-right">Invoiced Amount</th>
                         <th className="p-4 text-center">Order Status</th>
-                        <th className="p-4 text-center">Inspect</th>
+                        <th className="p-4 text-center">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#2A2A24]/40">
@@ -669,12 +1154,19 @@ export default function AdminPage() {
                           <td className="p-4 text-center">
                             <StatusBadge status={o.status} />
                           </td>
-                          <td className="p-4 text-center">
+                          <td className="p-4 text-center flex items-center justify-center gap-2">
                             <button 
                               onClick={() => setInspectedOrder(o)}
-                              className="px-3 py-1.5 bg-[#1C1C18] border border-[#2A2A24] hover:border-[var(--color-gold)] rounded-lg font-bold text-[#F5F5F0] hover:text-[var(--color-gold)] transition-all flex items-center gap-1.5 mx-auto"
+                              className="px-3 py-1.5 bg-[#1C1C18] border border-[#2A2A24] hover:border-[var(--color-gold)] rounded-lg font-bold text-[#F5F5F0] hover:text-[var(--color-gold)] transition-all flex items-center gap-1.5"
                             >
-                              <Eye size={12} /> View Details
+                              <Eye size={12} /> Inspect
+                            </button>
+                            <button 
+                              onClick={() => handleDeleteOrder(o.id, o.order_number)}
+                              className="p-1.5 text-rose-400 hover:bg-rose-450/10 rounded-lg"
+                              title="Delete Order"
+                            >
+                              <Trash2 size={13} />
                             </button>
                           </td>
                         </tr>
@@ -689,89 +1181,7 @@ export default function AdminPage() {
             </motion.div>
           )}
 
-          {/* COMBOS TAB */}
-          {activeTab === 'combos' && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h2 className="text-xl font-bold font-display text-[#F5F5F0]">Combo Packages</h2>
-                  <p className="text-xs text-[#A0A090] mt-1">Manage budget combo giftboxes and featured assortment packs</p>
-                </div>
-              </div>
-
-              {/* Seed Combos card */}
-              <div className="bg-gradient-to-r from-[var(--color-gold)]/5 via-transparent to-transparent border border-[var(--color-gold)]/20 rounded-2xl p-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div>
-                    <h3 className="font-bold text-sm flex items-center gap-2 text-[#F5F5F0]">
-                      <Gift size={16} className="text-[var(--color-gold)]" /> Populate Initial Assortment Combos
-                    </h3>
-                    <p className="text-xs text-[#A0A090] mt-1">Load the young kids, young couple, and premium family combos to seed the database catalog</p>
-                  </div>
-                  <button 
-                    onClick={seedCombos} 
-                    disabled={seedingCombos} 
-                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold text-xs disabled:opacity-50 flex items-center gap-2 hover:shadow-[0_0_15px_rgba(212,175,55,0.15)] transition-all shrink-0"
-                  >
-                    {seedingCombos ? <RefreshCw size={13} className="animate-spin" /> : <Database size={13} />}
-                    {seedingCombos ? 'Seeding Database...' : 'Seed Default Combos'}
-                  </button>
-                </div>
-                {seedComboStatus && (
-                  <p className="mt-3 text-xs font-semibold text-[var(--color-gold)]">{seedComboStatus}</p>
-                )}
-              </div>
-
-              {/* Combo table */}
-              <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-xs">
-                    <thead>
-                      <tr className="border-b border-[#2A2A24] bg-[#1C1C18]/40 text-[#A0A090] font-bold uppercase tracking-wider text-[10px]">
-                        <th className="p-4">Combo Identifier Name</th>
-                        <th className="p-4 text-center">Items Included</th>
-                        <th className="p-4 text-right">Standard MRP</th>
-                        <th className="p-4 text-right">Offer Sale Price</th>
-                        <th className="p-4 text-center">Featured status</th>
-                        <th className="p-4 text-center">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#2A2A24]/40">
-                      {combos.map((c: any) => (
-                        <tr key={c.id} className="hover:bg-[#1C1C18]/20 transition-colors">
-                          <td className="p-4 font-bold text-[#F5F5F0]">{c.combo_name}</td>
-                          <td className="p-4 text-center text-[#A0A090] font-bold">{c.total_items} items</td>
-                          <td className="p-4 text-right line-through text-[#A0A090]">₹{c.original_price}</td>
-                          <td className="p-4 text-right font-bold text-[var(--color-gold)]">₹{c.offer_price}</td>
-                          <td className="p-4 text-center">
-                            {c.featured ? (
-                              <span className="text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/15">Featured</span>
-                            ) : (
-                              <span className="text-[#A0A090]">-</span>
-                            )}
-                          </td>
-                          <td className="p-4 text-center">
-                            <button 
-                              onClick={() => handleDeleteCombo(c.id, c.combo_name)} 
-                              className="p-2 text-rose-400 hover:bg-rose-400/10 border border-transparent hover:border-rose-500/10 rounded-lg transition-colors"
-                              title="Delete Combo"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  {combos.length === 0 && (
-                    <div className="text-center py-16 text-[#A0A090]">No combo packs found. Initialize by clicking &quot;Seed Default Combos&quot; above.</div>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* PRODUCTS TAB */}
+          {/* INVENTORY DESK (PRODUCTS) */}
           {activeTab === 'products' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -780,16 +1190,31 @@ export default function AdminPage() {
                   <p className="text-xs text-[#A0A090] mt-1">Review inventory items, import database tables from spreadsheets or seed defaults</p>
                 </div>
                 
-                {/* Search */}
-                <div className="relative w-full sm:w-72">
-                  <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#A0A090]" />
-                  <input 
-                    type="text" 
-                    placeholder="Search by english english title, category..." 
-                    value={productQuery}
-                    onChange={(e) => setProductQuery(e.target.value)}
-                    className="w-full bg-[#141412] border border-[#2A2A24] rounded-xl py-2 pl-10 pr-4 text-xs text-[#F5F5F0] placeholder-[#A0A090]/40 focus:border-[var(--color-gold)] focus:outline-none transition-colors"
-                  />
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                  {/* Search */}
+                  <div className="relative w-full sm:w-60">
+                    <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#A0A090]" />
+                    <input 
+                      type="text" 
+                      placeholder="Search title, category..." 
+                      value={productQuery}
+                      onChange={(e) => setProductQuery(e.target.value)}
+                      className="w-full bg-[#141412] border border-[#2A2A24] rounded-xl py-2.5 pl-10 pr-4 text-xs text-[#F5F5F0] placeholder-[#A0A090]/40 focus:border-[var(--color-gold)] focus:outline-none transition-colors"
+                    />
+                  </div>
+
+                  <button 
+                    onClick={() => {
+                      setCurrentProduct({
+                        name_en: '', name_ta: '', category: 'single-sound',
+                        mrp: 0, price: 0, in_stock: true, is_featured: false
+                      });
+                      setProductFormOpen(true);
+                    }}
+                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold text-xs flex items-center gap-1.5 hover:shadow-[0_0_15px_rgba(212,175,55,0.15)] transition-all shrink-0"
+                  >
+                    <Plus size={14} /> Add Crackers
+                  </button>
                 </div>
               </div>
 
@@ -846,11 +1271,11 @@ export default function AdminPage() {
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
                       <tr className="border-b border-[#2A2A24] bg-[#1C1C18]/40 text-[#A0A090] font-bold uppercase tracking-wider text-[10px]">
-                        <th className="p-4">English / Tamil Label Name</th>
+                        <th className="p-4">Label Name</th>
                         <th className="p-4">Category</th>
                         <th className="p-4 text-right">Standard MRP</th>
                         <th className="p-4 text-right">Discounted Price</th>
-                        <th className="p-4 text-center">Discount Saved</th>
+                        <th className="p-4 text-center">Discount saved</th>
                         <th className="p-4 text-center">Status</th>
                         <th className="p-4 text-center">Actions</th>
                       </tr>
@@ -873,13 +1298,23 @@ export default function AdminPage() {
                               <span className="text-rose-400 font-bold bg-rose-500/10 px-2.5 py-0.5 rounded-full border border-rose-500/15 text-[10px]">Out of Stock</span>
                             )}
                           </td>
-                          <td className="p-4 text-center">
+                          <td className="p-4 text-center flex items-center justify-center gap-1">
+                            <button 
+                              onClick={() => {
+                                setCurrentProduct(p);
+                                setProductFormOpen(true);
+                              }}
+                              className="p-2 text-[var(--color-gold)] hover:bg-[#1C1C18] rounded-lg"
+                              title="Edit Product"
+                            >
+                              <Edit size={13} />
+                            </button>
                             <button 
                               onClick={() => handleDeleteProduct(p.id, p.name_en)} 
-                              className="p-2 text-rose-400 hover:bg-rose-400/10 border border-transparent hover:border-rose-500/10 rounded-lg transition-colors"
+                              className="p-2 text-rose-455 hover:bg-rose-450/10 rounded-lg transition-colors"
                               title="Delete Product"
                             >
-                              <Trash2 size={14} />
+                              <Trash2 size={13} />
                             </button>
                           </td>
                         </tr>
@@ -890,6 +1325,177 @@ export default function AdminPage() {
                     <div className="text-center py-16 text-[#A0A090]">No products found matching the query list</div>
                   )}
                 </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* COMBOS TAB */}
+          {activeTab === 'combos' && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-xl font-bold font-display text-[#F5F5F0]">Combo Packages</h2>
+                  <p className="text-xs text-[#A0A090] mt-1">Manage budget combo giftboxes and featured assortment packs</p>
+                </div>
+                
+                <button 
+                  onClick={() => {
+                    setCurrentCombo({
+                      combo_name: '', total_items: 0, original_price: 0,
+                      offer_price: 0, combo_type: 'Special Box', description: '',
+                      products: [], featured: false
+                    });
+                    setComboFormOpen(true);
+                  }}
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold text-xs flex items-center gap-1.5 hover:shadow-[0_0_15px_rgba(212,175,55,0.15)] transition-all shrink-0"
+                >
+                  <Plus size={14} /> Add Combo
+                </button>
+              </div>
+
+              {/* Seed Combos card */}
+              <div className="bg-gradient-to-r from-[var(--color-gold)]/5 via-transparent to-transparent border border-[var(--color-gold)]/20 rounded-2xl p-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div>
+                    <h3 className="font-bold text-sm flex items-center gap-2 text-[#F5F5F0]">
+                      <Gift size={16} className="text-[var(--color-gold)]" /> Populate Initial Assortment Combos
+                    </h3>
+                    <p className="text-xs text-[#A0A090] mt-1">Load the young kids, young couple, and premium family combos to seed the database catalog</p>
+                  </div>
+                  <button 
+                    onClick={seedCombos} 
+                    disabled={seedingCombos} 
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold text-xs disabled:opacity-50 flex items-center gap-2 hover:shadow-[0_0_15px_rgba(212,175,55,0.15)] transition-all shrink-0"
+                  >
+                    {seedingCombos ? <RefreshCw size={13} className="animate-spin" /> : <Database size={13} />}
+                    {seedingCombos ? 'Seeding Database...' : 'Seed Default Combos'}
+                  </button>
+                </div>
+                {seedComboStatus && (
+                  <p className="mt-3 text-xs font-semibold text-[var(--color-gold)]">{seedComboStatus}</p>
+                )}
+              </div>
+
+              {/* Combo table */}
+              <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="border-b border-[#2A2A24] bg-[#1C1C18]/40 text-[#A0A090] font-bold uppercase tracking-wider text-[10px]">
+                        <th className="p-4">Combo Identifier Name</th>
+                        <th className="p-4 text-center">Items Included</th>
+                        <th className="p-4 text-right">Standard MRP</th>
+                        <th className="p-4 text-right">Offer Sale Price</th>
+                        <th className="p-4 text-center">Featured status</th>
+                        <th className="p-4 text-center">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#2A2A24]/40">
+                      {combos.map((c: any) => (
+                        <tr key={c.id} className="hover:bg-[#1C1C18]/20 transition-colors">
+                          <td className="p-4 font-bold text-[#F5F5F0]">{c.combo_name}</td>
+                          <td className="p-4 text-center text-[#A0A090] font-bold">{c.total_items} items</td>
+                          <td className="p-4 text-right line-through text-[#A0A090]">₹{c.original_price}</td>
+                          <td className="p-4 text-right font-bold text-[var(--color-gold)]">₹{c.offer_price}</td>
+                          <td className="p-4 text-center">
+                            {c.featured ? (
+                              <span className="text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/15">Featured</span>
+                            ) : (
+                              <span className="text-[#A0A090]">-</span>
+                            )}
+                          </td>
+                          <td className="p-4 text-center flex items-center justify-center gap-1">
+                            <button 
+                              onClick={() => {
+                                setCurrentCombo(c);
+                                setComboFormOpen(true);
+                              }}
+                              className="p-2 text-[var(--color-gold)] hover:bg-[#1C1C18] rounded-lg"
+                              title="Edit Combo"
+                            >
+                              <Edit size={13} />
+                            </button>
+                            <button 
+                              onClick={() => handleDeleteCombo(c.id, c.combo_name)} 
+                              className="p-2 text-rose-455 hover:bg-rose-450/10 rounded-lg transition-colors"
+                              title="Delete Combo"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {combos.length === 0 && (
+                    <div className="text-center py-16 text-[#A0A090]">No combo packs found. Initialize by clicking &quot;Seed Default Combos&quot; above.</div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* CATEGORIES DESK TAB */}
+          {activeTab === 'categories' && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-xl font-bold font-display text-[#F5F5F0]">Product Categories</h2>
+                  <p className="text-xs text-[#A0A090] mt-1">Manage catalog filters and sections displayed to customers</p>
+                </div>
+                
+                <button 
+                  onClick={() => {
+                    setCurrentCategory({ id: '', label: '', emoji: '🎆', sort_order: 0, isNew: true });
+                    setCategoryFormOpen(true);
+                  }}
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold text-xs flex items-center gap-1.5 hover:shadow-[0_0_15px_rgba(212,175,55,0.15)] transition-all"
+                >
+                  <Plus size={14} /> Add Category
+                </button>
+              </div>
+
+              <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl overflow-hidden">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-[#2A2A24] bg-[#1C1C18]/40 text-[#A0A090] font-bold uppercase tracking-wider text-[10px]">
+                      <th className="p-4">Emoji</th>
+                      <th className="p-4">Category Identifier</th>
+                      <th className="p-4">Display Label Name</th>
+                      <th className="p-4 text-center">Sort Order</th>
+                      <th className="p-4 text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#2A2A24]/40">
+                    {categories.map((cat) => (
+                      <tr key={cat.id} className="hover:bg-[#1C1C18]/20 transition-colors">
+                        <td className="p-4 text-lg">{cat.emoji || '🎆'}</td>
+                        <td className="p-4 font-mono font-bold text-[#A0A090]">{cat.id}</td>
+                        <td className="p-4 font-bold text-[#F5F5F0]">{cat.label}</td>
+                        <td className="p-4 text-center font-bold text-[var(--color-gold)]">{cat.sort_order}</td>
+                        <td className="p-4 text-center flex items-center justify-center gap-1">
+                          <button 
+                            onClick={() => {
+                              setCurrentCategory({ ...cat, isNew: false });
+                              setCategoryFormOpen(true);
+                            }}
+                            className="p-2 text-[var(--color-gold)] hover:bg-[#1C1C18] rounded-lg"
+                            title="Edit Category"
+                          >
+                            <Edit size={13} />
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteCategory(cat.id, cat.label)}
+                            className="p-2 text-rose-455 hover:bg-rose-450/10 rounded-lg"
+                            title="Delete Category"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </motion.div>
           )}
@@ -958,69 +1564,313 @@ export default function AdminPage() {
             </motion.div>
           )}
 
-          {/* ANALYTICS TAB */}
-          {activeTab === 'analytics' && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+          {/* CUSTOMERS BASE TAB */}
+          {activeTab === 'customers' && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
               <div>
-                <h2 className="text-xl font-bold font-display text-[#F5F5F0]">Market Intelligence Analytics</h2>
-                <p className="text-xs text-[#A0A090] mt-1">Explore sales performance charts, conversion rates, and inventory segmentation statistics</p>
+                <h2 className="text-xl font-bold font-display text-[#F5F5F0]">Customer Profiles</h2>
+                <p className="text-xs text-[#A0A090] mt-1">Profiles compiled from orders logs</p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard icon={TrendingUp} label="Order Conversion Rate" value={orders.length > 0 ? `${Math.round((confirmedOrders / orders.length) * 100)}%` : '0%'} color="bg-emerald-500/10 text-emerald-400" />
-                <StatCard icon={DollarSign} label="Average Order Value" value={orders.length > 0 ? `₹${Math.round(totalRevenue / orders.length).toLocaleString('en-IN')}` : '₹0'} color="bg-blue-500/10 text-blue-400" />
-                <StatCard icon={Users} label="Total Enquiries Saved" value={enquiries.length} color="bg-purple-500/10 text-purple-400" />
-                <StatCard icon={Mail} label="Inbox Count" value={messages.length} color="bg-amber-500/10 text-amber-400" />
-              </div>
-
-              {/* Progress bars categories */}
-              <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl p-6">
-                <h3 className="font-display font-bold text-sm mb-6 text-[#F5F5F0]">Products Segmentation by Category</h3>
-                <div className="space-y-4">
-                  {Object.entries(products.reduce((acc: any, p: any) => { 
-                    acc[p.category] = (acc[p.category] || 0) + 1; 
-                    return acc; 
-                  }, {})).map(([cat, count]) => {
-                    const percentage = products.length > 0 ? Math.round(((count as number) / products.length) * 100) : 0;
-                    return (
-                      <div key={cat} className="space-y-2">
-                        <div className="flex justify-between items-center text-xs font-semibold">
-                          <span className="capitalize text-[#F5F5F0]">{cat.replace('-', ' ')}</span>
-                          <span className="text-[#A0A090]">{count as number} products ({percentage}%)</span>
-                        </div>
-                        <div className="h-2 bg-[#1C1C18] border border-[#2A2A24] rounded-full overflow-hidden">
-                          <motion.div 
-                            initial={{ width: 0 }} 
-                            animate={{ width: `${percentage}%` }} 
-                            transition={{ duration: 1, ease: 'easeOut' }}
-                            className="h-full bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] rounded-full" 
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Orders status grids */}
-              <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl p-6">
-                <h3 className="font-display font-bold text-sm mb-6 text-[#F5F5F0]">Orders Categorization Status</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                  {['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'].map(s => {
-                    const count = orders.filter((o: any) => o.status === s).length;
-                    return (
-                      <div key={s} className="bg-[#1C1C18]/60 border border-[#2A2A24] p-4 rounded-xl text-center flex flex-col justify-between items-center gap-3">
-                        <div className="text-xl font-bold font-display text-[#F5F5F0]">{count}</div>
-                        <StatusBadge status={s} />
-                      </div>
-                    );
-                  })}
-                </div>
+              <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl overflow-hidden">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-[#2A2A24] bg-[#1C1C18]/40 text-[#A0A090] font-bold uppercase tracking-wider text-[10px]">
+                      <th className="p-4">Customer Name</th>
+                      <th className="p-4">Phone Number</th>
+                      <th className="p-4">Email Address</th>
+                      <th className="p-4 text-center">Orders Placed</th>
+                      <th className="p-4 text-right">Total Net Worth</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#2A2A24]/40">
+                    {customersList.map((c: any) => (
+                      <tr key={c.phone} className="hover:bg-[#1C1C18]/20 transition-colors">
+                        <td className="p-4 font-bold text-[#F5F5F0]">{c.name}</td>
+                        <td className="p-4 font-mono font-semibold">{c.phone}</td>
+                        <td className="p-4 text-[#A0A090]">{c.email}</td>
+                        <td className="p-4 text-center font-bold text-[var(--color-gold)]">{c.ordersCount} orders</td>
+                        <td className="p-4 text-right font-bold text-emerald-400">₹{c.totalSpent.toLocaleString('en-IN')}</td>
+                      </tr>
+                    ))}
+                    {customersList.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="text-center py-16 text-[#A0A090]">No customers recorded yet</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </motion.div>
           )}
 
-          {/* DIAGNOSTICS TAB */}
+          {/* BANK ACCOUNTS TAB */}
+          {activeTab === 'bank-accounts' && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-xl font-bold font-display text-[#F5F5F0]">Bank Accounts</h2>
+                  <p className="text-xs text-[#A0A090] mt-1">Manage payment transfer options shown during client checkouts</p>
+                </div>
+                
+                <button 
+                  onClick={() => {
+                    setCurrentBank({ bank_name: '', branch: '', holder_name: '', account_number: '', ifsc_code: '', gpay_number: '', phonepe_number: '' });
+                    setBankFormOpen(true);
+                  }}
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold text-xs flex items-center gap-1.5 hover:shadow-[0_0_15px_rgba(212,175,55,0.15)] transition-all"
+                >
+                  <Plus size={14} /> Add Bank Details
+                </button>
+              </div>
+
+              <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl overflow-hidden">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-[#2A2A24] bg-[#1C1C18]/40 text-[#A0A090] font-bold uppercase tracking-wider text-[10px]">
+                      <th className="p-4">Bank Name</th>
+                      <th className="p-4">Branch</th>
+                      <th className="p-4">Holder Name</th>
+                      <th className="p-4">Account Number</th>
+                      <th className="p-4">IFSC Code</th>
+                      <th className="p-4">GPay / PhonePe</th>
+                      <th className="p-4 text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#2A2A24]/40">
+                    {bankAccounts.map((b) => (
+                      <tr key={b.id} className="hover:bg-[#1C1C18]/20 transition-colors">
+                        <td className="p-4 font-bold text-[#F5F5F0]">{b.bank_name}</td>
+                        <td className="p-4 text-[#A0A090] font-medium">{b.branch}</td>
+                        <td className="p-4 font-bold">{b.holder_name}</td>
+                        <td className="p-4 font-mono font-semibold">{b.account_number}</td>
+                        <td className="p-4 font-mono font-semibold text-[var(--color-gold)]">{b.ifsc_code}</td>
+                        <td className="p-4 text-[#A0A090]">{b.gpay_number || '-'}</td>
+                        <td className="p-4 text-center flex items-center justify-center gap-1">
+                          <button 
+                            onClick={() => {
+                              setCurrentBank(b);
+                              setBankFormOpen(true);
+                            }}
+                            className="p-2 text-[var(--color-gold)] hover:bg-[#1C1C18] rounded-lg"
+                            title="Edit Bank Details"
+                          >
+                            <Edit size={13} />
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteBank(b.id, b.bank_name)}
+                            className="p-2 text-rose-455 hover:bg-rose-450/10 rounded-lg"
+                            title="Delete Bank Details"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+
+          {/* HOMEPAGE BANNERS / SLIDERS */}
+          {activeTab === 'sliders' && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-xl font-bold font-display text-[#F5F5F0]">Homepage Slider Banners</h2>
+                  <p className="text-xs text-[#A0A090] mt-1">Manage glowing visual sliders featured on the client web pages</p>
+                </div>
+                
+                <button 
+                  onClick={() => {
+                    setCurrentSlider({ image_url: '', link_url: '', title: '', sort_order: 0 });
+                    setSliderFormOpen(true);
+                  }}
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold text-xs flex items-center gap-1.5 hover:shadow-[0_0_15px_rgba(212,175,55,0.15)] transition-all"
+                >
+                  <Plus size={14} /> Add Banner
+                </button>
+              </div>
+
+              <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl overflow-hidden">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-[#2A2A24] bg-[#1C1C18]/40 text-[#A0A090] font-bold uppercase tracking-wider text-[10px]">
+                      <th className="p-4">Sort Order</th>
+                      <th className="p-4">Banner Graphic</th>
+                      <th className="p-4">Header Title</th>
+                      <th className="p-4">Action URL</th>
+                      <th className="p-4 text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#2A2A24]/40">
+                    {sliders.map((s) => (
+                      <tr key={s.id} className="hover:bg-[#1C1C18]/20 transition-colors">
+                        <td className="p-4 text-center font-bold text-[var(--color-gold)]">{s.sort_order}</td>
+                        <td className="p-4">
+                          <div className="relative w-28 h-12 bg-black rounded-lg overflow-hidden border border-[#2A2A24]">
+                            <img src={s.image_url} alt="" className="object-cover w-full h-full" />
+                          </div>
+                        </td>
+                        <td className="p-4 font-bold text-[#F5F5F0]">{s.title || '-'}</td>
+                        <td className="p-4 text-xs font-mono text-[#A0A090]">{s.link_url || '-'}</td>
+                        <td className="p-4 text-center flex items-center justify-center gap-1">
+                          <button 
+                            onClick={() => {
+                              setCurrentSlider(s);
+                              setSliderFormOpen(true);
+                            }}
+                            className="p-2 text-[var(--color-gold)] hover:bg-[#1C1C18] rounded-lg"
+                            title="Edit Banner"
+                          >
+                            <Edit size={13} />
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteSlider(s.id)}
+                            className="p-2 text-rose-455 hover:bg-rose-450/10 rounded-lg"
+                            title="Delete Banner"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {sliders.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="text-center py-16 text-[#A0A090]">No homepage banners uploaded yet</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          )}
+
+          {/* SETTINGS & CONFIG TAB */}
+          {activeTab === 'settings' && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+              <div>
+                <h2 className="text-xl font-bold font-display text-[#F5F5F0]">Global System Configurations</h2>
+                <p className="text-xs text-[#A0A090] mt-1">Manage global discount rates, minimum orders, WhatsApp parameters, and company addresses</p>
+              </div>
+
+              <form onSubmit={handleSaveSettings} className="bg-[#141412] border border-[#2A2A24] rounded-2xl p-8 space-y-6 max-w-3xl">
+                <div className="grid sm:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-[10px] font-bold text-[#A0A090] mb-2 uppercase tracking-wider">Global Discount (%) *</label>
+                    <input 
+                      required 
+                      type="number" 
+                      min="0" max="100" 
+                      value={settings.global_discount} 
+                      onChange={(e) => setSettings({...settings, global_discount: e.target.value})} 
+                      className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-4 py-3 text-xs text-[#F5F5F0] focus:border-[var(--color-gold)] focus:outline-none transition-colors" 
+                    />
+                    <span className="text-[9px] text-[#A0A090] mt-1.5 block leading-normal">
+                      ⚠️ Updates prices for ALL catalog items off MRP dynamically upon save.
+                    </span>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-[#A0A090] mb-2 uppercase tracking-wider">Minimum Order Value (₹) *</label>
+                    <input 
+                      required 
+                      type="number" 
+                      min="0" 
+                      value={settings.min_order_value} 
+                      onChange={(e) => setSettings({...settings, min_order_value: e.target.value})} 
+                      className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-4 py-3 text-xs text-[#F5F5F0] focus:border-[var(--color-gold)] focus:outline-none transition-colors" 
+                    />
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-[10px] font-bold text-[#A0A090] mb-2 uppercase tracking-wider">Company Registered Name *</label>
+                    <input 
+                      required 
+                      value={settings.company_name} 
+                      onChange={(e) => setSettings({...settings, company_name: e.target.value})} 
+                      className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-4 py-3 text-xs text-[#F5F5F0] focus:border-[var(--color-gold)] focus:outline-none transition-colors" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-[#A0A090] mb-2 uppercase tracking-wider">Support/Enquiry Email Address *</label>
+                    <input 
+                      required 
+                      type="email" 
+                      value={settings.email_address} 
+                      onChange={(e) => setSettings({...settings, email_address: e.target.value})} 
+                      className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-4 py-3 text-xs text-[#F5F5F0] focus:border-[var(--color-gold)] focus:outline-none transition-colors" 
+                    />
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-[10px] font-bold text-[#A0A090] mb-2 uppercase tracking-wider">WhatsApp Contact Number *</label>
+                    <input 
+                      required 
+                      value={settings.whatsapp_number} 
+                      onChange={(e) => setSettings({...settings, whatsapp_number: e.target.value})} 
+                      className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-4 py-3 text-xs text-[#F5F5F0] focus:border-[var(--color-gold)] focus:outline-none transition-colors" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-[#A0A090] mb-2 uppercase tracking-wider">Mobile Number Line 1 *</label>
+                    <input 
+                      required 
+                      value={settings.mobile_number_1} 
+                      onChange={(e) => setSettings({...settings, mobile_number_1: e.target.value})} 
+                      className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-4 py-3 text-xs text-[#F5F5F0] focus:border-[var(--color-gold)] focus:outline-none transition-colors" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-[#A0A090] mb-2 uppercase tracking-wider">Mobile Number Line 2</label>
+                    <input 
+                      value={settings.mobile_number_2} 
+                      onChange={(e) => setSettings({...settings, mobile_number_2: e.target.value})} 
+                      className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-4 py-3 text-xs text-[#F5F5F0] focus:border-[var(--color-gold)] focus:outline-none transition-colors" 
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-[#A0A090] mb-2 uppercase tracking-wider">Company Physical Address *</label>
+                  <textarea 
+                    required 
+                    rows={2} 
+                    value={settings.company_address} 
+                    onChange={(e) => setSettings({...settings, company_address: e.target.value})} 
+                    className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-4 py-3 text-xs text-[#F5F5F0] focus:border-[var(--color-gold)] focus:outline-none transition-colors resize-none" 
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-[#A0A090] mb-2 uppercase tracking-wider">Header Alert Marquee Text</label>
+                  <input 
+                    value={settings.marquee} 
+                    onChange={(e) => setSettings({...settings, marquee: e.target.value})} 
+                    className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-4 py-3 text-xs text-[#F5F5F0] focus:border-[var(--color-gold)] focus:outline-none transition-colors" 
+                    placeholder="E.g., Grand Diwali festival booking open! Place your order soon."
+                  />
+                </div>
+
+                <div className="flex items-center justify-between pt-4">
+                  <span className="text-xs text-[var(--color-gold)] font-bold">{settingsStatus}</span>
+                  <button 
+                    type="submit" 
+                    disabled={savingSettings}
+                    className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold text-xs hover:shadow-[0_0_20px_rgba(212,175,55,0.2)] disabled:opacity-50 shrink-0"
+                  >
+                    {savingSettings ? 'Saving Settings...' : 'Save Configuration'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          )}
+
+          {/* SYSTEM DIAGNOSTICS TAB */}
           {activeTab === 'diagnostics' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
               <div>
@@ -1032,43 +1882,26 @@ export default function AdminPage() {
                 {/* Error Logs Card */}
                 <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl p-6 flex flex-col h-[500px]">
                   <div className="flex items-center justify-between mb-5 shrink-0">
-                    <h3 className="font-display font-bold text-base text-[#F5F5F0] flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
+                    <h3 className="font-display font-bold text-xs text-[#F5F5F0] flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
                       Trapped Error Logs ({errorLogs.length})
                     </h3>
-                    <span className="text-[10px] text-rose-400 font-bold uppercase tracking-wider bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded-full">
-                      Real-time
-                    </span>
                   </div>
                   
                   <div className="flex-grow overflow-y-auto divide-y divide-[#2A2A24]/60 pr-1 scrollbar-thin">
                     {errorLogs.map((log) => (
                       <div key={log.id} className="py-3.5 space-y-2">
                         <div className="flex justify-between items-start">
-                          <span className="font-mono text-[10px] font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded-md">
+                          <span className="font-mono text-[9px] font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded-md">
                             {log.error_type}
                           </span>
-                          <span className="text-[9px] text-[#A0A090] font-semibold">
+                          <span className="text-[8px] text-[#A0A090] font-semibold">
                             {new Date(log.created_at).toLocaleString()}
                           </span>
                         </div>
-                        <p className="text-xs text-[#F5F5F0] font-medium leading-relaxed">
+                        <p className="text-[11px] text-[#F5F5F0] font-medium leading-normal">
                           {log.message}
                         </p>
-                        {log.context && (
-                          <div className="bg-[#1C1C18] border border-[#2A2A24]/60 rounded-lg p-2.5 font-mono text-[9px] text-[var(--color-gold)] overflow-x-auto">
-                            <span className="text-white/40 block mb-1 font-bold text-[8px] uppercase tracking-wider">Error Context:</span>
-                            {JSON.stringify(log.context, null, 2)}
-                          </div>
-                        )}
-                        {log.stack && (
-                          <details className="text-[9px] text-white/40 cursor-pointer">
-                            <summary className="hover:text-white transition-colors">View Stack Trace</summary>
-                            <pre className="mt-2 p-2 bg-black/40 border border-[#2A2A24]/40 rounded-lg overflow-x-auto font-mono text-[8px] whitespace-pre">
-                              {log.stack}
-                            </pre>
-                          </details>
-                        )}
                       </div>
                     ))}
                     {errorLogs.length === 0 && (
@@ -1080,40 +1913,30 @@ export default function AdminPage() {
                 {/* Analytics Events Card */}
                 <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl p-6 flex flex-col h-[500px]">
                   <div className="flex items-center justify-between mb-5 shrink-0">
-                    <h3 className="font-display font-bold text-base text-[#F5F5F0] flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <h3 className="font-display font-bold text-xs text-[#F5F5F0] flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                       Live Event Activity Stream ({analyticsEvents.length})
                     </h3>
-                    <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-                      Live
-                    </span>
                   </div>
 
                   <div className="flex-grow overflow-y-auto divide-y divide-[#2A2A24]/60 pr-1 scrollbar-thin">
                     {analyticsEvents.map((event) => (
                       <div key={event.id} className="py-3.5 space-y-1.5">
                         <div className="flex justify-between items-start">
-                          <span className="font-mono text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+                          <span className="font-mono text-[9px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
                             {event.event_name}
                           </span>
-                          <span className="text-[9px] text-[#A0A090] font-semibold">
+                          <span className="text-[8px] text-[#A0A090] font-semibold">
                             {new Date(event.created_at).toLocaleString()}
                           </span>
                         </div>
-                        {event.category && (
-                          <span className="text-[9px] text-[#A0A090] uppercase font-bold tracking-wider block">
-                            Category: {event.category}
-                          </span>
-                        )}
-                        {event.metadata && (
-                          <div className="bg-[#1C1C18] border border-[#2A2A24]/60 rounded-lg p-2.5 font-mono text-[9px] text-emerald-300/80 overflow-x-auto">
-                            {JSON.stringify(event.metadata, null, 2)}
-                          </div>
-                        )}
+                        <p className="text-[11px] text-[#A0A090]">
+                          Context: {JSON.stringify(event.event_data)}
+                        </p>
                       </div>
                     ))}
                     {analyticsEvents.length === 0 && (
-                      <div className="text-[#A0A090] text-xs text-center py-24">No events registered yet</div>
+                      <div className="text-[#A0A090] text-xs text-center py-24">No live event signals detected</div>
                     )}
                   </div>
                 </div>
@@ -1124,163 +1947,414 @@ export default function AdminPage() {
         </div>
       </main>
 
-      {/* FLYOUT ORDER INSPECTOR DRAWER */}
+      {/* INSPECTED ORDER PANEL (FLYOUT) */}
       <AnimatePresence>
         {inspectedOrder && (
           <>
-            {/* Backdrop */}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.6 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black z-40" onClick={() => setInspectedOrder(null)} />
             <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }} 
-              className="fixed inset-0 bg-black/75 backdrop-blur-sm z-[90]" 
-              onClick={() => setInspectedOrder(null)} 
-            />
-            {/* Drawer */}
-            <motion.div 
-              initial={{ x: '100%' }} 
-              animate={{ x: 0 }} 
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
-              className="fixed top-0 right-0 bottom-0 w-full sm:w-[500px] bg-[#141412] border-l border-[#2A2A24] z-[91] shadow-2xl flex flex-col"
+              initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} 
+              transition={{ type: 'spring', damping: 25 }}
+              className="fixed top-0 right-0 bottom-0 w-full sm:w-[500px] bg-[#141412] border-l border-[#2A2A24] shadow-2xl z-50 p-8 flex flex-col justify-between overflow-y-auto"
             >
-              {/* Drawer Header */}
-              <div className="p-6 border-b border-[#2A2A24] flex items-center justify-between">
-                <div>
-                  <h3 className="font-display font-bold text-base text-[#F5F5F0]">{inspectedOrder.order_number}</h3>
-                  <p className="text-[10px] text-[#A0A090] mt-0.5">Recorded: {new Date(inspectedOrder.created_at).toLocaleString()}</p>
+              <div className="space-y-6">
+                <div className="flex items-center justify-between border-b border-[#2A2A24] pb-4">
+                  <div>
+                    <h3 className="font-display font-bold text-sm text-[var(--color-gold)]">{inspectedOrder.order_number}</h3>
+                    <p className="text-[9px] text-[#A0A090] uppercase tracking-wider font-bold">Placed on {new Date(inspectedOrder.created_at).toLocaleDateString()}</p>
+                  </div>
+                  <button onClick={() => setInspectedOrder(null)} className="p-2 hover:bg-[#1C1C18] rounded-xl text-[#A0A090] hover:text-[#F5F5F0]"><X size={16} /></button>
                 </div>
-                <button 
-                  onClick={() => setInspectedOrder(null)}
-                  className="p-2 rounded-lg hover:bg-[#1C1C18] text-[#A0A090] hover:text-[#F5F5F0] transition-colors border border-transparent hover:border-[#2A2A24]"
-                >
-                  <X size={18} />
-                </button>
-              </div>
 
-              {/* Drawer Scrollable Body */}
-              <div className="flex-1 p-6 overflow-y-auto space-y-6 text-xs">
-                
-                {/* Status Timeline Progress */}
-                <div className="bg-[#1C1C18]/50 border border-[#2A2A24] rounded-2xl p-5 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-[#F5F5F0] uppercase tracking-wider text-[10px]">Track Progress & Status</span>
-                    <StatusBadge status={inspectedOrder.status} />
+                <div className="space-y-4 text-xs">
+                  {/* Customer Block */}
+                  <div>
+                    <div className="text-[10px] text-[#A0A090] font-bold uppercase tracking-wider mb-2">Customer Profile</div>
+                    <div className="bg-[#1C1C18]/60 border border-[#2A2A24] rounded-xl p-4 space-y-2">
+                      <div className="font-bold text-[#F5F5F0]">{inspectedOrder.customer_name}</div>
+                      <div>📞 {inspectedOrder.customer_phone}</div>
+                      <div>✉️ {inspectedOrder.customer_email || 'N/A'}</div>
+                      <div className="pt-2 border-t border-[#2A2A24]/40 mt-1 flex gap-2 items-start text-[#A0A090]">
+                        <MapPin size={12} className="shrink-0 mt-0.5 text-[var(--color-gold)]" />
+                        <span>{[inspectedOrder.customer_address, inspectedOrder.customer_city, inspectedOrder.customer_pincode].filter(Boolean).join(', ')}</span>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Status selection update */}
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] text-[#A0A090] font-bold uppercase tracking-wider">Update Order Status</label>
-                    <select 
-                      value={inspectedOrder.status} 
-                      onChange={(e) => updateOrderStatus(inspectedOrder.id, e.target.value)}
-                      className="w-full bg-[#1C1C18] border border-[#2A2A24] text-[#F5F5F0] font-bold rounded-xl py-2 px-3 focus:outline-none focus:border-[var(--color-gold)] transition-colors text-xs"
-                    >
-                      {['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'].map(s => (
-                        <option key={s} value={s}>{s.toUpperCase()}</option>
+                  {/* Items list */}
+                  <div>
+                    <div className="text-[10px] text-[#A0A090] font-bold uppercase tracking-wider mb-2">Ordered Assortment ({Array.isArray(inspectedOrder.items) ? inspectedOrder.items.length : 0})</div>
+                    <div className="bg-[#1C1C18]/60 border border-[#2A2A24] rounded-xl p-4 divide-y divide-[#2A2A24]/40 max-h-48 overflow-y-auto scrollbar-thin">
+                      {Array.isArray(inspectedOrder.items) && inspectedOrder.items.map((i: any, idx: number) => (
+                        <div key={idx} className="flex justify-between py-2 text-[11px] first:pt-0 last:pb-0">
+                          <span>{i.quantity}x {i.name || i.product_name}</span>
+                          <span className="font-bold">₹{((i.price || 0) * (i.quantity || 1)).toLocaleString('en-IN')}</span>
+                        </div>
                       ))}
-                    </select>
+                    </div>
+                  </div>
+
+                  {/* Summary */}
+                  <div className="pt-2">
+                    <div className="bg-[#1C1C18]/40 border border-[#2A2A24]/60 rounded-xl p-4 space-y-2">
+                      <div className="flex justify-between text-[#A0A090]"><span>Subtotal</span><span>₹{(inspectedOrder.subtotal || inspectedOrder.total_amount).toLocaleString('en-IN')}</span></div>
+                      <div className="flex justify-between text-emerald-400"><span>Savings discount</span><span>-₹{(inspectedOrder.discount_total || 0).toLocaleString('en-IN')}</span></div>
+                      <div className="flex justify-between font-bold text-sm pt-2 border-t border-[#2A2A24]/60"><span>Grand Total</span><span className="text-[var(--color-gold)]">₹{inspectedOrder.total_amount?.toLocaleString('en-IN')}</span></div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Customer Details Box */}
-                <div className="bg-[#1C1C18]/30 border border-[#2A2A24] rounded-2xl p-5 space-y-3">
-                  <h4 className="font-bold text-[10px] text-[var(--color-gold)] uppercase tracking-wider border-b border-[#2A2A24] pb-2">Customer Details</h4>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                      <User size={13} className="text-[#A0A090]" />
-                      <span className="font-bold text-[#F5F5F0]">{inspectedOrder.customer_name}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Mail size={13} className="text-[#A0A090]" />
-                      <span className="text-[#A0A090]">{inspectedOrder.customer_email}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Clock size={13} className="text-[#A0A090]" />
-                      <span className="text-[#A0A090]">{inspectedOrder.customer_phone}</span>
-                    </div>
-                    <div className="flex items-center gap-3 pt-1.5 border-t border-[#2A2A24]/40 mt-1">
-                      <DollarSign size={13} className="text-[#A0A090]" />
-                      <span className="text-[#A0A090]">Payment Method: <strong className="text-[var(--color-gold)] font-bold">Bank Transfer / GPay / PhonePe</strong></span>
-                    </div>
-                    {inspectedOrder.customer_address && (
-                      <div className="flex items-start gap-3 mt-1 pt-1 border-t border-[#2A2A24]/40">
-                        <MapPin size={13} className="text-[#A0A090] mt-0.5 shrink-0" />
-                        <div className="text-[#A0A090] leading-relaxed">
-                          {inspectedOrder.customer_address}
-                          {(inspectedOrder.customer_city || inspectedOrder.customer_pincode) && (
-                            <div className="font-semibold text-[#F5F5F0] mt-0.5">
-                              {inspectedOrder.customer_city} {inspectedOrder.customer_pincode && ` - ${inspectedOrder.customer_pincode}`}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Ordered Items Table */}
-                <div className="bg-[#1C1C18]/30 border border-[#2A2A24] rounded-2xl p-5 space-y-3">
-                  <h4 className="font-bold text-[10px] text-[var(--color-gold)] uppercase tracking-wider border-b border-[#2A2A24] pb-2">Ordered Items ({inspectedOrder.items?.length || 0})</h4>
-                  
-                  <div className="divide-y divide-[#2A2A24]/40">
-                    {(inspectedOrder.items || []).map((item: any, idx: number) => (
-                      <div key={idx} className="py-2.5 flex justify-between items-center gap-2">
-                        <div>
-                          <div className="font-bold text-[#F5F5F0]">{item.name || item.product_name}</div>
-                          <div className="text-[10px] text-[#A0A090] mt-0.5">₹{item.price} &times; {item.quantity} units</div>
-                        </div>
-                        <div className="font-bold text-[#F5F5F0]">₹{(item.price * item.quantity).toLocaleString('en-IN')}</div>
-                      </div>
+                {/* Status selection */}
+                <div>
+                  <div className="text-[10px] text-[#A0A090] font-bold uppercase tracking-wider mb-2.5">Progress Stage Status</div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'].map(s => (
+                      <button 
+                        key={s} 
+                        onClick={() => updateOrderStatus(inspectedOrder.id, s)}
+                        className={`py-2 rounded-lg font-bold text-[10px] uppercase border transition-all ${
+                          inspectedOrder.status === s 
+                            ? 'bg-[var(--color-gold)] text-[#1a1400] border-[var(--color-gold)]' 
+                            : 'bg-[#1C1C18] border-[#2A2A24] text-[#A0A090] hover:text-[#F5F5F0]'
+                        }`}
+                      >
+                        {s}
+                      </button>
                     ))}
                   </div>
-
-                  {/* Calculations */}
-                  <div className="pt-3 border-t border-[#2A2A24] space-y-2 text-xs">
-                    <div className="flex justify-between text-[#A0A090]">
-                      <span>Subtotal amount</span>
-                      <span>₹{(inspectedOrder.subtotal || inspectedOrder.total_amount).toLocaleString('en-IN')}</span>
-                    </div>
-                    {inspectedOrder.discount_total > 0 && (
-                      <div className="flex justify-between text-emerald-400 font-bold">
-                        <span>Discount savings</span>
-                        <span>-₹{inspectedOrder.discount_total.toLocaleString('en-IN')}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between text-sm font-bold pt-2 border-t border-[#2A2A24] text-[var(--color-gold)]">
-                      <span>Invoiced Total</span>
-                      <span>₹{inspectedOrder.total_amount?.toLocaleString('en-IN')}</span>
-                    </div>
-                  </div>
                 </div>
+              </div>
 
-                {/* Action Trigger Buttons */}
-                <div className="grid grid-cols-2 gap-3 pt-3">
+              {/* PDF Receipts Actions */}
+              <div className="pt-6 border-t border-[#2A2A24] space-y-3">
+                <div className="flex gap-2">
                   <button 
                     onClick={() => handleManualReceiptDownload(inspectedOrder)}
-                    className="flex items-center justify-center gap-2 py-3 rounded-xl bg-[#1C1C18] border border-[#2A2A24] hover:border-[var(--color-gold)] font-bold text-xs text-[#F5F5F0] hover:text-[var(--color-gold)] transition-all"
+                    className="flex-1 py-3 bg-[#1C1C18] hover:bg-[#252520] border border-[#2A2A24] hover:border-[var(--color-gold)] text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-all"
                   >
-                    <Download size={13} /> Get PDF Receipt
+                    <Download size={13} /> PDF Invoice
                   </button>
-                  
                   <button 
                     onClick={() => handleResendReceiptEmail(inspectedOrder)}
                     disabled={resendingEmailId === inspectedOrder.id}
-                    className="flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-[var(--color-gold)]/10 to-[var(--color-gold-dark)]/5 border border-[var(--color-gold)]/20 hover:border-[var(--color-gold)] font-bold text-xs text-[var(--color-gold)] transition-all disabled:opacity-40"
+                    className="flex-1 py-3 bg-[var(--color-gold)] hover:shadow-[0_0_15px_rgba(212,175,55,0.15)] text-[#1a1400] font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition-all disabled:opacity-40"
                   >
-                    <Send size={13} className={resendingEmailId === inspectedOrder.id ? 'animate-pulse' : ''} /> 
-                    {resendingEmailId === inspectedOrder.id ? 'Resending...' : 'Resend Email'}
+                    <Send size={13} /> {resendingEmailId === inspectedOrder.id ? 'Resending...' : 'Resend Receipt'}
                   </button>
                 </div>
-
               </div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
 
-      {/* DIALOG MODAL CONFIRM */}
+      {/* --- ADD / EDIT PRODUCT MODAL --- */}
+      <AnimatePresence>
+        {productFormOpen && currentProduct && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.6 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black z-[90]" onClick={() => setProductFormOpen(false)} />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: '-40%' }} 
+              animate={{ opacity: 1, scale: 1, y: '-50%' }} 
+              exit={{ opacity: 0, scale: 0.95, y: '-40%' }} 
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[91] w-[90vw] max-w-lg bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl"
+            >
+              <div className="flex justify-between items-center border-b border-[#2A2A24] pb-4 mb-6">
+                <h3 className="font-display font-bold text-sm text-[var(--color-gold)]">{currentProduct.id ? 'Edit Fireworks Product' : 'Add New Fireworks Product'}</h3>
+                <button onClick={() => setProductFormOpen(false)} className="p-1.5 text-[#A0A090] hover:text-white rounded-lg"><X size={15} /></button>
+              </div>
+
+              <form onSubmit={handleSaveProduct} className="space-y-4 text-xs">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Product Name (EN) *</label>
+                    <input required value={currentProduct.name_en} onChange={(e) => setCurrentProduct({...currentProduct, name_en: e.target.value})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Product Name (Tamil)</label>
+                    <input value={currentProduct.name_ta} onChange={(e) => setCurrentProduct({...currentProduct, name_ta: e.target.value})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" />
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Category *</label>
+                    <select value={currentProduct.category} onChange={(e) => setCurrentProduct({...currentProduct, category: e.target.value})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none cursor-pointer">
+                      {categories.map((c) => (
+                        <option key={c.id} value={c.id}>{c.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Standard MRP (₹) *</label>
+                    <input required type="number" value={currentProduct.mrp} onChange={(e) => setCurrentProduct({...currentProduct, mrp: parseInt(e.target.value) || 0})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Selling Price (₹) *</label>
+                    <input required type="number" value={currentProduct.price} onChange={(e) => setCurrentProduct({...currentProduct, price: parseInt(e.target.value) || 0})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Product Image URL</label>
+                  <input value={currentProduct.image_url || ''} onChange={(e) => setCurrentProduct({...currentProduct, image_url: e.target.value})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" placeholder="https://image-hosting-link/photo.jpg" />
+                </div>
+
+                <div className="flex gap-6 pt-2">
+                  <label className="flex items-center gap-2.5 cursor-pointer font-bold">
+                    <input type="checkbox" checked={currentProduct.in_stock} onChange={(e) => setCurrentProduct({...currentProduct, in_stock: e.target.checked})} className="rounded bg-[#1C1C18] border-[#2A2A24]" />
+                    In Stock
+                  </label>
+                  <label className="flex items-center gap-2.5 cursor-pointer font-bold">
+                    <input type="checkbox" checked={currentProduct.is_featured} onChange={(e) => setCurrentProduct({...currentProduct, is_featured: e.target.checked})} className="rounded bg-[#1C1C18] border-[#2A2A24]" />
+                    Featured item
+                  </label>
+                </div>
+
+                <div className="flex gap-3 pt-6 border-t border-[#2A2A24] mt-6">
+                  <button type="button" onClick={() => setProductFormOpen(false)} className="flex-1 py-3 rounded-xl border border-[#2A2A24] text-white hover:bg-[#1C1C18]">Cancel</button>
+                  <button type="submit" className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold shadow-lg">Save Crackers</button>
+                </div>
+              </form>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* --- ADD / EDIT COMBO MODAL --- */}
+      <AnimatePresence>
+        {comboFormOpen && currentCombo && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.6 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black z-[90]" onClick={() => setComboFormOpen(false)} />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: '-40%' }} 
+              animate={{ opacity: 1, scale: 1, y: '-50%' }} 
+              exit={{ opacity: 0, scale: 0.95, y: '-40%' }} 
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[91] w-[90vw] max-w-lg bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl"
+            >
+              <div className="flex justify-between items-center border-b border-[#2A2A24] pb-4 mb-6">
+                <h3 className="font-display font-bold text-sm text-[var(--color-gold)]">{currentCombo.id ? 'Edit Combo Pack' : 'Add New Combo Pack'}</h3>
+                <button onClick={() => setComboFormOpen(false)} className="p-1.5 text-[#A0A090] hover:text-white rounded-lg"><X size={15} /></button>
+              </div>
+
+              <form onSubmit={handleSaveCombo} className="space-y-4 text-xs">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Combo Name *</label>
+                    <input required value={currentCombo.combo_name} onChange={(e) => setCurrentCombo({...currentCombo, combo_name: e.target.value})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Combo Type (Tag)</label>
+                    <input value={currentCombo.combo_type} onChange={(e) => setCurrentCombo({...currentCombo, combo_type: e.target.value})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" placeholder="e.g. Special Box, Kids Pack" />
+                  </div>
+                </div>
+
+                <div className="grid sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Total Items count *</label>
+                    <input required type="number" value={currentCombo.total_items} onChange={(e) => setCurrentCombo({...currentCombo, total_items: parseInt(e.target.value) || 0})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Standard MRP (₹) *</label>
+                    <input required type="number" value={currentCombo.original_price} onChange={(e) => setCurrentCombo({...currentCombo, original_price: parseInt(e.target.value) || 0})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Offer Sale Price (₹) *</label>
+                    <input required type="number" value={currentCombo.offer_price} onChange={(e) => setCurrentCombo({...currentCombo, offer_price: parseInt(e.target.value) || 0})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Description</label>
+                  <textarea rows={2} value={currentCombo.description || ''} onChange={(e) => setCurrentCombo({...currentCombo, description: e.target.value})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none resize-none" />
+                </div>
+
+                <div>
+                  <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Image Link URL</label>
+                  <input value={currentCombo.image_url || ''} onChange={(e) => setCurrentCombo({...currentCombo, image_url: e.target.value})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" />
+                </div>
+
+                <div className="flex pt-2">
+                  <label className="flex items-center gap-2.5 cursor-pointer font-bold">
+                    <input type="checkbox" checked={currentCombo.featured} onChange={(e) => setCurrentCombo({...currentCombo, featured: e.target.checked})} className="rounded bg-[#1C1C18] border-[#2A2A24]" />
+                    Featured Combo
+                  </label>
+                </div>
+
+                <div className="flex gap-3 pt-6 border-t border-[#2A2A24] mt-6">
+                  <button type="button" onClick={() => setComboFormOpen(false)} className="flex-1 py-3 rounded-xl border border-[#2A2A24] text-white hover:bg-[#1C1C18]">Cancel</button>
+                  <button type="submit" className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold shadow-lg">Save Combo</button>
+                </div>
+              </form>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* --- ADD / EDIT BANK ACCOUNT MODAL --- */}
+      <AnimatePresence>
+        {bankFormOpen && currentBank && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.6 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black z-[90]" onClick={() => setBankFormOpen(false)} />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: '-40%' }} 
+              animate={{ opacity: 1, scale: 1, y: '-50%' }} 
+              exit={{ opacity: 0, scale: 0.95, y: '-40%' }} 
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[91] w-[90vw] max-w-md bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl"
+            >
+              <div className="flex justify-between items-center border-b border-[#2A2A24] pb-4 mb-6">
+                <h3 className="font-display font-bold text-sm text-[var(--color-gold)]">{currentBank.id ? 'Edit Bank Account' : 'Add Bank Account'}</h3>
+                <button onClick={() => setBankFormOpen(false)} className="p-1.5 text-[#A0A090] hover:text-white rounded-lg"><X size={15} /></button>
+              </div>
+
+              <form onSubmit={handleSaveBank} className="space-y-4 text-xs">
+                <div>
+                  <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Bank Name *</label>
+                  <input required value={currentBank.bank_name} onChange={(e) => setCurrentBank({...currentBank, bank_name: e.target.value})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Branch Office *</label>
+                    <input required value={currentBank.branch} onChange={(e) => setCurrentBank({...currentBank, branch: e.target.value})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Holder Name *</label>
+                    <input required value={currentBank.holder_name} onChange={(e) => setCurrentBank({...currentBank, holder_name: e.target.value})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Account Number *</label>
+                    <input required value={currentBank.account_number} onChange={(e) => setCurrentBank({...currentBank, account_number: e.target.value})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">IFSC Code *</label>
+                    <input required value={currentBank.ifsc_code} onChange={(e) => setCurrentBank({...currentBank, ifsc_code: e.target.value})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">GPay Number (Optional)</label>
+                    <input value={currentBank.gpay_number || ''} onChange={(e) => setCurrentBank({...currentBank, gpay_number: e.target.value})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">PhonePe Number (Optional)</label>
+                    <input value={currentBank.phonepe_number || ''} onChange={(e) => setCurrentBank({...currentBank, phonepe_number: e.target.value})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" />
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-6 border-t border-[#2A2A24] mt-6">
+                  <button type="button" onClick={() => setBankFormOpen(false)} className="flex-1 py-3 rounded-xl border border-[#2A2A24] text-white hover:bg-[#1C1C18]">Cancel</button>
+                  <button type="submit" className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold shadow-lg">Save Bank Details</button>
+                </div>
+              </form>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* --- ADD / EDIT CATEGORY MODAL --- */}
+      <AnimatePresence>
+        {categoryFormOpen && currentCategory && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.6 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black z-[90]" onClick={() => setCategoryFormOpen(false)} />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: '-40%' }} 
+              animate={{ opacity: 1, scale: 1, y: '-50%' }} 
+              exit={{ opacity: 0, scale: 0.95, y: '-40%' }} 
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[91] w-[90vw] max-w-sm bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl"
+            >
+              <div className="flex justify-between items-center border-b border-[#2A2A24] pb-4 mb-6">
+                <h3 className="font-display font-bold text-sm text-[var(--color-gold)]">{currentCategory.isNew ? 'Add Category' : 'Edit Category'}</h3>
+                <button onClick={() => setCategoryFormOpen(false)} className="p-1.5 text-[#A0A090] hover:text-white rounded-lg"><X size={15} /></button>
+              </div>
+
+              <form onSubmit={handleSaveCategory} className="space-y-4 text-xs">
+                {currentCategory.isNew && (
+                  <div>
+                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Category URL Slug/ID *</label>
+                    <input required value={currentCategory.id} onChange={(e) => setCurrentCategory({...currentCategory, id: e.target.value})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" placeholder="e.g. single-sound" />
+                  </div>
+                )}
+                
+                <div>
+                  <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Display Label Name *</label>
+                  <input required value={currentCategory.label} onChange={(e) => setCurrentCategory({...currentCategory, label: e.target.value})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" placeholder="e.g. Single Sound" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Emoji Icon</label>
+                    <input value={currentCategory.emoji} onChange={(e) => setCurrentCategory({...currentCategory, emoji: e.target.value})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none text-center text-lg" placeholder="💥" />
+                  </div>
+                  <div>
+                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Sort Order (number)</label>
+                    <input type="number" value={currentCategory.sort_order} onChange={(e) => setCurrentCategory({...currentCategory, sort_order: parseInt(e.target.value) || 0})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" />
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-6 border-t border-[#2A2A24] mt-6">
+                  <button type="button" onClick={() => setCategoryFormOpen(false)} className="flex-1 py-3 rounded-xl border border-[#2A2A24] text-white hover:bg-[#1C1C18]">Cancel</button>
+                  <button type="submit" className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold shadow-lg">Save Category</button>
+                </div>
+              </form>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* --- ADD / EDIT HOMEPAGE SLIDER BANNER MODAL --- */}
+      <AnimatePresence>
+        {sliderFormOpen && currentSlider && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 0.6 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black z-[90]" onClick={() => setSliderFormOpen(false)} />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: '-40%' }} 
+              animate={{ opacity: 1, scale: 1, y: '-50%' }} 
+              exit={{ opacity: 0, scale: 0.95, y: '-40%' }} 
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[91] w-[90vw] max-w-md bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl"
+            >
+              <div className="flex justify-between items-center border-b border-[#2A2A24] pb-4 mb-6">
+                <h3 className="font-display font-bold text-sm text-[var(--color-gold)]">{currentSlider.id ? 'Edit Slider Banner' : 'Add Slider Banner'}</h3>
+                <button onClick={() => setSliderFormOpen(false)} className="p-1.5 text-[#A0A090] hover:text-white rounded-lg"><X size={15} /></button>
+              </div>
+
+              <form onSubmit={handleSaveSlider} className="space-y-4 text-xs">
+                <div>
+                  <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Banner Image Link URL *</label>
+                  <input required value={currentSlider.image_url} onChange={(e) => setCurrentSlider({...currentSlider, image_url: e.target.value})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" placeholder="https://domain/banner.jpg" />
+                </div>
+                
+                <div>
+                  <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Header Title (Optional)</label>
+                  <input value={currentSlider.title || ''} onChange={(e) => setCurrentSlider({...currentSlider, title: e.target.value})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" placeholder="e.g. Grand Diwali Sale 2026" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Action redirect URL</label>
+                    <input value={currentSlider.link_url || ''} onChange={(e) => setCurrentSlider({...currentSlider, link_url: e.target.value})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" placeholder="e.g. /products" />
+                  </div>
+                  <div>
+                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Sort Order (number)</label>
+                    <input type="number" value={currentSlider.sort_order} onChange={(e) => setCurrentSlider({...currentSlider, sort_order: parseInt(e.target.value) || 0})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" />
+                  </div>
+                </div>
+
+                <div className="flex gap-3 pt-6 border-t border-[#2A2A24] mt-6">
+                  <button type="button" onClick={() => setSliderFormOpen(false)} className="flex-1 py-3 rounded-xl border border-[#2A2A24] text-white hover:bg-[#1C1C18]">Cancel</button>
+                  <button type="submit" className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold shadow-lg">Save Banner</button>
+                </div>
+              </form>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Confirmation modal */}
       <ConfirmDialog 
         isOpen={confirmConfig.isOpen}
         title={confirmConfig.title}

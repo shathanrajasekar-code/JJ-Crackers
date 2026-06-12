@@ -41,8 +41,31 @@ export default function ProductsPage() {
   const [mounted, setMounted] = useState(false);
   const [totalProducts, setTotalProducts] = useState(0);
   const [searchDebounce, setSearchDebounce] = useState('');
+  const [categoriesList, setCategoriesList] = useState(categories);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => { 
+    setMounted(true); 
+    fetch('/api/categories')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          const hasAll = data.some((c: any) => c.id === 'all');
+          if (hasAll) {
+            setCategoriesList(data);
+          } else {
+            setCategoriesList([
+              { id: 'all', label: 'All Products', emoji: '🎆' },
+              ...data.map((c: any) => ({
+                id: c.id,
+                label: c.label,
+                emoji: c.emoji || '✨'
+              }))
+            ]);
+          }
+        }
+      })
+      .catch(err => console.error('Failed to load categories:', err));
+  }, []);
 
   // Debounce search input
   useEffect(() => {
@@ -59,7 +82,7 @@ export default function ProductsPage() {
       if (activeCategory !== 'all') params.set('category', activeCategory);
       if (searchDebounce) params.set('search', searchDebounce);
       if (sortBy !== 'default') params.set('sort', sortBy);
-      params.set('limit', '200');
+      params.set('limit', '10');
 
       const res = await fetch(`/api/products?${params.toString()}`);
       if (!res.ok) throw new Error('Failed to fetch products');
@@ -160,7 +183,7 @@ export default function ProductsPage() {
               <SlidersHorizontal size={16} /> Categories
             </div>
             <div className="flex flex-col gap-1">
-              {categories.map((cat) => {
+              {categoriesList.map((cat) => {
                 const count = getCategoryCount(cat.id);
                 return (
                   <button key={cat.id} onClick={() => setActiveCategory(cat.id)}

@@ -12,6 +12,7 @@ export async function GET(req: Request) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '200');
     const sortBy = searchParams.get('sort') || 'default';
+    const isAdmin = searchParams.get('admin') === 'true';
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -42,10 +43,33 @@ export async function GET(req: Request) {
         case 'discount': filtered.sort((a, b) => (b.discount_percent || 0) - (a.discount_percent || 0)); break;
       }
 
-      // Pagination
-      const total = filtered.length;
-      const start = (page - 1) * limit;
-      const paginated = filtered.slice(start, start + limit);
+      // Pagination or Per-category Limit
+      let paginated = [];
+      let total = 0;
+      if (isAdmin) {
+        // Admin gets ALL products
+        total = filtered.length;
+        const start = (page - 1) * limit;
+        paginated = filtered.slice(start, start + limit);
+      } else if (!category || category === 'all') {
+        // Public: Group and limit to 10 per category
+        const grouped: { [key: string]: any[] } = {};
+        const result: any[] = [];
+        for (const p of filtered) {
+          const cat = p.category || 'other';
+          if (!grouped[cat]) grouped[cat] = [];
+          if (grouped[cat].length < 10) {
+            grouped[cat].push(p);
+            result.push(p);
+          }
+        }
+        paginated = result;
+        total = result.length;
+      } else {
+        total = filtered.length;
+        const start = (page - 1) * limit;
+        paginated = filtered.slice(start, start + limit);
+      }
 
       return NextResponse.json({
         products: paginated,
@@ -58,14 +82,99 @@ export async function GET(req: Request) {
 
     // Supabase connected
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+    if (isAdmin || (category && category !== 'all')) {
+      // Admin or specific category: return all with pagination
+      let query = supabase
+        .from('products')
+        .select('*', { count: 'exact' });
+
+      if (category && category !== 'all') {
+        query = query.eq('category', category);
+      }
+
+      // Search filter
+      if (search) {
+        query = query.or(`name_en.ilike.%${search}%,category.ilike.%${search}%`);
+      }
+
+      // Sort
+      switch (sortBy) {
+        case 'price-low': query = query.order('price', { ascending: true }); break;
+        case 'price-high': query = query.order('price', { ascending: false }); break;
+        case 'name': query = query.order('name_en', { ascending: true }); break;
+        case 'discount': query = query.order('discount_percent', { ascending: false }); break;
+        default: query = query.order('category', { ascending: true }).order('price', { ascending: true });
+      }
+
+      // Pagination
+      const start = (page - 1) * limit;
+      query = query.range(start, start + limit - 1);
+
+      const { data, error, count } = await query;
+      if (error) throw error;
+
+      const total = count || 0;
+      return NextResponse.json({
+        products: data || [],
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      });
+    }
+
+    if (!category || category === 'all') {
+      // Public 'all' view: group by category, limit 10 per category
+      let query = supabase
+        .from('products')
+        .select('*');
+
+      // Search filter
+      if (search) {
+        query = query.or(`name_en.ilike.%${search}%,category.ilike.%${search}%`);
+      }
+
+      // Sort
+      switch (sortBy) {
+        case 'price-low': query = query.order('price', { ascending: true }); break;
+        case 'price-high': query = query.order('price', { ascending: false }); break;
+        case 'name': query = query.order('name_en', { ascending: true }); break;
+        case 'discount': query = query.order('discount_percent', { ascending: false }); break;
+        default: query = query.order('category', { ascending: true }).order('price', { ascending: true });
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      const grouped: { [key: string]: any[] } = {};
+      const result: any[] = [];
+      const productsList = data || [];
+
+      for (const p of productsList) {
+        const cat = p.category || 'other';
+        if (!grouped[cat]) grouped[cat] = [];
+        if (grouped[cat].length < 10) {
+          grouped[cat].push(p);
+          result.push(p);
+        }
+      }
+
+      return NextResponse.json({
+        products: result,
+        total: result.length,
+        page: 1,
+        limit: result.length,
+        totalPages: 1,
+      });
+    }
+
+    // Supabase connected & specific category filtered
     let query = supabase
       .from('products')
       .select('*', { count: 'exact' });
 
-    // Category filter
-    if (category && category !== 'all') {
-      query = query.eq('category', category);
-    }
+    query = query.eq('category', category);
 
     // Search filter
     if (search) {
