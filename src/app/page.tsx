@@ -78,7 +78,7 @@ export default function HomePage() {
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden cursor-crosshair" onClick={handleHeroClick} id="hero">
         <Traditional3DHero />
         
-        <div className="relative z-10 max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div className="relative z-10 max-w-7xl mx-auto px-6 py-20 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* LEFT COLUMN — Text Content */}
           <motion.div initial={{ opacity: 0, x: -60 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}>
             <motion.span 
@@ -90,16 +90,16 @@ export default function HomePage() {
               <Sparkles size={14} className="animate-pulse" /> Sivakasi&apos;s Royal Legacy Since 1984 <Sparkles size={14} className="animate-pulse" />
             </motion.span>
             
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-display font-bold leading-[0.85] mb-10 tracking-tighter text-left">
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-display font-bold leading-[0.85] mb-10 tracking-tighter text-center lg:text-left">
               <motion.span initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.7, duration: 1 }} className="block text-[var(--text)]/90">Elegance in</motion.span>
               <motion.span initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.9, duration: 1 }} className="block text-gradient-gold text-glow drop-shadow-[0_0_30px_rgba(212,175,55,0.4)]">Every Spark</motion.span>
             </h1>
 
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }} className="text-lg md:text-xl lg:text-2xl text-[var(--text)]/60 max-w-xl mb-12 leading-relaxed font-light text-left">
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }} className="text-lg md:text-xl lg:text-2xl text-[var(--text)]/60 max-w-xl mb-12 leading-relaxed font-light text-center lg:text-left">
               Experience the pinnacle of pyrotechnic artistry. Hand-crafted excellence from India&apos;s heartland, delivered to light up your legacy.
             </motion.p>
 
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.4 }} className="flex flex-col sm:flex-row items-start justify-start gap-5">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.4 }} className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-5">
               <Link href="/products">
                 <motion.button 
                   whileHover={{ scale: 1.05, boxShadow: '0 0 40px rgba(212,175,55,0.5)' }} 

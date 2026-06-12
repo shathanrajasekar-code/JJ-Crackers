@@ -258,6 +258,9 @@ export default function AdminPage() {
   const [sliderFormOpen, setSliderFormOpen] = useState(false);
   const [currentSlider, setCurrentSlider] = useState<any | null>(null);
 
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // Settings Save loading state
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsStatus, setSettingsStatus] = useState('');
@@ -550,6 +553,32 @@ export default function AdminPage() {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  // Image Upload Handler
+  const handleImageUpload = async (file: File, target: 'product' | 'combo' | 'slider') => {
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        if (target === 'product') {
+          setCurrentProduct((prev: any) => prev ? { ...prev, image_url: data.url } : prev);
+        } else if (target === 'combo') {
+          setCurrentCombo((prev: any) => prev ? { ...prev, image_url: data.url } : prev);
+        } else if (target === 'slider') {
+          setCurrentSlider((prev: any) => prev ? { ...prev, image_url: data.url } : prev);
+        }
+      } else {
+        alert('Upload failed: ' + (data.error || 'Unknown error'));
+      }
+    } catch (err) {
+      console.error('Upload error:', err);
+      alert('Image upload failed. Please try again.');
+    }
+    setUploading(false);
   };
 
   // CRUD: Combos Add / Edit
@@ -2096,8 +2125,44 @@ export default function AdminPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Product Image URL</label>
-                  <input value={currentProduct.image_url || ''} onChange={(e) => setCurrentProduct({...currentProduct, image_url: e.target.value})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" placeholder="https://image-hosting-link/photo.jpg" />
+                  <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Product Image</label>
+                  <div className="flex gap-3 items-start">
+                    <div className="flex-1 space-y-2">
+                      <div 
+                        onClick={() => fileInputRef.current?.click()} 
+                        className="w-full bg-[#1C1C18] border-2 border-dashed border-[#2A2A24] hover:border-[var(--color-gold)]/50 rounded-xl px-3 py-4 text-xs text-center cursor-pointer transition-colors group"
+                      >
+                        <input 
+                          ref={fileInputRef}
+                          type="file" 
+                          accept="image/*" 
+                          className="hidden" 
+                          onChange={(e) => {
+                            const f = e.target.files?.[0];
+                            if (f) handleImageUpload(f, 'product');
+                          }} 
+                        />
+                        {uploading ? (
+                          <span className="text-[var(--color-gold)] animate-pulse">⏳ Uploading...</span>
+                        ) : (
+                          <span className="text-[#A0A090] group-hover:text-[var(--color-gold)] transition-colors">
+                            <Upload size={16} className="inline mr-1.5 -mt-0.5" />Click to upload image
+                          </span>
+                        )}
+                      </div>
+                      <input 
+                        value={currentProduct.image_url || ''} 
+                        onChange={(e) => setCurrentProduct({...currentProduct, image_url: e.target.value})} 
+                        className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2 text-[10px] focus:border-[var(--color-gold)] focus:outline-none text-[#A0A090]" 
+                        placeholder="Or paste image URL here..." 
+                      />
+                    </div>
+                    {currentProduct.image_url && (
+                      <div className="w-16 h-16 rounded-xl overflow-hidden border border-[#2A2A24] flex-shrink-0 bg-[#1C1C18]">
+                        <img src={currentProduct.image_url} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex gap-6 pt-2">
