@@ -121,11 +121,13 @@ export default function CombosPage() {
                 </span>
               </div>
 
-              <div className="relative mb-8 text-center bg-[var(--surface-high)] w-32 h-32 rounded-2xl flex items-center justify-center mx-auto transition-transform group-hover:scale-110 border border-[var(--border)] overflow-hidden">
+              <div className="relative mb-6 w-full h-48 rounded-2xl bg-[var(--surface-high)] border border-[var(--border)] overflow-hidden transition-all duration-300 group-hover:shadow-[0_0_20px_rgba(212,175,55,0.1)]">
                 {combo.image_url ? (
-                  <Image src={combo.image_url} alt={combo.combo_name} fill className="object-cover" />
+                  <Image src={combo.image_url} alt={combo.combo_name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
                 ) : (
-                  <Gift size={48} className="text-[var(--color-gold)]" />
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Gift size={48} className="text-[var(--color-gold)]" />
+                  </div>
                 )}
               </div>
 

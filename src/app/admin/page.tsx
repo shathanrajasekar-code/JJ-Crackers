@@ -13,6 +13,7 @@ import {
   CreditCard, Tags, Sliders, Cpu, LineChart, Plus, Edit, Sparkles, Check
 } from 'lucide-react';
 import Image from 'next/image';
+import { adminAuthHeaders } from '@/lib/admin-auth';
 
 // --- CUSTOM MODAL CONFIRM DIALOG ---
 interface ConfirmDialogProps {
@@ -93,8 +94,8 @@ function AdminLogin({ onLogin }: { onLogin: (token: string) => void }) {
       } else { 
         setError(data.error || 'Invalid password'); 
       }
-    } catch { 
-      setError('Connection failed'); 
+    } catch (err: any) { 
+      setError(`Connection failed: ${err?.message || err}`); 
     }
     setLoading(false);
   };
@@ -105,8 +106,8 @@ function AdminLogin({ onLogin }: { onLogin: (token: string) => void }) {
         <div className="bg-[#141412] border border-[#2A2A24] rounded-3xl p-10 text-center relative overflow-hidden shadow-[0_0_80px_rgba(212,175,55,0.05)]">
           <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[var(--color-gold)] to-transparent opacity-65" />
           
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[var(--color-gold)] to-[var(--color-gold-dark)] flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(212,175,55,0.25)]">
-            <Lock size={32} className="text-[#1a1400]" />
+          <div className="w-20 h-20 rounded-full overflow-hidden mx-auto mb-6 shadow-[0_0_30px_rgba(212,175,55,0.25)] border-2 border-[var(--color-gold)]/30 bg-white">
+             <Image src="/logo/logo.png" alt="JJ Crackers" width={80} height={80} className="object-cover w-full h-full dark:brightness-[0.9] dark:contrast-[1.1] transition-all duration-300" />
           </div>
           <h1 className="text-3xl font-bold font-display text-[#F5F5F0] mb-2 tracking-tight">Admin Console</h1>
           <p className="text-[#A0A090] text-sm mb-8">Authorize to enter the command center</p>
@@ -183,6 +184,15 @@ function StatusBadge({ status }: { status: string }) {
 // --- MAIN ADMIN COMMAND CENTER ---
 export default function AdminPage() {
   const { isAuthenticated, login, logout, activeTab, setActiveTab, checkSession } = useAdminStore();
+  
+  const adminFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+    const headers = {
+      ...adminAuthHeaders(),
+      ...(init?.headers || {}),
+    };
+    return fetch(input, { ...init, headers });
+  };
+
   const [orders, setOrders] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [enquiries, setEnquiries] = useState<any[]>([]);
@@ -274,16 +284,16 @@ export default function AdminPage() {
     setLoading(true);
     try {
       const [o, p, e, m, c, t, s, b, cats, slds] = await Promise.all([
-        fetch('/api/orders').then(r => r.json()).catch(() => []),
-        fetch('/api/products?admin=true&limit=500').then(r => r.json()).catch(() => ({ products: [] })),
-        fetch('/api/enquiries').then(r => r.json()).catch(() => []),
-        fetch('/api/contact').then(r => r.json()).catch(() => []),
-        fetch('/api/combos').then(r => r.json()).catch(() => []),
-        fetch('/api/admin/tracking').then(r => r.json()).catch(() => ({ error_logs: [], analytics_events: [] })),
-        fetch('/api/settings').then(r => r.json()).catch(() => ({})),
-        fetch('/api/bank-accounts').then(r => r.json()).catch(() => []),
-        fetch('/api/categories').then(r => r.json()).catch(() => []),
-        fetch('/api/sliders').then(r => r.json()).catch(() => []),
+        adminFetch('/api/orders').then(r => r.json()).catch(() => []),
+        adminFetch('/api/products?admin=true&limit=500').then(r => r.json()).catch(() => ({ products: [] })),
+        adminFetch('/api/enquiries').then(r => r.json()).catch(() => []),
+        adminFetch('/api/contact').then(r => r.json()).catch(() => []),
+        adminFetch('/api/combos').then(r => r.json()).catch(() => []),
+        adminFetch('/api/admin/tracking').then(r => r.json()).catch(() => ({ error_logs: [], analytics_events: [] })),
+        adminFetch('/api/settings').then(r => r.json()).catch(() => ({})),
+        adminFetch('/api/bank-accounts').then(r => r.json()).catch(() => []),
+        adminFetch('/api/categories').then(r => r.json()).catch(() => []),
+        adminFetch('/api/sliders').then(r => r.json()).catch(() => []),
       ]);
       setOrders(Array.isArray(o) ? o : []);
       setProducts(Array.isArray(p) ? p : (p.products || []));
@@ -316,7 +326,7 @@ export default function AdminPage() {
 
   const updateOrderStatus = async (id: string, status: string) => {
     try {
-      const res = await fetch(`/api/orders/${id}`, { 
+      const res = await adminFetch(`/api/orders/${id}`, { 
         method: 'PATCH', 
         headers: { 'Content-Type': 'application/json' }, 
         body: JSON.stringify({ status }) 
@@ -333,7 +343,7 @@ export default function AdminPage() {
     setSeeding(true); 
     setSeedStatus('Seeding all products from JSON price list into Database...');
     try {
-      const res = await fetch('/api/admin/seed-products', { method: 'POST' });
+      const res = await adminFetch('/api/admin/seed-products', { method: 'POST' });
       const data = await res.json();
       if (res.ok) { 
         setSeedStatus(`✅ Successfully seeded ${data.totalInserted} products!`); 
@@ -357,7 +367,7 @@ export default function AdminPage() {
       action: async () => {
         setConfirmConfig(prev => ({ ...prev, isOpen: false }));
         try {
-          await fetch(`/api/products/${id}`, { method: 'DELETE' });
+          await adminFetch(`/api/products/${id}`, { method: 'DELETE' });
           fetchData();
         } catch (err) { console.error(err); }
       }
@@ -375,7 +385,7 @@ export default function AdminPage() {
         setConfirmConfig(prev => ({ ...prev, isOpen: false }));
         try {
           // DELETE endpoints for orders
-          await fetch(`/api/orders/${id}`, { method: 'DELETE' });
+          await adminFetch(`/api/orders/${id}`, { method: 'DELETE' });
           setInspectedOrder(null);
           fetchData();
         } catch (err) { console.error(err); }
@@ -387,7 +397,7 @@ export default function AdminPage() {
     setSeedingCombos(true); 
     setSeedComboStatus('Seeding default package combos into Database...');
     try {
-      const res = await fetch('/api/admin/seed-combos', { method: 'POST' });
+      const res = await adminFetch('/api/admin/seed-combos', { method: 'POST' });
       const data = await res.json();
       if (res.ok) { 
         setSeedComboStatus(`✅ Successfully seeded ${data.totalInserted} combo packs!`); 
@@ -411,7 +421,7 @@ export default function AdminPage() {
       action: async () => {
         setConfirmConfig(prev => ({ ...prev, isOpen: false }));
         try {
-          await fetch(`/api/combos/${id}`, { method: 'DELETE' });
+          await adminFetch(`/api/combos/${id}`, { method: 'DELETE' });
           fetchData();
         } catch (err) { console.error(err); }
       }
@@ -424,7 +434,7 @@ export default function AdminPage() {
     const fd = new FormData(); 
     fd.append('file', file);
     try {
-      const res = await fetch('/api/admin/seed', { method: 'POST', body: fd });
+      const res = await adminFetch('/api/admin/seed', { method: 'POST', body: fd });
       const data = await res.json();
       setUploadStatus(res.ok ? `🎉 Imported ${data.count} products successfully!` : data.error);
       if (res.ok) {
@@ -444,9 +454,15 @@ export default function AdminPage() {
             quantity: i.quantity,
             price: i.price,
             mrp: i.mrp || i.original_price || i.price,
+            category: i.category || 'Fireworks',
           }))
         : [];
       
+      const itemsTotal = orderItems.reduce((sum: number, item: any) => sum + (item.price || 0) * (item.quantity || 0), 0);
+      const diff = (order.total_amount || 0) - itemsTotal;
+      const calculatedPacking = Math.round(itemsTotal * 0.03);
+      const packingCharges = (diff >= calculatedPacking - 2 && diff <= calculatedPacking + 2) ? diff : 0;
+
       const { generateReceipt, downloadReceipt } = await import('@/lib/pdf/receiptGenerator');
       const doc = await generateReceipt({
         orderNumber: order.order_number,
@@ -460,9 +476,10 @@ export default function AdminPage() {
         customerState: order.customer_state || '',
         customerDistrict: order.customer_district || '',
         items: orderItems,
-        subtotal: order.subtotal || order.total_amount,
+        subtotal: order.subtotal || (itemsTotal + (order.discount_total || 0)),
         discountTotal: order.discount_total || 0,
         totalAmount: order.total_amount,
+        packingCharges: packingCharges,
       });
       downloadReceipt(doc, order.order_number);
     } catch (e) {
@@ -482,7 +499,7 @@ export default function AdminPage() {
           }))
         : [];
 
-      const res = await fetch('/api/send-receipt', {
+      const res = await adminFetch('/api/send-receipt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -515,7 +532,7 @@ export default function AdminPage() {
     setSavingSettings(true);
     setSettingsStatus('Saving settings...');
     try {
-      const res = await fetch('/api/settings', {
+      const res = await adminFetch('/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(settings)
@@ -536,10 +553,14 @@ export default function AdminPage() {
   // CRUD: Products Add / Edit
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!currentProduct.image_url) {
+      alert('Product image is required.');
+      return;
+    }
     try {
       const method = currentProduct.id ? 'PATCH' : 'POST';
       const endpoint = currentProduct.id ? `/api/products/${currentProduct.id}` : '/api/products';
-      const res = await fetch(endpoint, {
+      const res = await adminFetch(endpoint, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(currentProduct)
@@ -555,13 +576,39 @@ export default function AdminPage() {
     }
   };
 
+  const toggleProductStock = async (product: any) => {
+    try {
+      const nextStock = !product.in_stock;
+      
+      // Update local state immediately for instant feedback
+      setProducts((prev: any[]) => prev.map((p: any) => p.id === product.id ? { ...p, in_stock: nextStock } : p));
+      
+      const res = await adminFetch(`/api/products/${product.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ in_stock: nextStock })
+      });
+      
+      if (!res.ok) {
+        // Revert local state on error
+        setProducts((prev: any[]) => prev.map((p: any) => p.id === product.id ? { ...p, in_stock: product.in_stock } : p));
+        alert('Failed to update stock status on server');
+      }
+    } catch (err) {
+      console.error(err);
+      // Revert local state on error
+      setProducts((prev: any[]) => prev.map((p: any) => p.id === product.id ? { ...p, in_stock: product.in_stock } : p));
+      alert('Network error updating stock status');
+    }
+  };
+
   // Image Upload Handler
   const handleImageUpload = async (file: File, target: 'product' | 'combo' | 'slider') => {
     setUploading(true);
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const res = await adminFetch('/api/upload', { method: 'POST', body: formData });
       const data = await res.json();
       if (res.ok && data.url) {
         if (target === 'product') {
@@ -587,7 +634,7 @@ export default function AdminPage() {
     try {
       const method = currentCombo.id ? 'PATCH' : 'POST';
       const endpoint = currentCombo.id ? `/api/combos/${currentCombo.id}` : '/api/combos';
-      const res = await fetch(endpoint, {
+      const res = await adminFetch(endpoint, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(currentCombo)
@@ -608,7 +655,7 @@ export default function AdminPage() {
     e.preventDefault();
     try {
       const method = currentBank.id ? 'PUT' : 'POST';
-      const res = await fetch('/api/bank-accounts', {
+      const res = await adminFetch('/api/bank-accounts', {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(currentBank)
@@ -634,7 +681,7 @@ export default function AdminPage() {
       action: async () => {
         setConfirmConfig(prev => ({ ...prev, isOpen: false }));
         try {
-          await fetch(`/api/bank-accounts?id=${id}`, { method: 'DELETE' });
+          await adminFetch(`/api/bank-accounts?id=${id}`, { method: 'DELETE' });
           fetchData();
         } catch (err) { console.error(err); }
       }
@@ -646,7 +693,7 @@ export default function AdminPage() {
     e.preventDefault();
     try {
       const method = currentCategory.isNew ? 'POST' : 'PUT';
-      const res = await fetch('/api/categories', {
+      const res = await adminFetch('/api/categories', {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(currentCategory)
@@ -672,7 +719,7 @@ export default function AdminPage() {
       action: async () => {
         setConfirmConfig(prev => ({ ...prev, isOpen: false }));
         try {
-          await fetch(`/api/categories?id=${id}`, { method: 'DELETE' });
+          await adminFetch(`/api/categories?id=${id}`, { method: 'DELETE' });
           fetchData();
         } catch (err) { console.error(err); }
       }
@@ -684,7 +731,7 @@ export default function AdminPage() {
     e.preventDefault();
     try {
       const method = currentSlider.id ? 'PUT' : 'POST';
-      const res = await fetch('/api/sliders', {
+      const res = await adminFetch('/api/sliders', {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(currentSlider)
@@ -710,7 +757,7 @@ export default function AdminPage() {
       action: async () => {
         setConfirmConfig(prev => ({ ...prev, isOpen: false }));
         try {
-          await fetch(`/api/sliders?id=${id}`, { method: 'DELETE' });
+          await adminFetch(`/api/sliders?id=${id}`, { method: 'DELETE' });
           fetchData();
         } catch (err) { console.error(err); }
       }
@@ -778,20 +825,31 @@ export default function AdminPage() {
   // AI Growth recommendation algorithm
   const generateAIRecommendation = () => {
     const advices = [];
-    if (orders.length === 0) {
-      return ["⚠️ Low order data. Promote your website on WhatsApp to receive customer cart orders."];
+    if (orders.length === 0 && enquiries.length === 0) {
+      return ["⚠️ Low data stream. Promote your website on WhatsApp to receive customer cart orders & enquiries."];
     }
     
-    // 1. Geography recommendations
-    const cities: Record<string, number> = {};
+    // 1. Town demand density recommendations
+    const towns: Record<string, number> = {};
     orders.forEach(o => {
       if (o.customer_city) {
-        cities[o.customer_city] = (cities[o.customer_city] || 0) + 1;
+        const t = o.customer_city.trim();
+        const normalized = t.charAt(0).toUpperCase() + t.slice(1).toLowerCase();
+        towns[normalized] = (towns[normalized] || 0) + 1;
       }
     });
-    const topCity = Object.entries(cities).sort((a, b) => b[1] - a[1])[0];
-    if (topCity) {
-      advices.push(`🔥 Demand Density: **${topCity[0]}** accounts for **${Math.round((topCity[1]/orders.length)*100)}%** of sales volume. Target local promos here.`);
+    enquiries.forEach(e => {
+      if (e.customer_city) {
+        const t = e.customer_city.trim();
+        const normalized = t.charAt(0).toUpperCase() + t.slice(1).toLowerCase();
+        towns[normalized] = (towns[normalized] || 0) + 1;
+      }
+    });
+    
+    const topTown = Object.entries(towns).sort((a, b) => b[1] - a[1])[0];
+    if (topTown) {
+      const totalRequests = orders.length + enquiries.length;
+      advices.push(`🔥 Town Demand Density: **${topTown[0]}** accounts for **${Math.round((topTown[1] / totalRequests) * 100)}%** of overall orders and enquiries activity. Target local promos here.`);
     }
 
     // 2. Conversion recommendations
@@ -854,8 +912,8 @@ export default function AdminPage() {
       {/* SIDEBAR */}
       <aside className="w-full md:w-64 bg-[#141412] border-b md:border-b-0 md:border-r border-[#2A2A24] flex flex-col shrink-0">
         <div className="p-6 border-b border-[#2A2A24] flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl overflow-hidden border border-[#2A2A24] relative bg-[#1C1C18] flex items-center justify-center font-display font-black text-xl text-[var(--color-gold)]">
-            JJ
+          <div className="w-10 h-10 rounded-full overflow-hidden border border-[var(--color-gold)]/30 relative bg-white shadow-[0_0_15px_rgba(212,175,55,0.15)]">
+            <Image src="/logo/logo.png" alt="JJ Crackers" width={40} height={40} className="object-cover w-full h-full dark:brightness-[0.9] dark:contrast-[1.1] transition-all duration-300" />
           </div>
           <div>
             <h1 className="font-display font-bold text-sm tracking-tight text-[#F5F5F0]">JJ COMMAND</h1>
@@ -1067,34 +1125,51 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                {/* Sales Geography Density */}
+                {/* Town Demand Density */}
                 <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl p-6 flex flex-col justify-between">
                   <div>
-                    <h3 className="font-display font-bold text-sm text-[#F5F5F0]">Geographic Hub Density</h3>
-                    <p className="text-[10px] text-[#A0A090] mb-4">Location segmentation of placing customers</p>
+                    <h3 className="font-display font-bold text-sm text-[#F5F5F0]">Town Demand Density</h3>
+                    <p className="text-[10px] text-[#A0A090] mb-4">Combined sales volume & enquiry estimates by town</p>
                   </div>
 
                   <div className="space-y-4 max-h-48 overflow-y-auto pr-1 scrollbar-thin flex-grow">
-                    {Object.entries(orders.reduce((acc: any, o: any) => {
-                      const city = o.customer_city || 'Unknown';
-                      acc[city] = (acc[city] || 0) + (o.total_amount || 0);
-                      return acc;
-                    }, {})).sort((a: any, b: any) => b[1] - a[1]).slice(0, 5).map(([city, amt]: any) => {
-                      const percent = totalRevenue > 0 ? Math.round((amt / totalRevenue) * 100) : 0;
-                      return (
-                        <div key={city} className="space-y-1">
-                          <div className="flex justify-between text-[10px] font-bold">
-                            <span className="capitalize">{city}</span>
-                            <span>₹{amt.toLocaleString('en-IN')} ({percent}%)</span>
+                    {Object.entries(
+                      (() => {
+                        const townsData: Record<string, number> = {};
+                        orders.forEach(o => {
+                          const town = (o.customer_city || 'Unknown').trim();
+                          if (!town) return;
+                          const normalized = town.charAt(0).toUpperCase() + town.slice(1).toLowerCase();
+                          townsData[normalized] = (townsData[normalized] || 0) + (o.total_amount || 0);
+                        });
+                        enquiries.forEach(e => {
+                          const town = (e.customer_city || 'Unknown').trim();
+                          if (!town) return;
+                          const normalized = town.charAt(0).toUpperCase() + town.slice(1).toLowerCase();
+                          townsData[normalized] = (townsData[normalized] || 0) + (e.total_amount || 0);
+                        });
+                        return townsData;
+                      })()
+                    )
+                      .sort((a, b) => b[1] - a[1])
+                      .slice(0, 6)
+                      .map(([town, amt]) => {
+                        const totalCombined = orders.reduce((s: number, o: any) => s + (o.total_amount || 0), 0) + enquiries.reduce((s: number, e: any) => s + (e.total_amount || 0), 0);
+                        const percent = totalCombined > 0 ? Math.round((amt / totalCombined) * 100) : 0;
+                        return (
+                          <div key={town} className="space-y-1">
+                            <div className="flex justify-between text-[10px] font-bold">
+                              <span>{town}</span>
+                              <span>₹{amt.toLocaleString('en-IN')} ({percent}%)</span>
+                            </div>
+                            <div className="h-1.5 bg-[#1C1C18] border border-[#2A2A24] rounded-full overflow-hidden">
+                              <div className="h-full bg-[var(--color-gold)] rounded-full" style={{ width: `${percent}%` }} />
+                            </div>
                           </div>
-                          <div className="h-1.5 bg-[#1C1C18] border border-[#2A2A24] rounded-full overflow-hidden">
-                            <div className="h-full bg-[var(--color-gold)] rounded-full" style={{ width: `${percent}%` }} />
-                          </div>
-                        </div>
-                      );
-                    })}
-                    {orders.length === 0 && (
-                      <div className="text-center py-12 text-[#A0A090] text-xs">No geography metrics available</div>
+                        );
+                      })}
+                    {orders.length === 0 && enquiries.length === 0 && (
+                      <div className="text-center py-12 text-[#A0A090] text-xs">No town metrics available</div>
                     )}
                   </div>
                 </div>
@@ -1321,11 +1396,17 @@ export default function AdminPage() {
                           <td className="p-4 text-right font-bold text-[var(--color-gold)]">₹{p.price}</td>
                           <td className="p-4 text-center text-emerald-400 font-bold">{p.discount_percent || 0}% OFF</td>
                           <td className="p-4 text-center">
-                            {p.in_stock ? (
-                              <span className="text-emerald-400 font-bold bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/15 text-[10px]">In Stock</span>
-                            ) : (
-                              <span className="text-rose-400 font-bold bg-rose-500/10 px-2.5 py-0.5 rounded-full border border-rose-500/15 text-[10px]">Out of Stock</span>
-                            )}
+                            <button
+                              onClick={() => toggleProductStock(p)}
+                              className={`px-2.5 py-0.5 rounded-full border text-[10px] font-bold transition-all cursor-pointer ${
+                                p.in_stock
+                                  ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/15 hover:bg-emerald-500/20'
+                                  : 'text-rose-400 bg-rose-500/10 border-rose-500/15 hover:bg-rose-500/20'
+                              }`}
+                              title="Click to toggle stock status"
+                            >
+                              {p.in_stock ? 'In Stock' : 'Out of Stock'}
+                            </button>
                           </td>
                           <td className="p-4 text-center flex items-center justify-center gap-1">
                             <button 
@@ -2086,7 +2167,7 @@ export default function AdminPage() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }} 
               animate={{ opacity: 1, scale: 1, y: 0 }} 
               exit={{ opacity: 0, scale: 0.95, y: 20 }} 
-              className="relative z-10 w-full max-w-lg bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl my-auto"
+              className="relative z-10 w-full max-w-lg bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl my-auto max-h-[90vh] overflow-y-auto scrollbar-thin"
             >
               <div className="flex justify-between items-center border-b border-[#2A2A24] pb-4 mb-6">
                 <h3 className="font-display font-bold text-sm text-[var(--color-gold)]">{currentProduct.id ? 'Edit Fireworks Product' : 'Add New Fireworks Product'}</h3>
@@ -2125,7 +2206,7 @@ export default function AdminPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Product Image</label>
+                  <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Product Image *</label>
                   <div className="flex gap-3 items-start">
                     <div className="flex-1 space-y-2">
                       <div 
@@ -2151,6 +2232,7 @@ export default function AdminPage() {
                         )}
                       </div>
                       <input 
+                        required
                         value={currentProduct.image_url || ''} 
                         onChange={(e) => setCurrentProduct({...currentProduct, image_url: e.target.value})} 
                         className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2 text-[10px] focus:border-[var(--color-gold)] focus:outline-none text-[#A0A090]" 
@@ -2195,7 +2277,7 @@ export default function AdminPage() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }} 
               animate={{ opacity: 1, scale: 1, y: 0 }} 
               exit={{ opacity: 0, scale: 0.95, y: 20 }} 
-              className="relative z-10 w-full max-w-lg bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl my-auto"
+              className="relative z-10 w-full max-w-lg bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl my-auto max-h-[90vh] overflow-y-auto scrollbar-thin"
             >
               <div className="flex justify-between items-center border-b border-[#2A2A24] pb-4 mb-6">
                 <h3 className="font-display font-bold text-sm text-[var(--color-gold)]">{currentCombo.id ? 'Edit Combo Pack' : 'Add New Combo Pack'}</h3>
@@ -2265,7 +2347,7 @@ export default function AdminPage() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }} 
               animate={{ opacity: 1, scale: 1, y: 0 }} 
               exit={{ opacity: 0, scale: 0.95, y: 20 }} 
-              className="relative z-10 w-full max-w-md bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl my-auto"
+              className="relative z-10 w-full max-w-md bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl my-auto max-h-[90vh] overflow-y-auto scrollbar-thin"
             >
               <div className="flex justify-between items-center border-b border-[#2A2A24] pb-4 mb-6">
                 <h3 className="font-display font-bold text-sm text-[var(--color-gold)]">{currentBank.id ? 'Edit Bank Account' : 'Add Bank Account'}</h3>
@@ -2330,7 +2412,7 @@ export default function AdminPage() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }} 
               animate={{ opacity: 1, scale: 1, y: 0 }} 
               exit={{ opacity: 0, scale: 0.95, y: 20 }} 
-              className="relative z-10 w-full max-w-sm bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl my-auto"
+              className="relative z-10 w-full max-w-sm bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl my-auto max-h-[90vh] overflow-y-auto scrollbar-thin"
             >
               <div className="flex justify-between items-center border-b border-[#2A2A24] pb-4 mb-6">
                 <h3 className="font-display font-bold text-sm text-[var(--color-gold)]">{currentCategory.isNew ? 'Add Category' : 'Edit Category'}</h3>
@@ -2380,7 +2462,7 @@ export default function AdminPage() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }} 
               animate={{ opacity: 1, scale: 1, y: 0 }} 
               exit={{ opacity: 0, scale: 0.95, y: 20 }} 
-              className="relative z-10 w-full max-w-md bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl my-auto"
+              className="relative z-10 w-full max-w-md bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 shadow-2xl my-auto max-h-[90vh] overflow-y-auto scrollbar-thin"
             >
               <div className="flex justify-between items-center border-b border-[#2A2A24] pb-4 mb-6">
                 <h3 className="font-display font-bold text-sm text-[var(--color-gold)]">{currentSlider.id ? 'Edit Slider Banner' : 'Add Slider Banner'}</h3>

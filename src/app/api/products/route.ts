@@ -52,20 +52,6 @@ export async function GET(req: Request) {
         total = filtered.length;
         const start = (page - 1) * limit;
         paginated = filtered.slice(start, start + limit);
-      } else if (!category || category === 'all') {
-        // Public: Group and limit to 10 per category
-        const grouped: { [key: string]: any[] } = {};
-        const result: any[] = [];
-        for (const p of filtered) {
-          const cat = p.category || 'other';
-          if (!grouped[cat]) grouped[cat] = [];
-          if (grouped[cat].length < 10) {
-            grouped[cat].push(p);
-            result.push(p);
-          }
-        }
-        paginated = result;
-        total = result.length;
       } else {
         total = filtered.length;
         const start = (page - 1) * limit;
@@ -125,57 +111,14 @@ export async function GET(req: Request) {
       });
     }
 
-    if (!category || category === 'all') {
-      // Public 'all' view: group by category, limit 10 per category
-      let query = supabase
-        .from('products')
-        .select('*');
-
-      // Search filter
-      if (search) {
-        query = query.or(`name_en.ilike.%${search}%,category.ilike.%${search}%`);
-      }
-
-      // Sort
-      switch (sortBy) {
-        case 'price-low': query = query.order('price', { ascending: true }); break;
-        case 'price-high': query = query.order('price', { ascending: false }); break;
-        case 'name': query = query.order('name_en', { ascending: true }); break;
-        case 'discount': query = query.order('discount_percent', { ascending: false }); break;
-        default: query = query.order('category', { ascending: true }).order('price', { ascending: true });
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      const grouped: { [key: string]: any[] } = {};
-      const result: any[] = [];
-      const productsList = data || [];
-
-      for (const p of productsList) {
-        const cat = p.category || 'other';
-        if (!grouped[cat]) grouped[cat] = [];
-        if (grouped[cat].length < 10) {
-          grouped[cat].push(p);
-          result.push(p);
-        }
-      }
-
-      return NextResponse.json({
-        products: result,
-        total: result.length,
-        page: 1,
-        limit: result.length,
-        totalPages: 1,
-      });
-    }
-
     // Supabase connected & specific category filtered
     let query = supabase
       .from('products')
       .select('*', { count: 'exact' });
 
-    query = query.eq('category', category);
+    if (category && category !== 'all') {
+      query = query.eq('category', category);
+    }
 
     // Search filter
     if (search) {
@@ -234,6 +177,10 @@ export async function POST(req: Request) {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
     const body = await req.json();
+
+    if (!body.image_url) {
+      return NextResponse.json({ error: 'Product image is required.' }, { status: 400 });
+    }
 
     const slug = body.name_en.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Math.random().toString(36).substring(2, 6);
     const mrp = body.mrp || body.original_price || 0;

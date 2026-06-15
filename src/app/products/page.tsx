@@ -82,7 +82,7 @@ export default function ProductsPage() {
       if (activeCategory !== 'all') params.set('category', activeCategory);
       if (searchDebounce) params.set('search', searchDebounce);
       if (sortBy !== 'default') params.set('sort', sortBy);
-      params.set('limit', '10');
+      params.set('limit', '200');
 
       const res = await fetch(`/api/products?${params.toString()}`);
       if (!res.ok) throw new Error('Failed to fetch products');
@@ -119,7 +119,7 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="max-w-[1400px] mx-auto px-6 py-12">
+    <div className="max-w-[1600px] w-full mx-auto px-4 sm:px-8 md:px-12 py-12">
       {/* Page Header */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-12">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -205,7 +205,7 @@ export default function ProductsPage() {
           </div>
         </aside>
 
-        {/* Product Grid */}
+        {/* Product Grid Container */}
         <div className="flex-1">
           {/* Results count */}
           {!loading && (
@@ -227,7 +227,7 @@ export default function ProductsPage() {
 
           {/* Loading State */}
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
               {[...Array(8)].map((_, i) => (
                 <div key={i} className="glass-card rounded-2xl overflow-hidden">
                   <div className="w-full pt-[100%] bg-[var(--surface-high)] shimmer" />
@@ -240,18 +240,63 @@ export default function ProductsPage() {
               ))}
             </div>
           ) : products.length > 0 ? (
-            <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {products.map((product, i) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: Math.min(i * 0.02, 0.5) }}
-                >
-                  <ProductCard product={product} />
-                </motion.div>
-              ))}
-            </motion.div>
+            activeCategory === 'all' ? (
+              // E-commerce Grouped Category Sections
+              <div className="space-y-16">
+                {categoriesList.filter(cat => cat.id !== 'all').map((cat) => {
+                  const catProducts = products.filter(p => p.category === cat.id);
+                  if (catProducts.length === 0) return null;
+                  return (
+                    <section key={cat.id} className="scroll-mt-28">
+                      {/* Category Header */}
+                      <div className="flex items-center justify-between mb-2">
+                        <h2 className="text-2xl font-bold font-display flex items-center gap-2.5 text-[var(--text)]">
+                          <span className="text-2xl">{cat.emoji}</span>
+                          <span className="text-gradient-gold text-glow">{cat.label}</span>
+                          <span className="text-[10px] font-black bg-[var(--surface-high)] text-[var(--text-muted)] px-2.5 py-0.5 rounded-full border border-[var(--border)] ml-1">
+                            {catProducts.length} Products
+                          </span>
+                        </h2>
+                      </div>
+
+                      {/* Category Divider */}
+                      <div className="h-px bg-gradient-to-r from-[var(--color-gold)]/40 via-[var(--border)]/30 to-transparent mb-6" />
+
+                      {/* Responsive Grid */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
+                        {catProducts.map((product) => (
+                          <ProductCard key={product.id} product={product} />
+                        ))}
+                      </div>
+                    </section>
+                  );
+                })}
+              </div>
+            ) : (
+              // Single Category View
+              <section>
+                {/* Category Header */}
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-2xl font-bold font-display flex items-center gap-2.5 text-[var(--text)]">
+                    <span className="text-2xl">{categoriesList.find(c => c.id === activeCategory)?.emoji || '🎆'}</span>
+                    <span className="text-gradient-gold text-glow">{categoriesList.find(c => c.id === activeCategory)?.label || activeCategory}</span>
+                    <span className="text-[10px] font-black bg-[var(--surface-high)] text-[var(--text-muted)] px-2.5 py-0.5 rounded-full border border-[var(--border)] ml-1">
+                      {products.length} Products
+                    </span>
+                  </h2>
+                </div>
+
+                {/* Category Divider */}
+                <div className="h-px bg-gradient-to-r from-[var(--color-gold)]/40 via-[var(--border)]/30 to-transparent mb-6" />
+
+                {/* Responsive Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
+                  {products.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+              </section>
+            )
           ) : (
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="glass-card rounded-2xl p-16 text-center">
               <div className="text-5xl mb-4">🔍</div>

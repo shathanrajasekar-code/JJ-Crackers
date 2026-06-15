@@ -1,5 +1,110 @@
 import jsPDF from 'jspdf';
 
+// Helper to render mixed Tamil and English lines (with optional bold title) to a canvas and return an image data URL
+function renderTamilEnglishSectionToImage(title: string, lines: string[], fontSize: number, widthMm: number, lineSpacing: number = 3): { dataUrl: string, heightMm: number } {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    return { dataUrl: '', heightMm: 0 };
+  }
+  
+  const scale = 4; // High resolution scale
+  const mmToPx = 3.78; // 1mm ≈ 3.78px at standard 96 DPI
+  const widthPx = widthMm * mmToPx;
+  
+  // Set up temp canvas to measure text wrapping height
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = widthPx;
+  tempCanvas.height = 3000;
+  const tempCtx = tempCanvas.getContext('2d');
+  if (!tempCtx) return { dataUrl: '', heightMm: 0 };
+  
+  const paddingPx = 5;
+  const maxTextWidth = widthPx - paddingPx * 2;
+  
+  // Wrap lines helper
+  const wrapText = (ctx: CanvasRenderingContext2D, text: string, maxW: number, font: string): string[] => {
+    ctx.font = font;
+    const words = text.split(' ');
+    const wrapped: string[] = [];
+    let currentLine = '';
+    
+    for (let i = 0; i < words.length; i++) {
+      const testLine = currentLine ? currentLine + ' ' + words[i] : words[i];
+      const metrics = ctx.measureText(testLine);
+      if (metrics.width > maxW) {
+        wrapped.push(currentLine);
+        currentLine = words[i];
+      } else {
+        currentLine = testLine;
+      }
+    }
+    if (currentLine) {
+      wrapped.push(currentLine);
+    }
+    return wrapped;
+  };
+
+  const titleFont = `bold ${fontSize + 2.5}px "Segoe UI", "Nirmala UI", Arial, sans-serif`;
+  const bodyFont = `bold ${fontSize}px "Segoe UI", "Nirmala UI", Arial, sans-serif`;
+
+  const allWrappedItems: Array<{ text: string, isTitle: boolean }> = [];
+  
+  if (title) {
+    const wrappedTitle = wrapText(tempCtx, title, maxTextWidth, titleFont);
+    wrappedTitle.forEach(t => allWrappedItems.push({ text: t, isTitle: true }));
+    // Add an empty line spacing after title
+    allWrappedItems.push({ text: '', isTitle: false });
+  }
+
+  lines.forEach(line => {
+    const wrappedBody = wrapText(tempCtx, line, maxTextWidth, bodyFont);
+    wrappedBody.forEach(b => allWrappedItems.push({ text: b, isTitle: false }));
+  });
+
+  const totalHeightPx = allWrappedItems.reduce((acc, item) => {
+    if (item.text === '') return acc + lineSpacing * 2;
+    const itemH = item.isTitle ? (fontSize + 2.5) : fontSize;
+    return acc + itemH + lineSpacing;
+  }, 0) + paddingPx * 2;
+  
+  const heightMm = totalHeightPx / mmToPx;
+  
+  // Create final canvas for drawing
+  const canvas = document.createElement('canvas');
+  canvas.width = widthPx * scale;
+  canvas.height = totalHeightPx * scale;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return { dataUrl: '', heightMm: 0 };
+  
+  ctx.scale(scale, scale);
+  ctx.textBaseline = 'top';
+  
+  let drawY = paddingPx;
+  allWrappedItems.forEach(item => {
+    if (item.text === '') {
+      drawY += lineSpacing * 2;
+      return;
+    }
+    if (item.isTitle) {
+      ctx.fillStyle = '#b8860b'; // Gold color matching C.gold
+      ctx.font = titleFont;
+      ctx.textAlign = 'center';
+      ctx.fillText(item.text, widthPx / 2, drawY);
+      drawY += (fontSize + 2.5) + lineSpacing;
+    } else {
+      ctx.fillStyle = '#3c3c3c'; // Matches C.dark
+      ctx.font = bodyFont;
+      ctx.textAlign = 'center';
+      ctx.fillText(item.text, widthPx / 2, drawY);
+      drawY += fontSize + lineSpacing;
+    }
+  });
+  
+  return {
+    dataUrl: canvas.toDataURL('image/png'),
+    heightMm: heightMm
+  };
+}
+
 interface ReceiptItem {
   name: string;
   quantity: number;
@@ -23,6 +128,7 @@ interface ReceiptData {
   subtotal: number;
   discountTotal: number;
   totalAmount: number;
+  packingCharges?: number;
 }
 
 // ─── COLOR CONSTANTS ────────────────────────────────────────────────────────
@@ -67,7 +173,7 @@ export async function generateReceipt(data: ReceiptData): Promise<jsPDF> {
     await new Promise<void>((resolve) => {
       logoImg.onload = () => { logoLoaded = true; resolve(); };
       logoImg.onerror = () => resolve();
-      logoImg.src = '/jj-crackers-logo.png';
+      logoImg.src = '/logo/logo.png';
     });
   } catch { /* silent */ }
 
@@ -75,18 +181,18 @@ export async function generateReceipt(data: ReceiptData): Promise<jsPDF> {
   //  COLUMN LAYOUT — well-spaced, no overflow
   //  Total content width = 182mm (M=14 on each side)
   // ═══════════════════════════════════════════════════════════════════════
-  //  S.No: 10mm | Product: 62mm | Category: 24mm | Qty: 14mm | MRP: 22mm | Offer: 24mm | Total: 26mm = 182
+  //  S.No: 10mm | Product Description: 65mm | Qty: 12mm | Actual Price: 22mm | Actual Total: 25mm | Actual Discount: 24mm | Net Total: 24mm = 182
   const col = {
-    sno:     M,             // x = 14, width = 10
-    prod:    M + 10,        // x = 24, width = 62
-    cat:     M + 72,        // x = 86, width = 24
-    qty:     M + 96,        // x = 110, width = 14
-    mrp:     M + 110,       // x = 124, width = 22
-    offer:   M + 132,       // x = 146, width = 24
-    total:   M + 156,       // x = 170, width = 26
-    end:     M + CW,        // x = 196
+    sno:         M,             // x = 14, width = 10
+    prod:        M + 10,        // x = 24, width = 65
+    qty:         M + 75,        // x = 89, width = 12
+    actPrice:    M + 87,        // x = 101, width = 22
+    actTotal:    M + 109,       // x = 123, width = 25
+    actDiscount: M + 134,       // x = 148, width = 24
+    netTotal:    M + 158,       // x = 172, width = 24
+    end:         M + CW,        // x = 196
   };
-  const colBorders = [col.sno, col.prod, col.cat, col.qty, col.mrp, col.offer, col.total, col.end];
+  const colBorders = [col.sno, col.prod, col.qty, col.actPrice, col.actTotal, col.actDiscount, col.netTotal, col.end];
 
   // ═══════════════════════════════════════════════════════════════════════
   //  HELPER: Company Header (repeated every page)
@@ -182,11 +288,11 @@ export async function generateReceipt(data: ReceiptData): Promise<jsPDF> {
     const ty = y + 4.8;
     doc.text('S.No',               col.sno + 2,         ty);
     doc.text('Product Description', col.prod + 2,        ty);
-    doc.text('Category',            col.cat + 2,         ty);
-    doc.text('Qty',                 col.qty + 12,        ty, { align: 'right' });
-    doc.text('MRP',                 col.mrp + 20,        ty, { align: 'right' });
-    doc.text('Offer Price',         col.offer + 22,      ty, { align: 'right' });
-    doc.text('Total',               col.end - 2,         ty, { align: 'right' });
+    doc.text('Qty',                 col.qty + 10,        ty, { align: 'right' });
+    doc.text('Actual Price',        col.actPrice + 20,   ty, { align: 'right' });
+    doc.text('Actual Total',        col.actTotal + 23,   ty, { align: 'right' });
+    doc.text('Actual Discount',     col.actDiscount + 22, ty, { align: 'right' });
+    doc.text('Net Total',           col.end - 2,         ty, { align: 'right' });
 
     // Vertical white separators inside header
     doc.setDrawColor(...C.white);
@@ -386,31 +492,28 @@ export async function generateReceipt(data: ReceiptData): Promise<jsPDF> {
     doc.setTextColor(...C.black);
     doc.setFont('helvetica', 'normal');
     const nameStr = String(item.name || '');
-    const maxNameW = col.cat - col.prod - 4;
+    const maxNameW = col.qty - col.prod - 4; // 89 - 24 - 4 = 61mm
     const nameLines = doc.splitTextToSize(nameStr, maxNameW);
     doc.text(nameLines[0] || '', col.prod + 2, ty);
 
-    // Category
-    doc.setTextColor(...C.mid);
-    doc.setFontSize(6.5);
-    const catStr = String(item.category || '-');
-    const catTrunc = catStr.length > 12 ? catStr.substring(0, 10) + '..' : catStr;
-    doc.text(catTrunc, col.cat + 2, ty);
-    doc.setFontSize(7);
-
     // Qty (right-aligned)
     doc.setTextColor(...C.dark);
-    doc.text(String(item.quantity || 0), col.qty + 12, ty, { align: 'right' });
+    doc.text(String(item.quantity || 0), col.qty + 10, ty, { align: 'right' });
 
-    // MRP (right-aligned)
+    // Actual Price (MRP, right-aligned)
     doc.setTextColor(...C.light);
-    doc.text(rs(item.mrp || 0), col.mrp + 20, ty, { align: 'right' });
+    doc.text(rs(item.mrp || 0), col.actPrice + 20, ty, { align: 'right' });
 
-    // Offer Price (right-aligned)
-    doc.setTextColor(...C.dark);
-    doc.text(rs(item.price || 0), col.offer + 22, ty, { align: 'right' });
+    // Actual Total (MRP * Qty, right-aligned)
+    const lineMrpTotal = (item.mrp || 0) * (item.quantity || 0);
+    doc.text(rs(lineMrpTotal), col.actTotal + 23, ty, { align: 'right' });
 
-    // Total (right-aligned, bold)
+    // Actual Discount (Discount * Qty, right-aligned)
+    const lineDiscount = ((item.mrp || item.price) - item.price) * item.quantity;
+    doc.setTextColor(...C.green);
+    doc.text(rs(lineDiscount), col.actDiscount + 22, ty, { align: 'right' });
+
+    // Net Total (Price * Qty, right-aligned, bold)
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...C.black);
     const lineTotal = (item.price || 0) * (item.quantity || 0);
@@ -427,35 +530,59 @@ export async function generateReceipt(data: ReceiptData): Promise<jsPDF> {
   //  TOTALS (last page only)
   // ═══════════════════════════════════════════════════════════════════════
 
-  // Ensure enough space for totals + signature + terms (~80mm)
-  if (y > MAX_Y - 80) {
+  // Ensure enough space for totals (~45mm)
+  if (y > MAX_Y - 45) {
     doc.addPage();
     drawCompanyHeader(false);
   }
 
   y += 5;
 
-  // Subtotal
-  const totLabelX = M + 110;
+  const totLabelX = M + 105;
   const totValueX = PAGE_W - M - 4;
 
-  doc.setFontSize(8);
+  // 1. Gross Amount (Actual Total MRP)
+  const grossAmount = data.subtotal || data.items.reduce((sum, item) => sum + (item.mrp || item.price) * item.quantity, 0);
+  doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...C.mid);
-  doc.text('Sub Total:', totLabelX, y);
+  doc.text('Gross Amount (Actual Total):', totLabelX, y);
   doc.setTextColor(...C.dark);
   doc.setFont('helvetica', 'bold');
-  doc.text(rs(data.subtotal || 0), totValueX, y, { align: 'right' });
-  y += 6;
+  doc.text(rs(grossAmount), totValueX, y, { align: 'right' });
+  y += 5.5;
 
-  // Savings
-  if (data.discountTotal > 0) {
+  // 2. Less: Special Discount
+  const totalDiscount = data.discountTotal || 0;
+  if (totalDiscount > 0) {
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...C.mid);
+    doc.text('Less: Special Discount:', totLabelX, y);
     doc.setTextColor(...C.green);
     doc.setFont('helvetica', 'bold');
-    doc.text('Total Savings:', totLabelX, y);
-    doc.text('-' + rs(data.discountTotal), totValueX, y, { align: 'right' });
-    y += 6;
+    doc.text('-' + rs(totalDiscount), totValueX, y, { align: 'right' });
+    y += 5.5;
   }
+
+  // 3. Total Value (Net)
+  const netValue = grossAmount - totalDiscount;
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...C.mid);
+  doc.text('Total Value (Net Amount):', totLabelX, y);
+  doc.setTextColor(...C.dark);
+  doc.setFont('helvetica', 'bold');
+  doc.text(rs(netValue), totValueX, y, { align: 'right' });
+  y += 5.5;
+
+  // 4. Add: Packing & Forwarding Charges (3%)
+  const packingCharges = data.packingCharges !== undefined ? data.packingCharges : Math.round(netValue * 0.03);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...C.mid);
+  doc.text('Add: Packing Charges (3%):', totLabelX, y);
+  doc.setTextColor(...C.dark);
+  doc.setFont('helvetica', 'bold');
+  doc.text(rs(packingCharges), totValueX, y, { align: 'right' });
+  y += 5.5;
 
   // Divider
   doc.setDrawColor(...C.border);
@@ -463,100 +590,98 @@ export async function generateReceipt(data: ReceiptData): Promise<jsPDF> {
   doc.line(totLabelX - 2, y, PAGE_W - M, y);
   y += 4;
 
-  // NET PAYABLE bar
+  // NET PAYABLE bar (Grand Total)
+  const finalGrandTotal = netValue + packingCharges;
   const npX = totLabelX - 4;
   const npW = PAGE_W - M - npX;
   doc.setFillColor(...C.tableHead);
   doc.roundedRect(npX, y - 2.5, npW, 11, 1.5, 1.5, 'F');
 
-  doc.setFontSize(10);
+  doc.setFontSize(8.5);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...C.white);
-  doc.text('NET PAYABLE:', npX + 5, y + 4.5);
+  doc.text('NET PAYABLE AMOUNT:', npX + 4, y + 4.5);
   doc.setTextColor(...C.gold);
-  doc.text(rs(data.totalAmount || 0), PAGE_W - M - 4, y + 4.5, { align: 'right' });
+  doc.text(rs(finalGrandTotal), PAGE_W - M - 4, y + 4.5, { align: 'right' });
+
+  // ── Authorized Signatory (left side, dynamically aligned with Net Payable) ──
+  const sigX = 44;
+  const sigLineY = y - 1; // Aligned near the top of the Net Payable bar
+  if (logoLoaded && logoImg.complete && logoImg.naturalHeight > 0) {
+    doc.addImage(logoImg, 'PNG', 57.5, sigLineY - 20, 18, 18);
+  }
+  doc.setDrawColor(...C.border);
+  doc.setLineWidth(0.3);
+  doc.line(sigX, sigLineY, sigX + 45, sigLineY);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.5);
+  doc.setTextColor(...C.mid);
+  doc.text('Authorized Signatory', 66.5, sigLineY + 4, { align: 'center' });
 
   y += 18;
 
   // ═══════════════════════════════════════════════════════════════════════
-  //  CONFIRMED STAMP + AUTHORIZED SIGNATORY
+  //  THANK YOU NOTE (below Net Payable / Signatory area if space permits)
   // ═══════════════════════════════════════════════════════════════════════
 
-  if (y > MAX_Y - 40) {
+  if (y + 20 > MAX_Y) {
     doc.addPage();
     drawCompanyHeader(false);
   }
 
-  // ── CONFIRMED Stamp (left) ──
-  const stampW = 38;
-  const stampH = 12;
-  const stampX = M + 4;
-  const stampY = y;
-
-  doc.setDrawColor(...C.greenBdr);
-  doc.setLineWidth(1.2);
-  doc.setFillColor(...C.greenBg);
-  doc.roundedRect(stampX, stampY, stampW, stampH, 2, 2, 'FD');
-
+  // ── Professional Thank You Message ──
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(...C.green);
-  doc.text('CONFIRMED', stampX + stampW / 2, stampY + stampH / 2 + 1, { align: 'center' });
+  doc.setFontSize(16);
+  doc.setTextColor(...C.gold);
+  doc.text('Thank you for choosing us!', PAGE_W / 2, y + 5, { align: 'center' });
 
-  // ── Authorized Signatory (right) ──
-  const sigX = PAGE_W - M - 35;
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7);
+  doc.setFont('helvetica', 'italic');
+  doc.setFontSize(12);
   doc.setTextColor(...C.dark);
-  doc.text('For JJ Crackers', sigX + 17.5, y + 1, { align: 'center' });
+  doc.text('Celebrate the joy from JJ Crackers.', PAGE_W / 2, y + 12, { align: 'center' });
 
-  // Logo as signature
-  if (logoLoaded && logoImg.complete && logoImg.naturalHeight > 0) {
-    doc.addImage(logoImg, 'PNG', sigX + 8, y + 3, 18, 18);
-  }
-
-  const sigLineY = y + 23;
-  doc.setDrawColor(...C.border);
-  doc.setLineWidth(0.3);
-  doc.line(sigX - 3, sigLineY, sigX + 38, sigLineY);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(6.5);
-  doc.setTextColor(...C.mid);
-  doc.text('Authorized Signatory', sigX + 17.5, sigLineY + 4, { align: 'center' });
-
-  y += 32;
+  y += 20;
 
   // ═══════════════════════════════════════════════════════════════════════
-  //  TERMS & CONDITIONS (last page only)
+  //  TERMS & SAFETY INSTRUCTIONS (last page only, English & Tamil)
   // ═══════════════════════════════════════════════════════════════════════
 
-  if (y > MAX_Y - 30) {
-    doc.addPage();
-    drawCompanyHeader(false);
-  }
-
-  doc.setFontSize(7);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...C.dark);
-  doc.text('TERMS & CONDITIONS', M, y);
-  y += 4.5;
-
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...C.mid);
-  doc.setFontSize(6);
-  const terms = [
-    'Goods once booked cannot be cancelled after dispatch.',
-    'Transport charges may apply based on destination.',
-    'Delivery depends on transport service availability.',
-    'Customers must verify product quantity at pickup.',
-    'Fireworks should be used responsibly and safely.',
-    'Keep away from children.',
-    'Store in a cool and dry place.',
+  const termsLines = [
+    '1. Goods once booked cannot be cancelled or returned. (பதிவு செய்யப்பட்ட பொருட்கள் திரும்பப் பெறப்பட மாட்டாது.)',
+    '2. Delivery is subject to transport service availability. (பொருட்கள் போக்குவரத்து சேவை கிடைக்கும் தன்மையைப் பொறுத்து விநியோகம் செய்யப்படும்.)',
+    '3. Price includes local taxes; transport charges are extra. (விலையில் உள்ளூர் வரிகள் அடங்கும்; போக்குவரத்து கட்டணம் தனி.)',
+    '4. Customer must verify goods quantity at transport pickup hub. (போக்குவரத்து மையத்தில் பொருட்களைப் பெறும்போது அளவைச் சரிபார்க்கவும்.)'
   ];
-  terms.forEach((t, i) => {
-    doc.text((i + 1) + '. ' + t, M, y);
-    y += 3.4;
-  });
+
+  const safetyLines = [
+    '1. Store fireworks in a cool, dry, and secure place. (பட்டாசுகளை குளிர்ந்த, உலர்ந்த மற்றும் பாதுகாப்பான இடத்தில் வைக்கவும்.)',
+    '2. Maintain safe distance while lighting fireworks. (பட்டாசு பற்றவைக்கும்போது பாதுகாப்பான தூரத்தை பராமரிக்கவும்.)',
+    '3. Use an incense stick (Agarbatti) for lighting; do not use open flame. (பற்றவைக்க ஊதுபத்தி பயன்படுத்தவும்; திறந்த சுடரை பயன்படுத்த வேண்டாம்.)',
+    '4. Keep a bucket of water nearby in case of emergency. (அவசர காலத்திற்கு அருகில் ஒரு வாலி தண்ணீரை வைத்திருக்கவும்.)',
+    '5. Supervision by adults is mandatory for children. (குழந்தைகளுக்கு பெரியவர்களின் கண்காணிப்பு கட்டாயமாகும்.)'
+  ];
+
+  // Draw Terms & Conditions
+  const termsRes = renderTamilEnglishSectionToImage('TERMS & CONDITIONS / விதிகளும் நிபந்தனைகளும்', termsLines, 12, CW);
+  if (termsRes.dataUrl) {
+    if (y + termsRes.heightMm > MAX_Y) {
+      doc.addPage();
+      drawCompanyHeader(false);
+    }
+    doc.addImage(termsRes.dataUrl, 'PNG', M, y, CW, termsRes.heightMm);
+    y += termsRes.heightMm + 6;
+  }
+
+  // Draw Safety Instructions
+  const safetyRes = renderTamilEnglishSectionToImage('SAFETY INSTRUCTIONS / பாதுகாப்பு வழிமுறைகள்', safetyLines, 12, CW);
+  if (safetyRes.dataUrl) {
+    if (y + safetyRes.heightMm > MAX_Y) {
+      doc.addPage();
+      drawCompanyHeader(false);
+    }
+    doc.addImage(safetyRes.dataUrl, 'PNG', M, y, CW, safetyRes.heightMm);
+    y += safetyRes.heightMm;
+  }
 
   // ═══════════════════════════════════════════════════════════════════════
   //  POST-PROCESSING: Footers on all pages

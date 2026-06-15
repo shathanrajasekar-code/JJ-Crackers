@@ -62,8 +62,8 @@ export default function AboutPage() {
           <motion.div initial={{ opacity: 0, x: -60 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="relative flex justify-center">
             <div className="relative w-72 h-72 md:w-96 md:h-96">
               <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[var(--color-gold)]/20 to-transparent animate-spin-slow" />
-              <div className="absolute inset-4 rounded-full overflow-hidden border-4 border-[var(--color-gold)]/30 shadow-[0_0_60px_rgba(212,175,55,0.2)]">
-                <Image src="/jj-crackers-logo.png" alt="JJ Crackers Logo" fill className="object-contain p-6" sizes="(max-width: 768px) 300px, 400px" />
+              <div className="absolute inset-4 rounded-full overflow-hidden border-4 border-[var(--color-gold)]/30 shadow-[0_0_60px_rgba(212,175,55,0.2)] bg-white">
+                <Image src="/logo/logo.png" alt="JJ Crackers Logo" fill className="object-cover dark:brightness-[0.9] dark:contrast-[1.1] transition-all duration-300" sizes="(max-width: 768px) 300px, 400px" />
               </div>
               <motion.div initial={{ rotate: 0 }} whileInView={{ rotate: 360 }} transition={{ duration: 20, repeat: Infinity, ease: 'linear' }} className="absolute inset-0 rounded-full border-2 border-dashed border-[var(--color-gold)]/20" />
             </div>

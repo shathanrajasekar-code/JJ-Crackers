@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle2, MessageCircle, Sparkles, ArrowRight } from 'lucide-react';
 
 const contactInfo = [
-  { icon: MapPin, label: 'Visit Us', value: '1/406, Sivakasi-Vembakottai Main Road, Opp. EB Office, Vembakottai, Tamil Nadu', link: 'https://maps.google.com/?q=Vembakottai+Sivakasi' },
+  { icon: MapPin, label: 'Visit Us', value: '1/406, Sivakasi-Vembakottai Main Road, Opp. EB Office, Vembakottai, Tamil Nadu', link: 'https://maps.app.goo.gl/pi2T1vsVV5dzjZpv9' },
   { icon: Phone, label: 'Call Us', value: '+91 70923 00252', link: 'tel:+917092300252' },
   { icon: Mail, label: 'Email Us', value: 'jjcrackersworld@gmail.com', link: 'mailto:jjcrackersworld@gmail.com' },
   { icon: MessageCircle, label: 'WhatsApp', value: 'Chat with us instantly', link: 'https://wa.me/917092300252' },
@@ -168,7 +168,7 @@ export default function ContactPage() {
             {/* Google Map */}
             <div className="glass-card rounded-3xl overflow-hidden h-[350px]">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3938.5!2d77.95!3d9.35!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zOcKwMjEnMDAuMCJOIDc3wrA1NycwMC4wIkU!5e0!3m2!1sen!2sin!4v1234567890!5m2!1sen!2sin"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3938.4116035!2d77.7746492!3d9.3488037!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b06c9772ec1aa7f%3A0xa3f8fa8c241555c7!2sJEGAJOTHI%20CRACKER!5e0!3m2!1sen!2sin!4v1718220000000!5m2!1sen!2sin"
                 width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade" title="JJ Crackers Location"
                 className="grayscale hover:grayscale-0 transition-all duration-700"

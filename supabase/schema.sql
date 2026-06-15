@@ -168,3 +168,111 @@ CREATE POLICY "Anyone can subscribe" ON newsletter_subscribers FOR INSERT WITH C
 
 DROP POLICY IF EXISTS "Anyone can view subscribers" ON newsletter_subscribers;
 CREATE POLICY "Anyone can view subscribers" ON newsletter_subscribers FOR SELECT USING (true);
+
+
+-- =========================================================================
+-- ADDITIONAL APPLICATION TABLES
+-- =========================================================================
+
+-- Site Settings Table
+CREATE TABLE IF NOT EXISTS site_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Bank Accounts Table
+CREATE TABLE IF NOT EXISTS bank_accounts (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  bank_name TEXT NOT NULL,
+  branch TEXT NOT NULL,
+  holder_name TEXT NOT NULL,
+  account_number TEXT NOT NULL,
+  ifsc_code TEXT NOT NULL,
+  gpay_number TEXT,
+  phonepe_number TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Categories Table
+CREATE TABLE IF NOT EXISTS categories (
+  id TEXT PRIMARY KEY,
+  label TEXT NOT NULL,
+  emoji TEXT NOT NULL,
+  sort_order INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Sliders Table
+CREATE TABLE IF NOT EXISTS sliders (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  image_url TEXT NOT NULL,
+  link_url TEXT,
+  title TEXT,
+  sort_order INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Error Logs Table
+CREATE TABLE IF NOT EXISTS error_logs (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  error_type TEXT NOT NULL,
+  message TEXT NOT NULL,
+  stack TEXT,
+  context JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Analytics Events Table
+CREATE TABLE IF NOT EXISTS analytics_events (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  event_name TEXT NOT NULL,
+  category TEXT,
+  metadata JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable RLS for additional tables
+ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE bank_accounts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sliders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE error_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE analytics_events ENABLE ROW LEVEL SECURITY;
+
+-- Site Settings Policies
+DROP POLICY IF EXISTS "Anyone can view settings" ON site_settings;
+CREATE POLICY "Anyone can view settings" ON site_settings FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Anyone can modify settings" ON site_settings;
+CREATE POLICY "Anyone can modify settings" ON site_settings FOR ALL USING (true) WITH CHECK (true);
+
+-- Bank Accounts Policies
+DROP POLICY IF EXISTS "Anyone can view bank accounts" ON bank_accounts;
+CREATE POLICY "Anyone can view bank accounts" ON bank_accounts FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Anyone can modify bank accounts" ON bank_accounts;
+CREATE POLICY "Anyone can modify bank accounts" ON bank_accounts FOR ALL USING (true) WITH CHECK (true);
+
+-- Categories Policies
+DROP POLICY IF EXISTS "Anyone can view categories" ON categories;
+CREATE POLICY "Anyone can view categories" ON categories FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Anyone can modify categories" ON categories;
+CREATE POLICY "Anyone can modify categories" ON categories FOR ALL USING (true) WITH CHECK (true);
+
+-- Sliders Policies
+DROP POLICY IF EXISTS "Anyone can view sliders" ON sliders;
+CREATE POLICY "Anyone can view sliders" ON sliders FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Anyone can modify sliders" ON sliders;
+CREATE POLICY "Anyone can modify sliders" ON sliders FOR ALL USING (true) WITH CHECK (true);
+
+-- Error Logs Policies
+DROP POLICY IF EXISTS "Anyone can insert error logs" ON error_logs;
+CREATE POLICY "Anyone can insert error logs" ON error_logs FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Anyone can view error logs" ON error_logs;
+CREATE POLICY "Anyone can view error logs" ON error_logs FOR SELECT USING (true);
+
+-- Analytics Events Policies
+DROP POLICY IF EXISTS "Anyone can insert analytics events" ON analytics_events;
+CREATE POLICY "Anyone can insert analytics events" ON analytics_events FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Anyone can view analytics events" ON analytics_events;
+CREATE POLICY "Anyone can view analytics events" ON analytics_events FOR SELECT USING (true);
+

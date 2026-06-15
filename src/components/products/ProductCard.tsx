@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Plus, Minus, ShoppingCart, Leaf, Check } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import { useEnquiryStore } from '@/lib/store/enquiryStore';
 import type { Product } from '@/lib/supabase/types';
@@ -14,7 +14,12 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const [quantity, setQuantity] = useState(1);
   const addItem = useEnquiryStore((state) => state.addItem);
+  const items = useEnquiryStore((state) => state.items);
   const [isAdded, setIsAdded] = useState(false);
+
+  // Check if this product is already in the cart and get its quantity
+  const cartItem = useMemo(() => items.find(i => i.product.id === product.id), [items, product.id]);
+  const inCartQty = cartItem ? cartItem.quantity : 0;
 
   const handleAdd = () => {
     addItem({ product, quantity });
@@ -25,9 +30,9 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <motion.div
-      whileHover={{ y: -8 }}
+      whileHover={product.in_stock ? { y: -8 } : {}}
       transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-      className="glass-card rounded-2xl overflow-hidden flex flex-col group relative"
+      className={`glass-card rounded-2xl overflow-hidden flex flex-col group relative transition-opacity duration-300 ${!product.in_stock ? 'opacity-75' : ''}`}
     >
       {/* Badges */}
       <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
@@ -41,14 +46,26 @@ export function ProductCard({ product }: ProductCardProps) {
             <Leaf size={10} /> Eco
           </span>
         )}
+        {!product.in_stock && (
+          <span className="bg-rose-500/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 backdrop-blur-sm border border-rose-500/20 uppercase tracking-wider shadow-md">
+            Out of Stock
+          </span>
+        )}
       </div>
 
-      {/* Discount badge */}
-      {product.discount_percent && product.discount_percent > 0 && (!product.badge_text || !product.badge_text.includes(`${product.discount_percent}%`)) && (
-        <div className="absolute top-3 right-3 z-10 bg-[#F43F5E] text-white text-[10px] font-black px-2 py-1 rounded-full shadow-md">
-          {product.discount_percent}% OFF
-        </div>
-      )}
+      {/* Right Badges */}
+      <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5 items-end">
+        {product.discount_percent && product.discount_percent > 0 && (!product.badge_text || !product.badge_text.includes(`${product.discount_percent}%`)) && (
+          <div className="bg-[#F43F5E] text-white text-[10px] font-black px-2 py-1 rounded-full shadow-md">
+            {product.discount_percent}% OFF
+          </div>
+        )}
+        {inCartQty > 0 && !isAdded && (
+          <div className="bg-emerald-500 text-white text-[10px] font-black px-2 py-1 rounded-full shadow-md flex items-center gap-1">
+            <Check size={10} /> {inCartQty} in cart
+          </div>
+        )}
+      </div>
 
       {/* Image */}
       <div className="relative w-full pt-[100%] bg-[var(--surface-high)] overflow-hidden">
@@ -58,7 +75,7 @@ export function ProductCard({ product }: ProductCardProps) {
             alt={product.name_en}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-cover transition-transform duration-700 group-hover:scale-110"
+            className={`object-cover transition-transform duration-700 ${product.in_stock ? 'group-hover:scale-110' : 'opacity-40 grayscale-[20%]'}`}
             loading="lazy"
           />
         ) : (
@@ -67,15 +84,17 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
         )}
         {/* Gradient overlay on hover */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        {product.in_stock && (
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        )}
       </div>
 
       {/* Content */}
       <div className="p-4 flex flex-col flex-grow">
-        <div className="text-[10px] text-[var(--color-gold)] font-bold mb-1 uppercase tracking-[0.15em]">
+        <div className="text-[10px] text-[var(--color-gold)] font-bold mb-1 uppercase tracking-[0.15em] leading-normal">
           {product.category}
         </div>
-        <h3 className="text-sm font-bold text-[var(--text)] mb-3 leading-snug line-clamp-2 group-hover:text-[var(--color-gold)] transition-colors">
+        <h3 className={`text-sm font-bold text-[var(--text)] mb-3 leading-normal pb-0.5 line-clamp-2 transition-colors ${product.in_stock ? 'group-hover:text-[var(--color-gold)]' : 'opacity-70'}`}>
           {product.name_en}
         </h3>
 
@@ -87,19 +106,21 @@ export function ProductCard({ product }: ProductCardProps) {
 
           <div className="flex items-center gap-2">
             {/* Quantity Selector */}
-            <div className="flex items-center bg-[var(--surface-high)] rounded-lg border border-[var(--border)] overflow-hidden h-9">
+            <div className={`flex items-center bg-[var(--surface-high)] rounded-lg border border-[var(--border)] overflow-hidden h-9 ${!product.in_stock ? 'opacity-40 cursor-not-allowed' : ''}`}>
               <button
+                disabled={!product.in_stock}
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="w-7 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)]"
+                className="w-7 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)] disabled:pointer-events-none"
               >
                 <Minus size={12} />
               </button>
-              <div className="w-7 text-center text-xs font-bold text-[var(--text)] h-full flex items-center justify-center border-x border-[var(--border)]">
-                {quantity}
+              <div className="w-7 text-center text-xs font-bold text-[var(--text)] h-full flex items-center justify-center border-x border-[var(--border)] select-none">
+                {product.in_stock ? quantity : 0}
               </div>
               <button
+                disabled={!product.in_stock}
                 onClick={() => setQuantity(quantity + 1)}
-                className="w-7 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)]"
+                className="w-7 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)] disabled:pointer-events-none"
               >
                 <Plus size={12} />
               </button>
@@ -107,16 +128,25 @@ export function ProductCard({ product }: ProductCardProps) {
 
             {/* Add Button */}
             <motion.button
+              disabled={!product.in_stock}
               onClick={handleAdd}
-              whileTap={{ scale: 0.95 }}
+              whileTap={product.in_stock ? { scale: 0.95 } : {}}
               className={`flex-1 h-9 rounded-lg flex items-center justify-center gap-1.5 text-xs font-bold transition-all duration-300 ${
-                isAdded
-                  ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]'
-                  : 'bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]'
+                !product.in_stock
+                  ? 'bg-[var(--surface-high)] text-[var(--text-muted)] border border-[var(--border)] cursor-not-allowed opacity-60'
+                  : isAdded
+                    ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+                    : inCartQty > 0
+                      ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/25'
+                      : 'bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]'
               }`}
             >
-              {isAdded ? (
+              {!product.in_stock ? (
+                'Out of Stock'
+              ) : isAdded ? (
                 <><Check size={14} /> Added</>
+              ) : inCartQty > 0 ? (
+                <><Plus size={14} /> Add More</>
               ) : (
                 <><ShoppingCart size={14} /> Add</>
               )}

@@ -6,25 +6,11 @@ import Image from 'next/image';
 import { Traditional3DHero } from '@/components/effects/Traditional3DHero';
 import { RealisticFirework } from '@/components/effects/RealisticFirework';
 import { AnimatedKolam } from '@/components/ui/AnimatedKolam';
-import { AnimatedCounter } from '@/components/ui/AnimatedCounter';
-import { Shield, Leaf, Factory, Package, ArrowRight, Star, Award, Clock, Users, Sparkles, Quote } from 'lucide-react';
+import { Shield, Leaf, Factory, Package, ArrowRight, Sparkles } from 'lucide-react';
 import { useState, useCallback, useEffect } from 'react';
 
-const stats = [
-  { value: 40, suffix: '+', label: 'Years of Excellence', icon: Clock },
-  { value: 10000, suffix: '+', label: 'Happy Families', icon: Users },
-  { value: 500, suffix: '+', label: 'Premium Products', icon: Package },
-  { value: 100, suffix: '%', label: 'Safety Certified', icon: Shield },
-];
-
-const testimonials = [
-  { name: 'Rajesh Kumar', location: 'Chennai', text: "The quality of JJ Crackers is simply unmatched. The aerial shots were mesmerizing and the entire neighborhood was in awe. Best Diwali celebration we've ever had!", rating: 5 },
-  { name: 'Priya Mahadevan', location: 'Madurai', text: "I specifically love their eco-friendly range. Low smoke, vibrant colors, and the kids were safe throughout. Will definitely order again next festival season.", rating: 5 },
-  { name: 'Suresh Venkatesh', location: 'Coimbatore', text: "Ordered the Family Celebration Box — exceeded all expectations. Direct factory pricing saved us almost 40%. The packaging quality shows they truly care.", rating: 5 },
-];
-
 export default function HomePage() {
-  const [bursts, setBursts] = useState<Array<{ id: number; x: number; y: number; type: any }>>([]);
+  const [bursts, setBursts] = useState<Array<{ id: number; x: number; y: number; type: 'burst' | 'fountain' | 'spin' | 'sparkle' }>>([]);
 
   useEffect(() => {
     // Launch festive firework bursts on page entry
@@ -62,7 +48,7 @@ export default function HomePage() {
   }, []);
 
   const handleHeroClick = (e: React.MouseEvent) => {
-    const types = ['burst', 'fountain', 'spin', 'sparkle'];
+    const types = ['burst', 'fountain', 'spin', 'sparkle'] as const;
     const randomType = types[Math.floor(Math.random() * types.length)];
     const id = Date.now();
     setBursts(prev => [...prev, { id, x: e.clientX, y: e.clientY, type: randomType }]);
@@ -77,6 +63,132 @@ export default function HomePage() {
       {/* 3D HERO */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden cursor-crosshair" onClick={handleHeroClick} id="hero">
         <Traditional3DHero />
+
+        {/* Left Side Hanging Diya Lights */}
+        <div className="absolute left-6 md:left-16 top-0 z-20 flex gap-4 md:gap-8 pointer-events-none">
+          {/* Diya 1 */}
+          <motion.div 
+            initial={{ y: -200, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: 'spring', delay: 0.2, duration: 1.5, stiffness: 80 }}
+            className="flex flex-col items-center"
+          >
+            <div className="w-0.5 h-32 md:h-44 bg-gradient-to-b from-[var(--color-gold)]/20 via-[var(--color-gold)]/60 to-[var(--color-gold)]" />
+            <svg width="36" height="36" viewBox="0 0 100 100" className="text-[var(--color-gold)] drop-shadow-[0_0_10px_rgba(212,175,55,0.75)]">
+              <path fill="currentColor" d="M50 15 C52 35 75 50 75 70 A25 25 0 0 1 25 70 C25 50 48 35 50 15 Z" />
+              <circle cx="50" cy="70" r="10" fill="#E25822" />
+              <motion.path 
+                animate={{ scaleY: [1, 1.3, 0.95, 1.2, 1], scaleX: [1, 1.15, 0.9, 1.1, 1] }} 
+                transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+                fill="#FFD700" 
+                d="M50 42 C53 52 56 58 50 70 C44 58 47 52 50 42 Z" 
+              />
+            </svg>
+          </motion.div>
+
+          {/* Diya 2 */}
+          <motion.div 
+            initial={{ y: -250, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: 'spring', delay: 0.4, duration: 1.8, stiffness: 70 }}
+            className="flex flex-col items-center"
+          >
+            <div className="w-0.5 h-48 md:h-64 bg-gradient-to-b from-[var(--color-gold)]/20 via-[var(--color-gold)]/60 to-[var(--color-gold)]" />
+            <svg width="44" height="44" viewBox="0 0 100 100" className="text-[var(--color-gold)] drop-shadow-[0_0_12px_rgba(212,175,55,0.85)]">
+              <path fill="currentColor" d="M50 15 C52 35 75 50 75 70 A25 25 0 0 1 25 70 C25 50 48 35 50 15 Z" />
+              <circle cx="50" cy="70" r="10" fill="#E25822" />
+              <motion.path 
+                animate={{ scaleY: [1, 1.25, 0.9, 1.15, 1], scaleX: [1, 1.1, 0.95, 1.05, 1] }} 
+                transition={{ repeat: Infinity, duration: 1.3, ease: 'easeInOut' }}
+                fill="#FFD700" 
+                d="M50 42 C53 52 56 58 50 70 C44 58 47 52 50 42 Z" 
+              />
+            </svg>
+          </motion.div>
+
+          {/* Diya 3 */}
+          <motion.div 
+            initial={{ y: -150, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: 'spring', delay: 0.6, duration: 1.2, stiffness: 90 }}
+            className="flex flex-col items-center hidden sm:flex"
+          >
+            <div className="w-0.5 h-20 md:h-28 bg-gradient-to-b from-[var(--color-gold)]/20 via-[var(--color-gold)]/60 to-[var(--color-gold)]" />
+            <svg width="28" height="28" viewBox="0 0 100 100" className="text-[var(--color-gold)] drop-shadow-[0_0_8px_rgba(212,175,55,0.65)]">
+              <path fill="currentColor" d="M50 15 C52 35 75 50 75 70 A25 25 0 0 1 25 70 C25 50 48 35 50 15 Z" />
+              <circle cx="50" cy="70" r="10" fill="#E25822" />
+              <motion.path 
+                animate={{ scaleY: [1, 1.2, 0.95, 1.1, 1], scaleX: [1, 1.15, 0.9, 1.1, 1] }} 
+                transition={{ repeat: Infinity, duration: 1.7, ease: 'easeInOut' }}
+                fill="#FFD700" 
+                d="M50 42 C53 52 56 58 50 70 C44 58 47 52 50 42 Z" 
+              />
+            </svg>
+          </motion.div>
+        </div>
+
+        {/* Right Side Hanging Diya Lights */}
+        <div className="absolute right-6 md:right-16 top-0 z-20 flex gap-4 md:gap-8 pointer-events-none">
+          {/* Diya 1 */}
+          <motion.div 
+            initial={{ y: -180, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: 'spring', delay: 0.3, duration: 1.4, stiffness: 85 }}
+            className="flex flex-col items-center hidden sm:flex"
+          >
+            <div className="w-0.5 h-24 md:h-36 bg-gradient-to-b from-[var(--color-gold)]/20 via-[var(--color-gold)]/60 to-[var(--color-gold)]" />
+            <svg width="30" height="30" viewBox="0 0 100 100" className="text-[var(--color-gold)] drop-shadow-[0_0_8px_rgba(212,175,55,0.65)]">
+              <path fill="currentColor" d="M50 15 C52 35 75 50 75 70 A25 25 0 0 1 25 70 C25 50 48 35 50 15 Z" />
+              <circle cx="50" cy="70" r="10" fill="#E25822" />
+              <motion.path 
+                animate={{ scaleY: [1, 1.25, 0.9, 1.15, 1], scaleX: [1, 1.1, 0.95, 1.05, 1] }} 
+                transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}
+                fill="#FFD700" 
+                d="M50 42 C53 52 56 58 50 70 C44 58 47 52 50 42 Z" 
+              />
+            </svg>
+          </motion.div>
+
+          {/* Diya 2 */}
+          <motion.div 
+            initial={{ y: -260, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: 'spring', delay: 0.5, duration: 1.9, stiffness: 65 }}
+            className="flex flex-col items-center"
+          >
+            <div className="w-0.5 h-52 md:h-72 bg-gradient-to-b from-[var(--color-gold)]/20 via-[var(--color-gold)]/60 to-[var(--color-gold)]" />
+            <svg width="44" height="44" viewBox="0 0 100 100" className="text-[var(--color-gold)] drop-shadow-[0_0_12px_rgba(212,175,55,0.85)]">
+              <path fill="currentColor" d="M50 15 C52 35 75 50 75 70 A25 25 0 0 1 25 70 C25 50 48 35 50 15 Z" />
+              <circle cx="50" cy="70" r="10" fill="#E25822" />
+              <motion.path 
+                animate={{ scaleY: [1, 1.35, 0.95, 1.2, 1], scaleX: [1, 1.1, 0.9, 1.15, 1] }} 
+                transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
+                fill="#FFD700" 
+                d="M50 42 C53 52 56 58 50 70 C44 58 47 52 50 42 Z" 
+              />
+            </svg>
+          </motion.div>
+
+          {/* Diya 3 */}
+          <motion.div 
+            initial={{ y: -210, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: 'spring', delay: 0.7, duration: 1.6, stiffness: 75 }}
+            className="flex flex-col items-center"
+          >
+            <div className="w-0.5 h-36 md:h-48 bg-gradient-to-b from-[var(--color-gold)]/20 via-[var(--color-gold)]/60 to-[var(--color-gold)]" />
+            <svg width="36" height="36" viewBox="0 0 100 100" className="text-[var(--color-gold)] drop-shadow-[0_0_10px_rgba(212,175,55,0.75)]">
+              <path fill="currentColor" d="M50 15 C52 35 75 50 75 70 A25 25 0 0 1 25 70 C25 50 48 35 50 15 Z" />
+              <circle cx="50" cy="70" r="10" fill="#E25822" />
+              <motion.path 
+                animate={{ scaleY: [1, 1.25, 1], scaleX: [1, 1.1, 1] }} 
+                transition={{ repeat: Infinity, duration: 1.2, ease: 'easeInOut' }}
+                fill="#FFD700" 
+                d="M50 42 C53 52 56 58 50 70 C44 58 47 52 50 42 Z" 
+              />
+            </svg>
+          </motion.div>
+        </div>
         
         <div className="relative z-10 max-w-7xl mx-auto px-6 py-20 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* LEFT COLUMN — Text Content */}
@@ -90,7 +202,7 @@ export default function HomePage() {
               <Sparkles size={14} className="animate-pulse" /> Sivakasi&apos;s Royal Legacy Since 1984 <Sparkles size={14} className="animate-pulse" />
             </motion.span>
             
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-display font-bold leading-[0.85] mb-10 tracking-tighter text-center lg:text-left">
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-display font-bold leading-[1.1] mb-10 tracking-tighter text-center lg:text-left">
               <motion.span initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.7, duration: 1 }} className="block text-[var(--text)]/90">Elegance in</motion.span>
               <motion.span initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.9, duration: 1 }} className="block text-gradient-gold text-glow drop-shadow-[0_0_30px_rgba(212,175,55,0.4)]">Every Spark</motion.span>
             </h1>
@@ -144,7 +256,9 @@ export default function HomePage() {
               {/* JJ Badge overlay */}
               <div className="absolute bottom-6 left-6 right-6">
                 <div className="flex items-center gap-4 p-4 rounded-2xl bg-black/30 backdrop-blur-xl border border-white/10 group-hover:border-[var(--color-gold)]/30 transition-all duration-500">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--color-gold-light)] to-[var(--color-gold-dark)] flex items-center justify-center text-[#1a1400] font-black text-lg shadow-xl flex-shrink-0">JJ</div>
+                  <div className="w-12 h-12 rounded-full overflow-hidden shadow-xl flex-shrink-0 relative bg-white border border-[var(--color-gold)]/30">
+                    <Image src="/logo/logo.png" alt="Jegajothi Crackers" fill className="object-cover dark:brightness-[0.9] dark:contrast-[1.1] transition-all duration-300" />
+                  </div>
                   <div>
                     <div className="text-white font-bold text-sm tracking-tight">Jegajothi Crackers</div>
                     <div className="text-[var(--color-gold)] text-xs font-black tracking-widest">SINCE 1984</div>
@@ -182,155 +296,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* STATS */}
-      <section className="py-32 relative">
-        <div className="absolute inset-0 opacity-10">
-          <AnimatedKolam className="absolute -left-20 top-0" size={500} color="#D4AF37" />
-          <AnimatedKolam className="absolute -right-20 bottom-0 rotate-180" size={500} color="#D4AF37" />
-        </div>
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-16 relative z-10">
-          {stats.map((s, i) => (
-            <motion.div key={s.label} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="text-center group">
-              <div className="w-20 h-20 rounded-full bg-white/5 text-[var(--color-gold)] flex items-center justify-center mx-auto mb-8 border border-white/10 group-hover:shadow-[0_0_30px_rgba(212,175,55,0.2)] transition-all">
-                <s.icon size={32} />
-              </div>
-              <div className="text-5xl md:text-6xl font-display font-bold text-[var(--text)] mb-3 tracking-tighter">
-                <AnimatedCounter target={s.value} suffix={s.suffix} />
-              </div>
-              <div className="text-sm text-[var(--text-muted)] font-black uppercase tracking-[0.2em]">{s.label}</div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* HERITAGE - Redesigned for Extreme Professionalism */}
-      <section className="py-32 bg-[var(--surface-high)] border-y border-[var(--border)]/10 relative overflow-hidden" id="about">
-        {/* Glow Effects to fix plain black backdrop */}
-        <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[500px] h-[500px] bg-[var(--color-gold)]/5 rounded-full blur-3xl pointer-events-none" />
-        
-        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-24 items-center">
-          <motion.div initial={{ opacity: 0, x: -60 }} whileInView={{ opacity: 1, x: -0 }} viewport={{ once: true }} transition={{ duration: 1 }} className="relative">
-            <div className="relative aspect-[4/5] rounded-[3rem] overflow-hidden border border-[var(--border)]/10 shadow-[0_40px_80px_rgba(0,0,0,0.3)]">
-              <Image src="/family-festive.png" alt="JJ Crackers Tamil Traditional Family Diwali Celebration" fill className="object-cover scale-110 hover:scale-100 transition-transform duration-1000" sizes="(max-width: 768px) 100vw, 50vw" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
-              <div className="absolute bottom-10 left-10 right-10">
-                <div className="flex items-center gap-5 p-6 rounded-3xl bg-[var(--surface)]/20 backdrop-blur-xl border border-white/10">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--color-gold-light)] to-[var(--color-gold-dark)] flex items-center justify-center text-[#1a1400] font-black text-2xl shadow-2xl">JJ</div>
-                  <div>
-                    <div className="text-white font-bold text-xl tracking-tight">Jegajothi Crackers</div>
-                    <div className="text-[var(--color-gold)] text-sm font-black tracking-widest">LEGACY EST. 1984</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <motion.div initial={{ rotate: 0, scale: 0 }} whileInView={{ rotate: 12, scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.6, type: 'spring' }} className="absolute -top-10 -right-10 w-32 h-32 rounded-3xl bg-gradient-to-br from-[var(--color-gold)] to-[var(--color-gold-dark)] flex flex-col items-center justify-center text-[#1a1400] shadow-[0_20px_50px_rgba(212,175,55,0.4)]">
-              <Award size={36} /><span className="text-sm font-black mt-2 tracking-tighter">40 YEARS</span>
-            </motion.div>
-          </motion.div>
-          
-          <motion.div initial={{ opacity: 0, x: 60 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 1 }}>
-            <span className="inline-flex items-center gap-3 text-sm font-black text-[var(--color-gold)] uppercase tracking-[0.4em] mb-8"><div className="w-8 h-[1px] bg-[var(--color-gold)]" /> Our Heritage</span>
-            <h2 className="text-5xl md:text-7xl font-display font-bold mb-10 text-[var(--text)] leading-[0.9] tracking-tighter">
-              Crafting Brilliance <br /><span className="text-gradient-gold">Since 1984</span>
-            </h2>
-            <p className="text-xl text-[var(--text-muted)] leading-relaxed mb-8 font-light italic">"Born in Sivakasi, refined by time, and celebrated across nations."</p>
-            <p className="text-lg text-[var(--text)]/60 leading-relaxed mb-12">Founded in the heart of India&apos;s pyrotechnic capital, Jegajothi Crackers has evolved from a master craftsman&apos;s workshop into a global benchmark for quality. Each spark we create carries the weight of forty years of tradition, safety, and joy.</p>
-            
-            <div className="grid grid-cols-2 gap-6">
-              {[{ label: 'Sivakasi Origin', year: '1984' }, { label: 'Global Standards', year: 'ISO' }, { label: 'Next-Gen Eco', year: '2020' }, { label: 'Digital Era', year: '2024' }].map((m) => (
-                <div key={m.label} className="group p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)]/10 hover:border-[var(--color-gold)]/30 transition-all">
-                  <div className="text-2xl font-display font-bold text-[var(--color-gold)] mb-1">{m.year}</div>
-                  <div className="text-xs text-[var(--text-muted)] font-black uppercase tracking-widest">{m.label}</div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* TAMIL TRADITIONAL SPECIALTY SECTION */}
-      <section className="py-32 relative overflow-hidden border-b border-[var(--border)]/10 bg-radial-[circle_at_center] from-[#100F0D] via-[var(--bg)] to-[var(--bg)]">
-        {/* Floating elements */}
-        <div className="absolute top-10 right-10 opacity-5 pointer-events-none">
-          <AnimatedKolam size={400} color="#D4AF37" />
-        </div>
-        <div className="absolute bottom-10 left-10 opacity-5 pointer-events-none">
-          <AnimatedKolam size={450} color="#D4AF37" />
-        </div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[var(--color-gold)]/5 rounded-full blur-[140px] pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-20">
-            <span className="inline-flex items-center gap-3 text-sm font-black text-[var(--color-gold)] uppercase tracking-[0.4em] mb-6">
-              <div className="w-8 h-[1px] bg-[var(--color-gold)]" /> Traditional Pride <div className="w-8 h-[1px] bg-[var(--color-gold)]" />
-            </span>
-            <h2 className="text-5xl md:text-7xl font-display font-bold text-[var(--text)] tracking-tighter">
-              Sivakasi Specialty <br /><span className="text-gradient-gold">Traditional Assortments</span>
-            </h2>
-            <p className="text-lg text-[var(--text-muted)] max-w-2xl mx-auto mt-6 font-light">
-              Bringing you the authentic sound and light formulas crafted in Sivakasi since 1984. Built for heritage celebrations.
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              { title: 'Oolai Vedi', desc: 'Tamil Nadu’s traditional hand-knotted dry palm-leaf cracker with a loud echoing thunder burst.', type: 'Palm Leaf Cracker', label: 'Classic Sound' },
-              { title: 'Lakshmi Vedi', desc: 'Worshipped paper bomb wrapped in sacred red threads carrying the classic medium-frequency crackle.', type: 'Red Thread Bomb', label: 'Auspicious' },
-              { title: 'Garland Chains', desc: 'Long-running continuous crackling wall hangers simulating a rhythmic waterfall of sparks.', type: 'Chain Crackers', label: '1000 to 10000 Lari' },
-              { title: 'Golden Chakkars', desc: 'Traditional ground spinners releasing high-speed concentric golden sparks on flooring.', type: 'Ground Spinner', label: 'Vibrant Light' }
-            ].map((vedi, idx) => (
-              <motion.div 
-                key={vedi.title}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1, duration: 0.6 }}
-                className="bg-[#141412] border border-[#2A2A24] rounded-3xl p-8 hover:border-[var(--color-gold)]/40 transition-all duration-500 group relative overflow-hidden"
-              >
-                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-[var(--color-gold)]/5 to-transparent rounded-bl-3xl group-hover:from-[var(--color-gold)]/10 transition-all" />
-                <span className="text-[10px] font-black uppercase tracking-wider text-[var(--color-gold)] bg-[var(--color-gold)]/10 px-3 py-1 rounded-full border border-[var(--color-gold)]/20">{vedi.label}</span>
-                <h3 className="text-2xl font-display font-bold text-[#F5F5F0] mt-6 group-hover:text-[var(--color-gold)] transition-colors">{vedi.title}</h3>
-                <p className="text-xs text-[#A0A090] uppercase tracking-widest font-black mt-1">{vedi.type}</p>
-                <p className="text-sm text-[var(--text-muted)] mt-5 leading-relaxed font-light">{vedi.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
 
-
-      {/* TESTIMONIALS - Luxury Slider Style */}
-      <section className="py-32 bg-[var(--surface-high)] border-t border-[var(--border)]/10" id="testimonials">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-24 gap-10">
-            <div>
-              <span className="inline-flex items-center gap-3 text-sm font-black text-[var(--color-gold)] uppercase tracking-[0.4em] mb-6">Wall of Trust</span>
-              <h2 className="text-6xl md:text-7xl font-display font-bold text-[var(--text)] tracking-tighter">Loved by Thousands</h2>
-            </div>
-            <p className="text-xl text-[var(--text-muted)] max-w-md font-light leading-relaxed">Join the global community of families who celebrate their most precious moments with JJ Crackers.</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((t, i) => (
-              <motion.div key={i} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
-                <div className="h-full p-10 rounded-[3rem] bg-[var(--surface)] border border-[var(--border)]/10 hover:border-[var(--color-gold)]/20 transition-all duration-500 group shadow-sm hover:shadow-md">
-                  <Quote size={48} className="text-[var(--color-gold)]/10 mb-8 group-hover:text-[var(--color-gold)]/30 transition-colors" />
-                  <div className="flex text-[var(--color-gold)] mb-8 gap-1">{[...Array(t.rating)].map((_, j) => <Star key={j} size={16} fill="currentColor" />)}</div>
-                  <p className="text-lg text-[var(--text)]/60 mb-12 leading-relaxed font-light italic">&ldquo;{t.text}&rdquo;</p>
-                  <div className="flex items-center gap-5 pt-8 border-t border-[var(--border)]/10">
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--color-gold)] to-[var(--color-gold-dark)] flex items-center justify-center text-[#1a1400] text-lg font-black shadow-xl">{t.name.charAt(0)}</div>
-                    <div>
-                      <div className="font-bold text-lg text-[var(--text)] tracking-tight">{t.name}</div>
-                      <div className="text-xs text-[var(--text-muted)] font-black uppercase tracking-widest">{t.location}</div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* CTA BANNER - The Final Flourish */}
       <section className="py-32 relative overflow-hidden" id="cta">
@@ -351,11 +318,11 @@ export default function HomePage() {
                     Shop Now <ArrowRight size={28} />
                   </motion.button>
                 </Link>
-                <a href="https://wa.me/917092300252" target="_blank" rel="noopener noreferrer">
+                <Link href="/contact">
                   <motion.button whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.3)' }} whileTap={{ scale: 0.97 }} className="px-12 py-6 rounded-full bg-white/20 backdrop-blur-md border border-[#1a1400]/20 text-[#1a1400] font-black text-2xl hover:bg-white/30 transition-all">
-                    WhatsApp Concierge
+                    Contact Us
                   </motion.button>
-                </a>
+                </Link>
               </div>
             </div>
           </motion.div>

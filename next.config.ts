@@ -9,6 +9,14 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/products/:path+',
+        destination: '/product-assets/:path+',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

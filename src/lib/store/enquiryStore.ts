@@ -9,6 +9,7 @@ export interface EnquiryItem {
 
 interface EnquiryState {
   items: EnquiryItem[];
+  lastActive: number | null;
   addItem: (payload: { product: Product; quantity: number }) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, qty: number) => void;
@@ -16,30 +17,35 @@ interface EnquiryState {
   getTotal: () => number;
   getSavings: () => number;
   getItemCount: () => number;
+  setLastActive: (timestamp: number) => void;
+  checkCartExpiry: () => void;
 }
 
 export const useEnquiryStore = create<EnquiryState>()(
   persist(
     (set, get) => ({
       items: [],
+      lastActive: null,
 
       addItem: ({ product, quantity }) => {
         set((state) => {
-          const existing = state.items.find((i) => i.product.id === product.id);
-          if (existing) {
-            return {
-              items: state.items.map((i) =>
-                i.product.id === product.id ? { ...i, quantity: i.quantity + quantity } : i
-              ),
-            };
-          }
-          return { items: [...state.items, { product, quantity }] };
+          const existing = state.items.find((i) => String(i.product.id) === String(product.id));
+          const updatedItems = existing
+            ? state.items.map((i) =>
+                String(i.product.id) === String(product.id) ? { ...i, quantity: i.quantity + quantity } : i
+              )
+            : [...state.items, { product, quantity }];
+          return { 
+            items: updatedItems,
+            lastActive: Date.now()
+          };
         });
       },
 
       removeItem: (id) => {
         set((state) => ({
           items: state.items.filter((i) => i.product.id !== id),
+          lastActive: Date.now()
         }));
       },
 
@@ -52,11 +58,26 @@ export const useEnquiryStore = create<EnquiryState>()(
           items: state.items.map((i) =>
             i.product.id === id ? { ...i, quantity: Math.min(quantity, 100) } : i
           ),
+          lastActive: Date.now()
         }));
       },
 
       clearCart: () => {
-        set({ items: [] });
+        set({ items: [], lastActive: null });
+      },
+
+      setLastActive: (timestamp) => {
+        set({ lastActive: timestamp });
+      },
+
+      checkCartExpiry: () => {
+        const { lastActive, items } = get();
+        if (lastActive && items.length > 0) {
+          const diff = Date.now() - lastActive;
+          if (diff > 10 * 60 * 1000) { // 10 minutes in ms
+            set({ items: [], lastActive: null });
+          }
+        }
       },
 
       getTotal: () => {

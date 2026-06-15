@@ -48,6 +48,11 @@ export default function ReceiptDownloadPage({ params }: PageProps) {
         category: i.category || 'Fireworks'
       }));
 
+      const itemsTotal = orderItems.reduce((sum: number, item: any) => sum + (item.price || 0) * (item.quantity || 0), 0);
+      const diff = (order.total_amount || 0) - itemsTotal;
+      const calculatedPacking = Math.round(itemsTotal * 0.03);
+      const packingCharges = (diff >= calculatedPacking - 2 && diff <= calculatedPacking + 2) ? diff : 0;
+
       const doc = await generateReceipt({
         orderNumber: order.order_number,
         date: new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }),
@@ -60,9 +65,10 @@ export default function ReceiptDownloadPage({ params }: PageProps) {
         customerState: order.customer_state || '',
         customerDistrict: order.customer_district || '',
         items: orderItems,
-        subtotal: order.subtotal || order.total_amount,
+        subtotal: order.subtotal || (itemsTotal + (order.discount_total || 0)),
         discountTotal: order.discount_total || 0,
         totalAmount: order.total_amount,
+        packingCharges: packingCharges,
       });
 
       downloadReceipt(doc, order.order_number);

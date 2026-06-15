@@ -7,7 +7,7 @@ import { Trash2, Plus, Minus, ArrowRight, ArrowLeft, PackageOpen, Sparkles, Shop
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import { buildEnquiryMessage, openWhatsApp } from '@/lib/whatsapp';
+import { RealisticFirework } from '@/components/effects/RealisticFirework';
 
 export default function EnquiryPage() {
   const { items, removeItem, updateQuantity, getTotal, getSavings, clearCart } = useEnquiryStore();
@@ -19,14 +19,10 @@ export default function EnquiryPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [emailStatus, setEmailStatus] = useState<'idle' | 'sending' | 'sent' | 'skipped' | 'failed'>('idle');
   const [emailErrorMessage, setEmailErrorMessage] = useState<string | null>(null);
-  const [smsStatus, setSmsStatus] = useState<'idle' | 'sending' | 'sent' | 'skipped' | 'failed'>('idle');
-  const [smsErrorMessage, setSmsErrorMessage] = useState<string | null>(null);
-  const [whatsappStatus, setWhatsappStatus] = useState<'idle' | 'sending' | 'sent' | 'skipped' | 'failed'>('idle');
-  const [whatsappErrorMessage, setWhatsappErrorMessage] = useState<string | null>(null);
+  const [bursts, setBursts] = useState<Array<{ id: number; x: number; y: number; type: 'burst' | 'fountain' | 'spin' | 'sparkle' }>>([]);
 
   const [settings, setSettings] = useState<any>({
     min_order_value: '2000',
-    whatsapp_number: '7092300252'
   });
   const [bankAccounts, setBankAccounts] = useState<any[]>([]);
 
@@ -41,6 +37,37 @@ export default function EnquiryPage() {
       .then(data => { if (Array.isArray(data)) setBankAccounts(data); })
       .catch(err => console.error('Failed to load bank accounts:', err));
   }, []);
+
+  // Continuous background fireworks on successful order
+  useEffect(() => {
+    if (step === 4 && orderResult) {
+      // 1. Celebratory confetti shower
+      import('canvas-confetti').then((confetti) => {
+        confetti.default({
+          particleCount: 120,
+          spread: 90,
+          origin: { y: 0.6 },
+          colors: ['#D4AF37', '#F4E296', '#F43F5E', '#10B981', '#FF9F1C']
+        });
+      });
+
+      // 2. Setup periodic firework bursts around the screen
+      const fireworkTypes = ['burst', 'fountain', 'spin', 'sparkle'] as const;
+      const interval = setInterval(() => {
+        const id = Date.now() + Math.random();
+        const x = Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 800);
+        const y = Math.random() * (typeof window !== 'undefined' ? window.innerHeight * 0.6 : 400);
+        const type = fireworkTypes[Math.floor(Math.random() * fireworkTypes.length)];
+        setBursts(prev => [...prev.slice(-8), { id, x, y, type }]);
+      }, 800);
+
+      return () => clearInterval(interval);
+    }
+  }, [step, orderResult]);
+
+  const removeBurst = (id: number) => {
+    setBursts(prev => prev.filter(b => b.id !== id));
+  };
 
   const minOrderValue = parseInt(settings.min_order_value) || 2000;
 
@@ -62,10 +89,6 @@ export default function EnquiryPage() {
     setSubmitError(null);
     setEmailStatus('idle');
     setEmailErrorMessage(null);
-    setSmsStatus('idle');
-    setSmsErrorMessage(null);
-    setWhatsappStatus('idle');
-    setWhatsappErrorMessage(null);
     
     try {
       const orderItems = items.map(item => ({
@@ -74,6 +97,10 @@ export default function EnquiryPage() {
         category: item.product.category,
       }));
       
+      const orderValue = getTotal();
+      const packingCharges = Math.round(orderValue * 0.03);
+      const grandTotal = orderValue + packingCharges;
+
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -83,8 +110,9 @@ export default function EnquiryPage() {
           customer_city: customerInfo.city, customer_pincode: customerInfo.pincode,
           customer_state: customerInfo.state, customer_district: customerInfo.district,
           items: orderItems, subtotal: getTotal() + getSavings(),
-          discount_total: getSavings(), total_amount: getTotal(),
+          discount_total: getSavings(), total_amount: grandTotal,
           payment_method: 'bank_transfer',
+          notes: `Includes 3% packing charges (₹${packingCharges.toLocaleString('en-IN')}) on order value (₹${orderValue.toLocaleString('en-IN')})`,
         }),
       });
       
@@ -115,7 +143,8 @@ export default function EnquiryPage() {
           customerCity: customerInfo.city, customerPincode: customerInfo.pincode,
           customerState: customerInfo.state, customerDistrict: customerInfo.district,
           items: orderItems, subtotal: getTotal() + getSavings(),
-          discountTotal: getSavings(), totalAmount: getTotal(),
+          discountTotal: getSavings(), totalAmount: grandTotal,
+          packingCharges: packingCharges,
         });
         
         // Convert to data URI and parse raw base64 data for attachment
@@ -139,8 +168,9 @@ export default function EnquiryPage() {
         body: JSON.stringify({
           to: customerInfo.email, orderNumber: data.order_number,
           customerName: customerInfo.name, items: orderItems,
-          totalAmount: getTotal(), subtotal: getTotal() + getSavings(),
+          totalAmount: grandTotal, subtotal: getTotal() + getSavings(),
           discountTotal: getSavings(),
+          packingCharges: packingCharges,
           pdfBase64: pdfBase64Data,
         }),
       })
@@ -163,69 +193,7 @@ export default function EnquiryPage() {
         setEmailErrorMessage(err instanceof Error ? err.message : String(err));
       });
 
-      // 3. Dispatch SMS Confirmation
-      setSmsStatus('sending');
-      fetch('/api/notify-sms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          phone: customerInfo.phone,
-          orderNumber: data.order_number,
-          amount: getTotal(),
-          customerName: customerInfo.name
-        }),
-      })
-      .then(async (smsRes) => {
-        const smsData = await smsRes.json();
-        if (smsRes.ok) {
-          if (smsData.status === 'skipped') {
-            setSmsStatus('skipped');
-          } else {
-            setSmsStatus('sent');
-          }
-        } else {
-          setSmsStatus('failed');
-          setSmsErrorMessage(smsData.error || 'SMS delivery failed.');
-        }
-      })
-      .catch(err => {
-        console.error('SMS dispatch error:', err);
-        setSmsStatus('failed');
-        setSmsErrorMessage(err instanceof Error ? err.message : String(err));
-      });
-
-      // 4. Dispatch WhatsApp Receipt Document
-      setWhatsappStatus('sending');
-      fetch('/api/notify-whatsapp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          phone: customerInfo.phone,
-          orderNumber: data.order_number,
-          customerName: customerInfo.name,
-          pdfBase64: pdfBase64Data
-        }),
-      })
-      .then(async (waRes) => {
-        const waData = await waRes.json();
-        if (waRes.ok) {
-          if (waData.status === 'skipped') {
-            setWhatsappStatus('skipped');
-          } else {
-            setWhatsappStatus('sent');
-          }
-        } else {
-          setWhatsappStatus('failed');
-          setWhatsappErrorMessage(waData.error || 'WhatsApp delivery failed.');
-        }
-      })
-      .catch(err => {
-        console.error('WhatsApp dispatch error:', err);
-        setWhatsappStatus('failed');
-        setWhatsappErrorMessage(err instanceof Error ? err.message : String(err));
-      });
-
-      // 5. Track order placement analytics event
+      // 3. Track order placement analytics event
       try {
         const { trackEvent } = await import('@/lib/tracking');
         await trackEvent('order_placed', 'checkout', { orderNumber: data.order_number, totalAmount: getTotal() });
@@ -249,6 +217,10 @@ export default function EnquiryPage() {
   const handleDownloadReceipt = async () => {
     if (!orderResult) return;
     const orderItems = items.length > 0 ? items.map(i => ({ name: i.product.name_en, quantity: i.quantity, price: i.product.price, mrp: i.product.mrp })) : (orderResult.items || []);
+    const itemsTotal = orderItems.reduce((sum: number, item: any) => sum + (item.price || 0) * (item.quantity || 0), 0);
+    const calculatedPacking = Math.round(itemsTotal * 0.03);
+    const grandTotal = itemsTotal + calculatedPacking;
+    
     const { generateReceipt, downloadReceipt } = await import('@/lib/pdf/receiptGenerator');
     const doc = await generateReceipt({
       orderNumber: orderResult.order_number, date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }),
@@ -260,8 +232,10 @@ export default function EnquiryPage() {
       customerState: orderResult.customer_state || customerInfo.state,
       customerDistrict: orderResult.customer_district || customerInfo.district,
       items: orderItems,
-      subtotal: orderResult.subtotal || orderResult.total_amount, discountTotal: orderResult.discount_total || 0,
-      totalAmount: orderResult.total_amount,
+      subtotal: orderResult.subtotal || (itemsTotal + (orderResult.discount_total || 0)), 
+      discountTotal: orderResult.discount_total || 0,
+      totalAmount: grandTotal,
+      packingCharges: calculatedPacking,
     });
     downloadReceipt(doc, orderResult.order_number);
   };
@@ -269,290 +243,212 @@ export default function EnquiryPage() {
   // Step 4: Success
   if (step === 4 && orderResult) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 text-center max-w-2xl mx-auto">
-        <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', bounce: 0.4 }}
-          className="w-24 h-24 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6 border border-emerald-500/20">
-          <CheckCircle2 size={48} className="text-emerald-500" />
-        </motion.div>
+      <div className="relative min-h-[80vh] flex flex-col items-center justify-center p-6 text-center overflow-hidden z-10">
         
-        <motion.h2 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-3xl font-bold font-display mb-2">Order Placed! 🎆</motion.h2>
-        
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="glass-card rounded-2xl p-6 w-full mb-6 mt-4">
-          <div className="text-sm text-[var(--text-muted)] mb-1">Order Number</div>
-          <div className="text-2xl font-bold text-[var(--color-gold)] font-display mb-3">{orderResult.order_number}</div>
-          <div className="text-sm text-[var(--text-muted)]">Total: <span className="font-bold text-[var(--text)]">₹{orderResult.total_amount?.toLocaleString('en-IN')}</span></div>
-        </motion.div>
-
-        {/* Dynamic Email Delivery Status Banner */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="w-full mb-8">
-          {emailStatus === 'sending' && (
-            <div className="flex items-center justify-center gap-3 p-4 bg-[var(--surface-high)] border border-[var(--border)] rounded-2xl text-sm text-[var(--text-muted)]">
-              <div className="w-4 h-4 border-2 border-[var(--color-gold)] border-t-transparent rounded-full animate-spin" />
-              Emailing confirmation receipt...
-            </div>
-          )}
-          {emailStatus === 'sent' && (
-            <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-sm text-emerald-400 text-left flex gap-3">
-              <CheckCircle2 size={18} className="shrink-0 mt-0.5" />
-              <div>
-                <strong className="block text-emerald-300">Receipt Emailed!</strong>
-                Your PDF invoice receipt has been sent to <strong>{customerInfo.email || orderResult.customer_email}</strong>.
-              </div>
-            </div>
-          )}
-          {emailStatus === 'skipped' && (
-            <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-xs text-amber-300 text-left space-y-2">
-              <div className="flex gap-2.5">
-                <AlertCircle size={16} className="shrink-0 mt-0.5 text-amber-400" />
-                <div>
-                  <strong className="block text-amber-400 text-sm">Email Status: Sandbox Mode</strong>
-                  The confirmation email was skipped because the Resend API Key is not configured in `.env.local`.
-                </div>
-              </div>
-              <div className="pt-2 border-t border-amber-500/10 text-[10px] text-[var(--text-muted)] space-y-1">
-                <span className="font-bold text-amber-400/80 block">NEXT STEPS FOR ADMIN / DEVELOPER:</span>
-                <div>1. Get a key at <a href="https://resend.com" target="_blank" className="underline hover:text-amber-400">resend.com</a>.</div>
-                <div>2. Set <code className="bg-black/30 px-1 py-0.5 rounded text-amber-300 font-mono">RESEND_API_KEY=your_key</code> in <code className="bg-black/30 px-1 py-0.5 rounded font-mono">.env.local</code>.</div>
-              </div>
-            </div>
-          )}
-          {emailStatus === 'failed' && (
-            <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-sm text-rose-300 text-left flex gap-3">
-              <AlertCircle size={18} className="shrink-0 mt-0.5 text-rose-450" />
-              <div>
-                <strong className="block text-rose-400">Email Delivery Interrupted</strong>
-                We registered your order but could not send the receipt email.
-                {emailErrorMessage && <p className="mt-1 text-xs opacity-80 font-mono">Reason: {emailErrorMessage}</p>}
-                <p className="mt-2 text-xs text-rose-450/80">Please click the button below to download your PDF receipt manually.</p>
-              </div>
-            </div>
-          )}
-        </motion.div>
-
-        {/* Dynamic SMS Confirmation Status Banner */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }} className="w-full mb-4">
-          {smsStatus === 'sending' && (
-            <div className="flex items-center justify-center gap-3 p-4 bg-[var(--surface-high)] border border-[var(--border)] rounded-2xl text-sm text-[var(--text-muted)]">
-              <div className="w-4 h-4 border-2 border-[var(--color-gold)] border-t-transparent rounded-full animate-spin" />
-              Sending SMS confirmation...
-            </div>
-          )}
-          {smsStatus === 'sent' && (
-            <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-sm text-emerald-400 text-left flex gap-3">
-              <CheckCircle2 size={18} className="shrink-0 mt-0.5" />
-              <div>
-                <strong className="block text-emerald-300">SMS Confirmation Sent!</strong>
-                A text confirmation has been dispatched to <strong>{customerInfo.phone || orderResult.customer_phone}</strong>.
-              </div>
-            </div>
-          )}
-          {smsStatus === 'skipped' && (
-            <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-xs text-amber-300 text-left space-y-2">
-              <div className="flex gap-2.5">
-                <AlertCircle size={16} className="shrink-0 mt-0.5 text-amber-400" />
-                <div>
-                  <strong className="block text-amber-400 text-sm">SMS Notification: Config Required</strong>
-                  Automated SMS dispatch was skipped because no SMS provider is enabled in `.env.local`.
-                </div>
-              </div>
-              <div className="pt-2 border-t border-amber-500/10 text-[10px] text-[var(--text-muted)] space-y-1">
-                <span className="font-bold text-amber-400/80 block">NEXT STEPS FOR ADMIN / DEVELOPER:</span>
-                <div>1. Select a provider by setting <code className="bg-black/30 px-1 py-0.5 rounded text-amber-300 font-mono">SMS_PROVIDER=fast2sms</code> (or <code className="bg-black/30 px-1 py-0.5 rounded text-amber-300 font-mono">twilio</code>) in <code className="bg-black/30 px-1 py-0.5 rounded font-mono">.env.local</code>.</div>
-                <div>2. Register on Fast2SMS and paste your <code className="bg-black/30 px-1 py-0.5 rounded text-amber-300 font-mono">FAST2SMS_API_KEY</code>.</div>
-              </div>
-            </div>
-          )}
-          {smsStatus === 'failed' && (
-            <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-sm text-rose-300 text-left flex gap-3">
-              <AlertCircle size={18} className="shrink-0 mt-0.5 text-rose-450" />
-              <div>
-                <strong className="block text-rose-400">SMS Delivery Interrupted</strong>
-                We registered your order but could not send the SMS confirmation.
-                {smsErrorMessage && <p className="mt-1 text-xs opacity-80 font-mono">Reason: {smsErrorMessage}</p>}
-              </div>
-            </div>
-          )}
-        </motion.div>
-
-        {/* Dynamic WhatsApp Receipt Status Banner */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="w-full mb-8">
-          {whatsappStatus === 'sending' && (
-            <div className="flex items-center justify-center gap-3 p-4 bg-[var(--surface-high)] border border-[var(--border)] rounded-2xl text-sm text-[var(--text-muted)]">
-              <div className="w-4 h-4 border-2 border-[var(--color-gold)] border-t-transparent rounded-full animate-spin" />
-              Delivering PDF receipt to WhatsApp...
-            </div>
-          )}
-          {whatsappStatus === 'sent' && (
-            <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-sm text-emerald-400 text-left flex gap-3">
-              <CheckCircle2 size={18} className="shrink-0 mt-0.5" />
-              <div>
-                <strong className="block text-emerald-300">WhatsApp Receipt Delivered!</strong>
-                The order receipt has been sent to <strong>{customerInfo.phone || orderResult.customer_phone}</strong>.
-              </div>
-            </div>
-          )}
-          {whatsappStatus === 'skipped' && (
-            <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-xs text-amber-300 text-left space-y-2">
-              <div className="flex gap-2.5">
-                <AlertCircle size={16} className="shrink-0 mt-0.5 text-amber-400" />
-                <div>
-                  <strong className="block text-amber-400 text-sm">WhatsApp Receipt: Config Required</strong>
-                  Automated WhatsApp delivery was skipped because no WhatsApp provider is enabled in `.env.local`.
-                </div>
-              </div>
-              <div className="pt-2 border-t border-amber-500/10 text-[10px] text-[var(--text-muted)] space-y-1">
-                <span className="font-bold text-amber-400/80 block">NEXT STEPS FOR ADMIN / DEVELOPER:</span>
-                <div>1. Enable a provider by setting <code className="bg-black/30 px-1 py-0.5 rounded text-amber-300 font-mono">WHATSAPP_PROVIDER=ultramsg</code> (or <code className="bg-black/30 px-1 py-0.5 rounded text-amber-300 font-mono">whatsapp_business</code>) in <code className="bg-black/30 px-1 py-0.5 rounded font-mono">.env.local</code>.</div>
-                <div>2. Register on UltraMsg, link your phone, and paste your credentials.</div>
-              </div>
-            </div>
-          )}
-          {whatsappStatus === 'failed' && (
-            <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-sm text-rose-300 text-left flex gap-3">
-              <AlertCircle size={18} className="shrink-0 mt-0.5 text-rose-450" />
-              <div>
-                <strong className="block text-rose-450">WhatsApp Delivery Interrupted</strong>
-                We registered your order but could not send the WhatsApp receipt.
-                {whatsappErrorMessage && <p className="mt-1 text-xs opacity-80 font-mono">Reason: {whatsappErrorMessage}</p>}
-              </div>
-            </div>
-          )}
-        </motion.div>
-
-        <div className="flex flex-col sm:flex-row gap-3">
-          <motion.button onClick={handleDownloadReceipt} whileHover={{ scale: 1.05 }} className="px-6 py-3 rounded-full bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] font-bold text-sm flex items-center gap-2 hover:border-[var(--color-gold)]">
-            <Download size={16} /> Download Receipt
-          </motion.button>
-          
-          <motion.button 
-            onClick={() => {
-              const orderItems = items.length > 0 ? items : (orderResult.items || []).map((i: any) => ({
-                product: { name_en: i.name, price: i.price, mrp: i.mrp, category: i.category },
-                quantity: i.quantity
-              }));
-              const msg = buildEnquiryMessage(
-                orderItems,
-                orderResult.customer_name || customerInfo.name,
-                orderResult.customer_city || customerInfo.city
-              );
-              const fullMsg = `📋 *Order Ref:* ${orderResult.order_number}\n\n${msg}`;
-              openWhatsApp(fullMsg);
-            }} 
-            whileHover={{ scale: 1.05 }} 
-            className="px-6 py-3 rounded-full bg-emerald-600 text-white font-bold text-sm flex items-center gap-2 hover:bg-emerald-700 shadow-lg"
-          >
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" className="shrink-0">
-              <path d="M12.012 2c-5.506 0-9.988 4.482-9.988 9.988 0 1.76.459 3.48 1.332 5l-1.42 5.19 5.308-1.393c1.472.803 3.125 1.226 4.768 1.226 5.506 0 9.988-4.482 9.988-9.988 0-2.66-1.036-5.16-2.918-7.042A9.925 9.925 0 0 0 12.012 2zm5.82 14.28c-.254.71-1.476 1.39-2.007 1.455-.477.06-1.1.28-3.213-.593-2.706-1.114-4.436-3.886-4.57-4.067-.137-.18-1.085-1.44-1.085-2.75 0-1.31.685-1.954.93-2.22.253-.267.553-.332.738-.332.185 0 .37.005.53.01.173.007.408-.067.637.492.235.57.802 1.954.872 2.094.07.14.116.305.023.49-.092.187-.138.305-.277.468-.138.163-.292.365-.417.49-.138.14-.282.292-.12.57.162.277.72 1.185 1.54 1.914.823.73 1.517.954 1.73 1.062.213.11.338.093.463-.05.125-.143.53-.618.673-.83.143-.21.287-.176.48-.105.195.07 1.237.583 1.45.69.213.106.356.16.408.25.053.09.053.52-.2.1.23z"/>
-            </svg>
-            Confirm on WhatsApp
-          </motion.button>
-
-          <Link href="/products">
-            <motion.button whileHover={{ scale: 1.05 }} className="px-6 py-3 rounded-full bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold text-sm flex items-center gap-2 shadow-lg">
-              Continue Shopping <ArrowRight size={16} />
-            </motion.button>
-          </Link>
+        {/* Background Bursting Fireworks */}
+        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+          <AnimatePresence>
+            {bursts.map(b => (
+              <RealisticFirework key={b.id} x={b.x} y={b.y} type={b.type} onComplete={() => removeBurst(b.id)} />
+            ))}
+          </AnimatePresence>
         </div>
 
-        {/* Free Mobile Sharing (WhatsApp & SMS) */}
-        <div className="mt-8 pt-6 border-t border-[var(--border)] text-left w-full">
-          <h4 className="text-sm font-bold text-[var(--color-gold)] mb-3 uppercase tracking-wider flex items-center gap-2">
-            📢 Share Order Details to Customer (100% Free)
-          </h4>
-          <p className="text-xs text-[var(--text-muted)] mb-4">
-            Instantly send the order summary, invoice details, and bank transfer instructions to the customer's phone number using native apps. No API or gateway costs.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            {/* WhatsApp Share to Customer */}
-            <motion.button 
-              onClick={() => {
-                const phone = orderResult?.customer_phone || customerInfo.phone || '';
-                const cleanPhone = phone.replace(/[^0-9]/g, '');
-                // Prefix 91 if it is a 10 digit Indian number
-                const targetPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
-                
-                const receiptLink = `${window.location.origin}/receipt/${orderResult?.id || ''}`;
-                const bankText = bankAccounts.length > 0 
-                  ? bankAccounts.map(b => 
-                      `• *Name:* ${b.holder_name}\n` +
-                      `• *Bank:* ${b.bank_name}\n` +
-                      `• *A/C:* ${b.account_number}\n` +
-                      `• *IFSC:* ${b.ifsc_code}\n` +
-                      (b.gpay_number ? `• *GPay/PhonePe:* ${b.gpay_number}\n` : '')
-                    ).join('\n')
-                  : `• *Name:* Muthuganesa pandian C\n` +
-                    `• *Bank:* City Union Bank\n` +
-                    `• *A/C:* 500101012011879\n` +
-                    `• *IFSC:* CIUB0000162\n` +
-                    `• *GPay/PhonePe:* 7092300252\n`;
+        {/* Traditional Hanging Lamps (Diyas) popping up / hanging down */}
+        <div className="absolute top-0 inset-x-0 flex justify-between px-6 sm:px-20 pointer-events-none z-10 overflow-hidden h-48">
+          {/* Left Lamp */}
+          <motion.div 
+            initial={{ y: -150, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: 'spring', delay: 0.2, duration: 1.5, stiffness: 100 }}
+            className="flex flex-col items-center"
+          >
+            <div className="w-0.5 h-24 bg-gradient-to-b from-[var(--color-gold)]/60 to-[var(--color-gold)]" />
+            <svg width="44" height="44" viewBox="0 0 100 100" className="text-[var(--color-gold)] drop-shadow-[0_0_12px_rgba(212,175,55,0.85)]">
+              <path fill="currentColor" d="M50 15 C52 35 75 50 75 70 A25 25 0 0 1 25 70 C25 50 48 35 50 15 Z" />
+              <circle cx="50" cy="70" r="10" fill="#E25822" />
+              <motion.path 
+                animate={{ scaleY: [1, 1.3, 0.9, 1.2, 1], scaleX: [1, 1.15, 0.95, 1.1, 1] }} 
+                transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+                fill="#FFD700" 
+                d="M50 42 C53 52 56 58 50 70 C44 58 47 52 50 42 Z" 
+              />
+            </svg>
+          </motion.div>
 
-                const supportNumber = settings.whatsapp_number || '7092300252';
+          {/* Left-Center Lamp (Hidden on small) */}
+          <motion.div 
+            initial={{ y: -180, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: 'spring', delay: 0.5, duration: 1.5, stiffness: 90 }}
+            className="flex flex-col items-center hidden sm:flex"
+          >
+            <div className="w-0.5 h-36 bg-gradient-to-b from-[var(--color-gold)]/40 to-[var(--color-gold)]" />
+            <svg width="34" height="34" viewBox="0 0 100 100" className="text-[var(--color-gold)] drop-shadow-[0_0_8px_rgba(212,175,55,0.65)]">
+              <path fill="currentColor" d="M50 15 C52 35 75 50 75 70 A25 25 0 0 1 25 70 C25 50 48 35 50 15 Z" />
+              <circle cx="50" cy="70" r="10" fill="#E25822" />
+              <motion.path 
+                animate={{ scaleY: [1, 1.25, 1], scaleX: [1, 1.1, 1] }} 
+                transition={{ repeat: Infinity, duration: 1.3, ease: 'easeInOut' }}
+                fill="#FFD700" 
+                d="M50 42 C53 52 56 58 50 70 C44 58 47 52 50 42 Z" 
+              />
+            </svg>
+          </motion.div>
 
-                const message = `🎆 *JJ CRACKERS — ORDER CONFIRMED* 🎆\n` +
-                  `----------------------------------\n` +
-                  `*Order Ref:* ${orderResult?.order_number || 'N/A'}\n` +
-                  `*Customer Name:* ${orderResult?.customer_name || customerInfo.name}\n` +
-                  `*Total Amount:* ₹${((orderResult?.total_amount || getTotal())).toLocaleString('en-IN')}\n\n` +
-                  `📄 *Download Receipt PDF:* ${receiptLink}\n\n` +
-                  `🏦 *PAYMENT DETAILS (BANK TRANSFER):*\n` +
-                  bankText + `\n` +
-                  `*Action Required:* Please transfer the total amount and send the payment screenshot to support (+91 ${supportNumber}) to confirm dispatch. Thank you! 🎆`;
+          {/* Right-Center Lamp (Hidden on small) */}
+          <motion.div 
+            initial={{ y: -180, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: 'spring', delay: 0.6, duration: 1.5, stiffness: 90 }}
+            className="flex flex-col items-center hidden sm:flex"
+          >
+            <div className="w-0.5 h-32 bg-gradient-to-b from-[var(--color-gold)]/40 to-[var(--color-gold)]" />
+            <svg width="34" height="34" viewBox="0 0 100 100" className="text-[var(--color-gold)] drop-shadow-[0_0_8px_rgba(212,175,55,0.65)]">
+              <path fill="currentColor" d="M50 15 C52 35 75 50 75 70 A25 25 0 0 1 25 70 C25 50 48 35 50 15 Z" />
+              <circle cx="50" cy="70" r="10" fill="#E25822" />
+              <motion.path 
+                animate={{ scaleY: [1, 1.2, 1], scaleX: [1, 1.15, 1] }} 
+                transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
+                fill="#FFD700" 
+                d="M50 42 C53 52 56 58 50 70 C44 58 47 52 50 42 Z" 
+              />
+            </svg>
+          </motion.div>
 
-                const url = targetPhone 
-                  ? `https://api.whatsapp.com/send?phone=${targetPhone}&text=${encodeURIComponent(message)}`
-                  : `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-                window.open(url, '_blank', 'noopener,noreferrer');
-              }} 
-              whileHover={{ scale: 1.02 }}
-              className="px-5 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-450 font-bold text-xs flex items-center gap-2 hover:bg-emerald-500/20 transition-colors"
+          {/* Right Lamp */}
+          <motion.div 
+            initial={{ y: -150, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: 'spring', delay: 0.3, duration: 1.5, stiffness: 100 }}
+            className="flex flex-col items-center"
+          >
+            <div className="w-0.5 h-24 bg-gradient-to-b from-[var(--color-gold)]/60 to-[var(--color-gold)]" />
+            <svg width="44" height="44" viewBox="0 0 100 100" className="text-[var(--color-gold)] drop-shadow-[0_0_12px_rgba(212,175,55,0.85)]">
+              <path fill="currentColor" d="M50 15 C52 35 75 50 75 70 A25 25 0 0 1 25 70 C25 50 48 35 50 15 Z" />
+              <circle cx="50" cy="70" r="10" fill="#E25822" />
+              <motion.path 
+                animate={{ scaleY: [1, 1.35, 0.95, 1.2, 1], scaleX: [1, 1.1, 0.9, 1.15, 1] }} 
+                transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}
+                fill="#FFD700" 
+                d="M50 42 C53 52 56 58 50 70 C44 58 47 52 50 42 Z" 
+              />
+            </svg>
+          </motion.div>
+        </div>
+
+        {/* Success Card Wrapper */}
+        <div className="relative z-10 max-w-2xl mx-auto w-full px-4 py-8">
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }} 
+            animate={{ scale: 1, opacity: 1 }} 
+            transition={{ type: 'spring', damping: 15 }}
+            className="glass-card rounded-[2.5rem] p-8 md:p-12 relative overflow-hidden border border-[var(--color-gold)]/30 shadow-[0_0_50px_rgba(212,175,55,0.1)] animate-pulse-glow"
+          >
+            <motion.div 
+              initial={{ scale: 0 }} 
+              animate={{ scale: 1 }} 
+              transition={{ type: 'spring', bounce: 0.4, delay: 0.2 }}
+              className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6 border border-emerald-500/20 mx-auto"
             >
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" className="shrink-0 text-emerald-400">
-                <path d="M12.012 2c-5.506 0-9.988 4.482-9.988 9.988 0 1.76.459 3.48 1.332 5l-1.42 5.19 5.308-1.393c1.472.803 3.125 1.226 4.768 1.226 5.506 0 9.988-4.482 9.988-9.988 0-2.66-1.036-5.16-2.918-7.042A9.925 9.925 0 0 0 12.012 2zm5.82 14.28c-.254.71-1.476 1.39-2.007 1.455-.477.06-1.1.28-3.213-.593-2.706-1.114-4.436-3.886-4.57-4.067-.137-.18-1.085-1.44-1.085-2.75 0-1.31.685-1.954.93-2.22.253-.267.553-.332.738-.332.185 0 .37.005.53.01.173.007.408-.067.637.492.235.57.802 1.954.872 2.094.07.14.116.305.023.49-.092.187-.138.305-.277.468-.138.163-.292.365-.417.49-.138.14-.282.292-.12.57.162.277.72 1.185 1.54 1.914.823.73 1.517.954 1.73 1.062.213.11.338.093.463-.05.125-.143.53-.618.673-.83.143-.21.287-.176.48-.105.195.07 1.237.583 1.45.69.213.106.356.16.408.25.053.09.053.52-.2.1.23z"/>
-              </svg>
-              WhatsApp to Customer
-            </motion.button>
-
-            {/* SMS Share to Customer */}
-            <motion.button 
-              onClick={() => {
-                const phone = orderResult?.customer_phone || customerInfo.phone || '';
-                const cleanPhone = phone.replace(/[^0-9]/g, '');
-                
-                const receiptLink = `${window.location.origin}/receipt/${orderResult?.id || ''}`;
-                const bankTextSms = bankAccounts.length > 0 
-                  ? bankAccounts.map(b => 
-                      `Name: ${b.holder_name}\n` +
-                      `Bank: ${b.bank_name}\n` +
-                      `A/C: ${b.account_number}\n` +
-                      `IFSC: ${b.ifsc_code}\n` +
-                      (b.gpay_number ? `GPay/PhonePe: ${b.gpay_number}\n` : '')
-                    ).join('\n')
-                  : `Name: Muthuganesa pandian C\n` +
-                    `Bank: City Union Bank\n` +
-                    `A/C: 500101012011879\n` +
-                    `IFSC: CIUB0000162\n` +
-                    `GPay/PhonePe: 7092300252\n`;
-
-                const message = `🎆 JJ CRACKERS ORDER CONFIRMED! 🎆\n` +
-                  `Order Ref: ${orderResult?.order_number || 'N/A'}\n` +
-                  `Total: Rs. ${((orderResult?.total_amount || getTotal())).toLocaleString('en-IN')}\n\n` +
-                  `Download Receipt PDF: ${receiptLink}\n\n` +
-                  `🏦 BANK TRANSFER:\n` +
-                  bankTextSms + `\n` +
-                  `Please transfer amount & share screenshot to support. Thank you!`;
-
-                const url = `sms:${cleanPhone}?body=${encodeURIComponent(message)}`;
-                window.location.href = url;
-              }} 
-              whileHover={{ scale: 1.02 }}
-              className="px-5 py-2.5 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-400 font-bold text-xs flex items-center gap-2 hover:bg-blue-500/20 transition-colors"
+              <CheckCircle2 size={40} className="text-emerald-500" />
+            </motion.div>
+            
+            <motion.h2 
+              initial={{ opacity: 0, y: 15 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              transition={{ delay: 0.3 }} 
+              className="text-4xl md:text-5xl font-bold font-display mb-3 text-gradient-gold text-glow"
             >
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-blue-400">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-              </svg>
-              SMS to Customer
-            </motion.button>
-          </div>
+              Thank You for Using JJ Crackers! 🪔
+            </motion.h2>
+            <motion.p 
+              initial={{ opacity: 0, y: 15 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              transition={{ delay: 0.4 }} 
+              className="text-lg md:text-xl font-medium text-[var(--text)]/90 mb-8"
+            >
+              We will contact you soon to finalize shipment details.
+            </motion.p>
+            
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              transition={{ delay: 0.5 }} 
+              className="bg-[var(--surface-high)] border border-[var(--border)] rounded-2xl p-6 w-full mb-8"
+            >
+              <div className="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Order Reference</div>
+              <div className="text-2xl font-bold text-[var(--color-gold)] font-display mb-3 tracking-wide">{orderResult.order_number}</div>
+              <div className="text-sm text-[var(--text-muted)]">Net Payable (Grand Total): <span className="font-bold text-[var(--text)]">₹{orderResult.total_amount?.toLocaleString('en-IN')}</span></div>
+            </motion.div>
+
+            {/* Dynamic Email Delivery Status Banner */}
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="w-full mb-8">
+              {emailStatus === 'sending' && (
+                <div className="flex items-center justify-center gap-3 p-4 bg-[var(--surface)] border border-[var(--border)] rounded-2xl text-sm text-[var(--text-muted)] shadow-sm">
+                  <div className="w-4 h-4 border-2 border-[var(--color-gold)] border-t-transparent rounded-full animate-spin" />
+                  Emailing confirmation receipt...
+                </div>
+              )}
+              {emailStatus === 'sent' && (
+                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-sm text-emerald-400 text-left flex gap-3 shadow-sm">
+                  <CheckCircle2 size={18} className="shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="block text-emerald-300">Receipt Emailed!</strong>
+                    Your PDF invoice receipt has been sent to <strong>{customerInfo.email || orderResult.customer_email}</strong>.
+                  </div>
+                </div>
+              )}
+              {emailStatus === 'skipped' && (
+                <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-xs text-amber-300 text-left space-y-2 shadow-sm">
+                  <div className="flex gap-2.5">
+                    <AlertCircle size={16} className="shrink-0 mt-0.5 text-amber-450" />
+                    <div>
+                      <strong className="block text-amber-400 text-sm">Email Status: Sandbox Mode</strong>
+                      The confirmation email was skipped because the Resend API Key is not configured in `.env.local`.
+                    </div>
+                  </div>
+                  <div className="pt-2 border-t border-amber-500/10 text-[10px] text-[var(--text-muted)] space-y-1">
+                    <span className="font-bold text-amber-400/80 block">NEXT STEPS FOR ADMIN / DEVELOPER:</span>
+                    <div>1. Get a key at <a href="https://resend.com" target="_blank" className="underline hover:text-amber-400">resend.com</a>.</div>
+                    <div>2. Set <code className="bg-black/30 px-1 py-0.5 rounded text-amber-300 font-mono">RESEND_API_KEY=your_key</code> in <code className="bg-black/30 px-1 py-0.5 rounded font-mono">.env.local</code>.</div>
+                  </div>
+                </div>
+              )}
+              {emailStatus === 'failed' && (
+                <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-sm text-rose-300 text-left flex gap-3 shadow-sm">
+                  <AlertCircle size={18} className="shrink-0 mt-0.5 text-rose-450" />
+                  <div>
+                    <strong className="block text-rose-400">Email Delivery Interrupted</strong>
+                    We registered your order but could not send the receipt email.
+                    {emailErrorMessage && <p className="mt-1 text-xs opacity-80 font-mono">Reason: {emailErrorMessage}</p>}
+                    <p className="mt-2 text-xs text-rose-450/80">Please click the button below to download your PDF receipt manually.</p>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <motion.button 
+                onClick={handleDownloadReceipt} 
+                whileHover={{ scale: 1.05 }} 
+                whileTap={{ scale: 0.95 }}
+                className="px-8 py-3.5 rounded-full bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] font-bold text-sm flex items-center justify-center gap-2 hover:border-[var(--color-gold)] hover:text-[var(--color-gold)] transition-colors"
+              >
+                <Download size={16} /> Download Receipt
+              </motion.button>
+
+              <Link href="/products" className="block">
+                <motion.button 
+                  whileHover={{ scale: 1.05 }} 
+                  whileTap={{ scale: 0.95 }}
+                  className="w-full px-8 py-3.5 rounded-full bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-black text-sm flex items-center justify-center gap-2 shadow-lg hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] transition-all"
+                >
+                  Continue Shopping <ArrowRight size={16} />
+                </motion.button>
+              </Link>
+            </div>
+          </motion.div>
         </div>
       </div>
     );
@@ -629,11 +525,13 @@ export default function EnquiryPage() {
               <div className="glass-card rounded-2xl p-6">
                 <h3 className="text-lg font-bold font-display mb-5 border-b border-[var(--border)] pb-3 flex items-center gap-2"><ShoppingCart size={16} className="text-[var(--color-gold)]" /> Order Summary</h3>
                 <div className="space-y-3 mb-5 text-sm">
-                  <div className="flex justify-between"><span className="text-[var(--text-muted)]">Subtotal ({items.length} items)</span><span className="font-bold">₹{(getTotal() + getSavings()).toLocaleString('en-IN')}</span></div>
-                  <div className="flex justify-between text-emerald-500 font-bold"><span>Discount</span><span>- ₹{getSavings().toLocaleString('en-IN')}</span></div>
+                  <div className="flex justify-between"><span className="text-[var(--text-muted)]">Actual Total (Gross)</span><span className="font-bold">₹{(getTotal() + getSavings()).toLocaleString('en-IN')}</span></div>
+                  <div className="flex justify-between text-emerald-500 font-bold"><span>Actual Discount</span><span>- ₹{getSavings().toLocaleString('en-IN')}</span></div>
+                  <div className="flex justify-between text-[var(--text-muted)] border-t border-[var(--border)]/30 pt-2"><span>Total Value (Net)</span><span className="font-bold">₹{getTotal().toLocaleString('en-IN')}</span></div>
+                  <div className="flex justify-between text-[var(--text-muted)]"><span>Packing Charges (3%)</span><span className="font-bold">₹{Math.round(getTotal() * 0.03).toLocaleString('en-IN')}</span></div>
                 </div>
                 <div className="flex justify-between items-end border-t border-[var(--border)] pt-4 mb-6">
-                  <span className="font-bold">Total</span><span className="text-2xl font-bold text-[var(--color-gold)]">₹{getTotal().toLocaleString('en-IN')}</span>
+                  <span className="font-bold">Net Payable</span><span className="text-2xl font-bold text-[var(--color-gold)]">₹{(getTotal() + Math.round(getTotal() * 0.03)).toLocaleString('en-IN')}</span>
                 </div>
 
                 {getTotal() < minOrderValue && (
@@ -665,16 +563,32 @@ export default function EnquiryPage() {
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="max-w-2xl mx-auto">
           <button onClick={() => goToStep(1)} className="flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[var(--color-gold)] mb-6"><ArrowLeft size={16} /> Back to Cart</button>
           <h1 className="text-3xl font-bold font-display mb-8">Your Details</h1>
-          <form onSubmit={(e) => { e.preventDefault(); goToStep(3); }} className="glass-card rounded-2xl p-8 space-y-5">
+          <form onSubmit={(e) => { 
+            e.preventDefault(); 
+            if (customerInfo.phone.length !== 10) {
+              setSubmitError('Mobile Number must be exactly 10 digits.');
+              return;
+            }
+            if (customerInfo.pincode.length !== 6) {
+              setSubmitError('Pincode must be exactly 6 digits.');
+              return;
+            }
+            if (!customerInfo.email) {
+              setSubmitError('Email Address is required.');
+              return;
+            }
+            setSubmitError(null);
+            goToStep(3); 
+          }} className="glass-card rounded-2xl p-8 space-y-5">
             <div className="grid sm:grid-cols-2 gap-5">
               <div><label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">Full Name *</label>
                 <input required value={customerInfo.name} onChange={(e) => setCustomerInfo({...customerInfo, name: e.target.value})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all" placeholder="Your Full Name" /></div>
               <div><label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">Mobile Number *</label>
-                <input required type="tel" value={customerInfo.phone} onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all" placeholder="+91 XXXXX XXXXX" /></div>
+                <input required type="tel" pattern="[0-9]{10}" maxLength={10} value={customerInfo.phone} onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value.replace(/\D/g, '').slice(0, 10)})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all" placeholder="10-digit Mobile Number" /></div>
             </div>
             <div className="grid sm:grid-cols-2 gap-5">
-              <div><label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">Email Address <span className="text-[var(--text-muted)]/60">(Optional)</span></label>
-                <input type="email" value={customerInfo.email} onChange={(e) => setCustomerInfo({...customerInfo, email: e.target.value})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all" placeholder="you@email.com" /></div>
+              <div><label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">Email Address *</label>
+                <input required type="email" value={customerInfo.email} onChange={(e) => setCustomerInfo({...customerInfo, email: e.target.value})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all" placeholder="you@email.com" /></div>
               <div><label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">State *</label>
                 <select required value={customerInfo.state} onChange={(e) => setCustomerInfo({...customerInfo, state: e.target.value})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all appearance-none cursor-pointer">
                   <option value="">Select State</option>
@@ -695,7 +609,18 @@ export default function EnquiryPage() {
             <div><label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">Full Delivery Address *</label>
               <textarea required rows={3} value={customerInfo.address} onChange={(e) => setCustomerInfo({...customerInfo, address: e.target.value})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all resize-none" placeholder="House No, Street, Area, Landmark" /></div>
             <div className="w-1/3"><label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">Pincode *</label>
-              <input required value={customerInfo.pincode} onChange={(e) => setCustomerInfo({...customerInfo, pincode: e.target.value})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all" placeholder="625515" /></div>
+              <input required type="tel" pattern="[0-9]{6}" maxLength={6} value={customerInfo.pincode} onChange={(e) => setCustomerInfo({...customerInfo, pincode: e.target.value.replace(/\D/g, '').slice(0, 6)})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all" placeholder="6-digit Pincode" /></div>
+            
+            {submitError && (
+              <div className="flex items-start gap-3 text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4 text-left">
+                <AlertCircle size={18} className="shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold text-sm">Validation Error</span>
+                  <p className="text-xs text-rose-300/80 mt-1">{submitError}</p>
+                </div>
+              </div>
+            )}
+
             <motion.button type="submit" whileHover={{ scale: 1.02 }} className="w-full bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold rounded-xl py-3.5 text-sm shadow-lg flex items-center justify-center gap-2">
               Review Order <ArrowRight size={16} />
             </motion.button>
@@ -750,10 +675,12 @@ export default function EnquiryPage() {
                   <span className="font-bold">₹{(item.product.price * item.quantity).toLocaleString('en-IN')}</span>
                 </div>
               ))}
-              <div className="mt-4 pt-4 border-t border-[var(--border)] space-y-2">
-                <div className="flex justify-between text-sm"><span className="text-[var(--text-muted)]">Subtotal</span><span>₹{(getTotal() + getSavings()).toLocaleString('en-IN')}</span></div>
-                <div className="flex justify-between text-sm text-emerald-500"><span>Discount</span><span>-₹{getSavings().toLocaleString('en-IN')}</span></div>
-                <div className="flex justify-between text-xl font-bold pt-2 border-t border-[var(--border)]"><span>Total</span><span className="text-[var(--color-gold)]">₹{getTotal().toLocaleString('en-IN')}</span></div>
+              <div className="mt-4 pt-4 border-t border-[var(--border)] space-y-2 text-sm">
+                <div className="flex justify-between"><span className="text-[var(--text-muted)]">Actual Total (Gross)</span><span>₹{(getTotal() + getSavings()).toLocaleString('en-IN')}</span></div>
+                <div className="flex justify-between text-emerald-500"><span>Actual Discount</span><span>-₹{getSavings().toLocaleString('en-IN')}</span></div>
+                <div className="flex justify-between pt-1 border-t border-[var(--border)]/30"><span className="text-[var(--text-muted)]">Total Value (Net)</span><span className="font-bold">₹{getTotal().toLocaleString('en-IN')}</span></div>
+                <div className="flex justify-between"><span className="text-[var(--text-muted)]">Packing Charges (3%)</span><span className="font-bold">₹{Math.round(getTotal() * 0.03).toLocaleString('en-IN')}</span></div>
+                <div className="flex justify-between text-xl font-bold pt-2 border-t border-[var(--border)]"><span>Net Payable</span><span className="text-[var(--color-gold)]">₹{(getTotal() + Math.round(getTotal() * 0.03)).toLocaleString('en-IN')}</span></div>
               </div>
             </div>
 
@@ -775,36 +702,11 @@ export default function EnquiryPage() {
               </div>
             )}
 
-            <motion.button onClick={() => setShowConfirmModal(true)} disabled={isSubmitting} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+            <motion.button onClick={handlePlaceOrder} disabled={isSubmitting} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
               className="w-full bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold rounded-xl py-4 text-lg shadow-lg flex items-center justify-center gap-3 disabled:opacity-50">
               {isSubmitting ? 'Placing Order...' : <><CheckCircle2 size={20} /> Confirm & Place Order</>}
             </motion.button>
           </div>
-
-          {/* Confirmation Modal */}
-          <AnimatePresence>
-            {showConfirmModal && (
-              <>
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" onClick={() => setShowConfirmModal(false)} />
-                <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
-                  className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[90vw] max-w-md bg-[var(--bg)] rounded-3xl p-8 border border-[var(--border)] shadow-2xl">
-                  <div className="text-center">
-                    <div className="w-16 h-16 rounded-full bg-[var(--color-gold)]/10 flex items-center justify-center mx-auto mb-4">
-                      <FileText size={28} className="text-[var(--color-gold)]" />
-                    </div>
-                    <h3 className="text-xl font-bold font-display mb-2">Confirm Order?</h3>
-                    <p className="text-sm text-[var(--text-muted)] mb-6">You are about to place an order for <strong className="text-[var(--color-gold)]">₹{getTotal().toLocaleString('en-IN')}</strong>. This action will generate your receipt.</p>
-                    <div className="flex gap-3">
-                      <button onClick={() => setShowConfirmModal(false)} className="flex-1 py-3 rounded-xl border border-[var(--border)] text-[var(--text)] font-bold text-sm hover:bg-[var(--surface-high)]">Cancel</button>
-                      <motion.button onClick={handlePlaceOrder} whileTap={{ scale: 0.95 }} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold text-sm shadow-lg">
-                        Yes, Place Order
-                      </motion.button>
-                    </div>
-                  </div>
-                </motion.div>
-              </>
-            )}
-          </AnimatePresence>
         </motion.div>
       )}
     </div>

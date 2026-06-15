@@ -38,6 +38,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const supabase = createClient(supabaseUrl, supabaseKey);
     const body = await req.json();
 
+    if (body.image_url !== undefined && (body.image_url === null || body.image_url === '')) {
+      return NextResponse.json({ error: 'Product image is required.' }, { status: 400 });
+    }
+
     const updateData: Record<string, any> = {};
     if (body.name_en !== undefined) updateData.name_en = body.name_en;
     if (body.name_ta !== undefined) updateData.name_ta = body.name_ta;

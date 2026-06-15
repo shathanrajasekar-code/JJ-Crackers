@@ -92,17 +92,17 @@ export async function POST(req: Request) {
         // Fetch all products
         const { data: products, error: fetchError } = await supabase
           .from('products')
-          .select('id, mrp');
+          .select('*');
         
         if (fetchError) throw fetchError;
         
         if (products && products.length > 0) {
-          // Perform bulk price updates
+          // Perform bulk price updates (keep mrp constant, calculate price from mrp based on new discount)
           const updates = products.map(p => {
             const mrp = p.mrp || 0;
             const price = Math.round(mrp * (1 - discountVal / 100));
             return {
-              id: p.id,
+              ...p,
               price,
               discount_percent: discountVal,
               badge_text: discountVal > 0 ? `🔥 ${discountVal}% OFF` : null,
@@ -110,7 +110,6 @@ export async function POST(req: Request) {
           });
 
           // Supabase upsert on products table (replaces matching rows by id)
-          // We only update price, discount_percent, and badge_text
           for (const chunk of chunkArray(updates, 50)) {
             const { error: updateError } = await supabase.from('products').upsert(chunk);
             if (updateError) throw updateError;

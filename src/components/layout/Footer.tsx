@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { MessageCircle, Mail, Phone, MapPin, ArrowUp, Sparkles, Send } from 'lucide-react';
+import { Mail, Phone, MapPin, ArrowUp, Sparkles, Send } from 'lucide-react';
 import { useState } from 'react';
 
 const footerLinks = {
@@ -27,9 +27,8 @@ const footerLinks = {
 };
 
 const socialLinks = [
-  { icon: MessageCircle, label: 'WhatsApp', href: 'https://wa.me/917092300252', color: 'hover:text-[#25D366] hover:border-[#25D366]' },
   { icon: Phone, label: 'Call Us', href: 'tel:+917092300252', color: 'hover:text-[#E4405F] hover:border-[#E4405F]' },
-  { icon: MapPin, label: 'Visit Factory', href: 'https://maps.google.com/?q=1/406+Sivakasi-Vembakottai+Main+Road+Vembakottai', color: 'hover:text-[#1877F2] hover:border-[#1877F2]' },
+  { icon: MapPin, label: 'Visit Factory', href: 'https://maps.app.goo.gl/pi2T1vsVV5dzjZpv9', color: 'hover:text-[#1877F2] hover:border-[#1877F2]' },
   { icon: Mail, label: 'Email', href: 'mailto:jjcrackersworld@gmail.com', color: 'hover:text-[var(--color-gold)] hover:border-[var(--color-gold)]' },
 ];
 
@@ -58,8 +57,8 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
           <div className="lg:col-span-2">
             <Link href="/" suppressHydrationWarning className="inline-flex items-center gap-3 mb-6 group">
-              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[var(--color-gold)]/30 shadow-[0_0_20px_rgba(212,175,55,0.3)]">
-                <Image src="/jj-crackers-logo.png" alt="JJ Crackers" width={48} height={48} className="object-contain" />
+              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[var(--color-gold)]/30 shadow-[0_0_20px_rgba(212,175,55,0.3)] bg-white">
+                <Image src="/logo/logo.png" alt="JJ Crackers" width={48} height={48} className="object-cover dark:brightness-[0.9] dark:contrast-[1.1] transition-all duration-300" />
               </div>
               <div className="flex flex-col">
                 <span className="font-display font-bold text-2xl tracking-tight leading-none">Jegajothi Crackers</span>

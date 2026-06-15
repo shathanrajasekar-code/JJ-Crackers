@@ -1,11 +1,9 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from 'next/font/google';
-import dynamic from 'next/dynamic';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { ToastContainer } from '@/components/ui/Toast';
-import { WhatsAppFAB } from '@/components/ui/WhatsAppFAB';
 import { AIChatbot } from '@/components/ui/AIChatbot';
 import "./globals.css";
 
@@ -76,7 +74,7 @@ export default function RootLayout({
                 name: 'Jegajothi Crackers',
                 alternateName: 'JJ Crackers',
                 url: process.env.NEXT_PUBLIC_SITE_URL || 'https://jegajothi-crackers.vercel.app',
-                logo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://jegajothi-crackers.vercel.app'}/jj-crackers-logo.png`,
+                logo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://jegajothi-crackers.vercel.app'}/logo/logo.png`,
                 foundingDate: '1984',
                 description: "Sivakasi's most trusted fireworks manufacturer since 1984.",
                 telephone: '+91-70923-00252',
@@ -127,7 +125,6 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
-          <WhatsAppFAB />
           <AIChatbot />
           <ToastContainer />
         </ThemeProvider>

@@ -41,8 +41,8 @@ export function Navbar() {
         <div suppressHydrationWarning className="max-w-[1400px] mx-auto px-6 flex items-center justify-between">
           <Link href="/" suppressHydrationWarning className="flex items-center gap-3 group" id="nav-logo">
             <motion.div suppressHydrationWarning whileHover={{ scale: 1.1, rotate: 5 }}
-              className="relative w-11 h-11 rounded-full overflow-hidden shadow-[0_0_20px_rgba(212,175,55,0.3)] border-2 border-[var(--color-gold)]/30">
-              <Image src="/jj-crackers-logo.png" alt="JJ Crackers" fill className="object-contain" sizes="44px" />
+              className="relative w-11 h-11 rounded-full overflow-hidden shadow-[0_0_20px_rgba(212,175,55,0.3)] border-2 border-[var(--color-gold)]/30 bg-white">
+              <Image src="/logo/logo.png" alt="JJ Crackers" fill className="object-cover dark:brightness-[0.9] dark:contrast-[1.1] transition-all duration-300" sizes="44px" />
             </motion.div>
             <div className="flex flex-col">
               <span className="font-display text-lg font-bold tracking-tight text-[var(--text)] leading-none">Jegajothi</span>
