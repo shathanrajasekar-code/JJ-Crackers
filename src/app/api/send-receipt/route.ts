@@ -5,7 +5,23 @@ export async function POST(req: Request) {
   let body: any = null;
   try {
     body = await req.json();
-    const { to, orderNumber, customerName, items, totalAmount, subtotal, discountTotal, pdfBase64 } = body;
+    const {
+      to,
+      orderNumber,
+      customerName,
+      items,
+      totalAmount,
+      subtotal,
+      discountTotal,
+      pdfBase64,
+      customerPhone,
+      customerAddress,
+      customerCity,
+      customerPincode,
+      customerState,
+      customerDistrict,
+      notifyAdmin
+    } = body;
 
     const apiKey = process.env.RESEND_API_KEY;
     const senderEmail = process.env.SENDER_EMAIL || 'onboarding@resend.dev';
@@ -207,11 +223,9 @@ export async function POST(req: Request) {
     </html>
     `;
 
-    const adminEmail = process.env.ADMIN_EMAIL || 'jjcrackersworld@gmail.com';
     const emailPayload: any = {
       from: `JJ Crackers <${senderEmail}>`,
       to: [to],
-      bcc: [adminEmail],
       subject: `Order Confirmed — ${orderNumber} | JJ Crackers`,
       html: emailHtml,
     };
@@ -227,8 +241,156 @@ export async function POST(req: Request) {
     }
 
     const { data, error } = await resend.emails.send(emailPayload);
-
     if (error) throw error;
+
+    // Send dedicated notification email to owner if requested (e.g. on new checkout)
+    const adminEmail = process.env.ADMIN_EMAIL || 'jjcrackersworld@gmail.com';
+    if (notifyAdmin) {
+      const adminEmailHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>New Order Alert — ${orderNumber}</title>
+      </head>
+      <body style="margin:0;padding:0;background-color:#FAF7F0;font-family:'Inter', 'Segoe UI', Arial, sans-serif;color:#2D241E;">
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#FAF7F0;padding:20px 10px;">
+          <tr>
+            <td align="center">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:600px;background-color:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 8px 30px rgba(45,36,30,0.06);border:1px solid #E8E2D1;">
+                
+                <!-- Top Banner -->
+                <tr>
+                  <td style="background:linear-gradient(135deg,#8B0000 0%,#B22222 100%);padding:40px 32px;text-align:center;">
+                    <h1 style="color:#D4AF37;margin:0;font-size:24px;font-weight:800;letter-spacing:2px;text-shadow:0 2px 4px rgba(0,0,0,0.2);">NEW ORDER RECEIVED! 🔔</h1>
+                    <p style="color:#F4E296;margin:8px 0 0;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:600;">JJ Crackers Administration</p>
+                  </td>
+                </tr>
+                
+                <!-- Content -->
+                <tr>
+                  <td style="padding:40px 32px;">
+                    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                      <tr>
+                        <td style="padding-bottom:24px;">
+                          <h2 style="margin:0;font-size:18px;font-weight:800;color:#1A1400;">Hello Admin,</h2>
+                          <p style="margin:8px 0 0;font-size:14px;color:#5D5046;line-height:1.6;font-weight:500;">A new order has been successfully placed on the website. Below is a summary of the order and customer information. The full invoice receipt PDF is also attached to this email.</p>
+                        </td>
+                      </tr>
+                      
+                      <!-- Customer Information Box -->
+                      <tr>
+                        <td style="padding-bottom:30px;">
+                          <h3 style="margin:0 0 10px;font-size:12px;font-weight:800;color:#A67C00;text-transform:uppercase;letter-spacing:1px;">👤 Customer Info</h3>
+                          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#FAF7F0;border:1px solid #E8E2D1;border-radius:16px;padding:20px;font-size:13px;line-height:1.6;color:#2D241E;">
+                            <tr>
+                              <td><strong>Name:</strong> ${customerName}</td>
+                            </tr>
+                            <tr>
+                              <td><strong>Phone:</strong> ${customerPhone || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                              <td><strong>Email:</strong> ${to}</td>
+                            </tr>
+                            <tr>
+                              <td><strong>Delivery Address:</strong> ${[customerAddress, customerCity, customerDistrict, customerState, customerPincode].filter(Boolean).join(', ') || 'N/A'}</td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+
+                      <!-- Order Summary Box -->
+                      <tr>
+                        <td style="padding-bottom:30px;">
+                          <h3 style="margin:0 0 10px;font-size:12px;font-weight:800;color:#A67C00;text-transform:uppercase;letter-spacing:1px;">📦 Order Summary</h3>
+                          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color:#FAF7F0;border:1px solid #E8E2D1;border-radius:16px;padding:20px;font-size:13px;line-height:1.6;color:#2D241E;">
+                            <tr>
+                              <td><strong>Order Number:</strong> <span style="color:#B22222;font-weight:bold;font-family:monospace;font-size:14px;">${orderNumber}</span></td>
+                            </tr>
+                            <tr>
+                              <td><strong>Subtotal:</strong> ₹${(subtotal || totalAmount).toLocaleString('en-IN')}</td>
+                            </tr>
+                            ${discountTotal ? `
+                            <tr>
+                              <td style="color:#10B981;"><strong>Discount:</strong> -₹${discountTotal.toLocaleString('en-IN')}</td>
+                            </tr>
+                            ` : ''}
+                            <tr>
+                              <td style="border-top:1px solid #E8E2D1;padding-top:8px;margin-top:8px;"><strong>Grand Total:</strong> <strong style="color:#A67C00;font-size:16px;">₹${totalAmount.toLocaleString('en-IN')}</strong></td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      
+                      <!-- Ordered Items Table -->
+                      <tr>
+                        <td style="padding-bottom:20px;">
+                          <h3 style="margin:0;font-size:12px;font-weight:800;color:#1A1400;text-transform:uppercase;letter-spacing:1px;padding-bottom:10px;border-bottom:2px solid #B22222;">Items Ordered</h3>
+                        </td>
+                      </tr>
+                      
+                      <tr>
+                        <td style="padding-bottom:30px;">
+                          <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <thead>
+                              <tr style="color:#8B735B;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;text-align:left;">
+                                <th style="padding:10px 0;border-bottom:1px solid #E8E2D1;">Product</th>
+                                <th style="padding:10px 10px;border-bottom:1px solid #E8E2D1;text-align:center;width:60px;">Qty</th>
+                                <th style="padding:10px 10px;border-bottom:1px solid #E8E2D1;text-align:right;width:90px;">Price</th>
+                                <th style="padding:10px 0;border-bottom:1px solid #E8E2D1;text-align:right;width:90px;">Total</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              ${itemsHtml}
+                            </tbody>
+                          </table>
+                        </td>
+                      </tr>
+
+                      <tr>
+                        <td align="center" style="padding-top:10px;">
+                          <a href="https://jjcrackersworld.com/admin" style="background-color:#B22222;color:#ffffff;padding:12px 30px;border-radius:12px;font-size:13px;font-weight:bold;text-decoration:none;display:inline-block;box-shadow:0 4px 12px rgba(178,34,34,0.3);font-family:'Inter', Arial, sans-serif;">Manage Order in Admin Panel</a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                
+                <!-- Footer -->
+                <tr>
+                  <td style="background-color:#FAF7F0;border-top:1px solid #E8E2D1;padding:24px;text-align:center;font-size:11px;color:#8B735B;">
+                    <p style="margin:0;font-weight:700;color:#2D241E;">JJ Crackers Administration Notification System</p>
+                  </td>
+                </tr>
+                
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+      `;
+
+      const adminEmailPayload: any = {
+        from: `JJ Crackers Alerts <${senderEmail}>`,
+        to: [adminEmail],
+        subject: `🚨 New Order Alert — ${orderNumber} | JJ Crackers`,
+        html: adminEmailHtml,
+      };
+
+      if (pdfBase64) {
+        adminEmailPayload.attachments = [
+          {
+            filename: `JJ-Crackers-Receipt-${orderNumber}.pdf`,
+            content: pdfBase64,
+            contentType: 'application/pdf',
+          },
+        ];
+      }
+
+      await resend.emails.send(adminEmailPayload);
+    }
 
     // Track analytics event
     try {

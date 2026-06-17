@@ -172,6 +172,13 @@ export default function EnquiryPage() {
           discountTotal: getSavings(),
           packingCharges: packingCharges,
           pdfBase64: pdfBase64Data,
+          customerPhone: customerInfo.phone,
+          customerAddress: customerInfo.address,
+          customerCity: customerInfo.city,
+          customerPincode: customerInfo.pincode,
+          customerState: customerInfo.state,
+          customerDistrict: customerInfo.district,
+          notifyAdmin: true,
         }),
       })
       .then(async (emailRes) => {
