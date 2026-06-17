@@ -212,12 +212,83 @@ export default function AdminPage() {
     whatsapp_number: '7092300252',
     email_address: 'jjcrackersworld@gmail.com',
     marquee: '',
+    whatsapp_provider: 'none',
+    whatsapp_business_phone_number_id: '',
+    whatsapp_business_access_token: '',
+    whatsapp_ultramsg_instance_id: '',
+    whatsapp_ultramsg_token: '',
+    whatsapp_template_name: 'order_status_update',
+    whatsapp_msg_pending: '',
+    whatsapp_msg_confirmed: '',
+    whatsapp_msg_processing: '',
+    whatsapp_msg_shipped: '',
+    whatsapp_msg_delivered: '',
+    whatsapp_msg_cancelled: '',
   });
   const [bankAccounts, setBankAccounts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [sliders, setSliders] = useState<any[]>([]);
   
+  // Inspected Order
+  const [inspectedOrder, setInspectedOrder] = useState<any | null>(null);
+  const [resendingEmailId, setResendingEmailId] = useState<string | null>(null);
+  
+  // WhatsApp & Email Notifications states
+  const [notifyWhatsApp, setNotifyWhatsApp] = useState(true);
+  const [notifyEmail, setNotifyEmail] = useState(true);
+  const [trackingInfo, setTrackingInfo] = useState('');
+  const [customMessageText, setCustomMessageText] = useState('');
+  const [sendingNotificationId, setSendingNotificationId] = useState<string | null>(null);
+  const [notificationStatus, setNotificationStatus] = useState<string | null>(null);
+
   const [loading, setLoading] = useState(false);
+
+  // Function to build/preview the message text based on the status template and parameters
+  const getInterpolatedMessage = (statusStr: string, trackingStr: string, orderObj: any) => {
+    if (!orderObj) return '';
+    let template = '';
+    
+    switch (statusStr) {
+      case 'pending':
+        template = settings.whatsapp_msg_pending || 'Hello {{customer_name}}, your order {{order_number}} is received and is pending verification. We will contact you shortly to confirm!';
+        break;
+      case 'confirmed':
+        template = settings.whatsapp_msg_confirmed || 'Hello {{customer_name}}, your order {{order_number}} is confirmed! We are packaging your crackers now.';
+        break;
+      case 'processing':
+        template = settings.whatsapp_msg_processing || 'Hello {{customer_name}}, your order {{order_number}} is being processed at our Sivakasi factory.';
+        break;
+      case 'shipped':
+        template = settings.whatsapp_msg_shipped || 'Hello {{customer_name}}, your order {{order_number}} has been shipped! Transport tracking details: {{tracking_info}}';
+        break;
+      case 'delivered':
+        template = settings.whatsapp_msg_delivered || 'Hello {{customer_name}}, your order {{order_number}} has been successfully delivered. Happy and safe celebrating! 🎆';
+        break;
+      case 'cancelled':
+        template = settings.whatsapp_msg_cancelled || 'Hello {{customer_name}}, your order {{order_number}} has been cancelled. Please contact support if you have questions.';
+        break;
+      default:
+        template = `Hello {{customer_name}}, your order {{order_number}} is currently: ${statusStr.toUpperCase()}.`;
+    }
+
+    return template
+      .replace(/\{\{customer_name\}\}/g, orderObj.customer_name || 'Customer')
+      .replace(/\{\{order_number\}\}/g, orderObj.order_number || '')
+      .replace(/\{\{tracking_info\}\}/g, trackingStr || 'N/A')
+      .replace(/\{\{status\}\}/g, statusStr);
+  };
+
+  // Reset/update message when order status changes
+  useEffect(() => {
+    if (inspectedOrder) {
+      const msg = getInterpolatedMessage(inspectedOrder.status, trackingInfo, inspectedOrder);
+      setCustomMessageText(msg);
+    } else {
+      setTrackingInfo('');
+      setCustomMessageText('');
+      setNotificationStatus(null);
+    }
+  }, [inspectedOrder?.id, inspectedOrder?.status, trackingInfo]);
   const [mounted, setMounted] = useState(false);
   
   // Search and Filter states
@@ -240,10 +311,6 @@ export default function AdminPage() {
     action: () => {},
   });
 
-  // Inspected Order
-  const [inspectedOrder, setInspectedOrder] = useState<any | null>(null);
-  const [resendingEmailId, setResendingEmailId] = useState<string | null>(null);
-  
   // Excel File State
   const [file, setFile] = useState<File | null>(null);
   const [uploadStatus, setUploadStatus] = useState('');
@@ -325,6 +392,9 @@ export default function AdminPage() {
   }, [orders, inspectedOrder]);
 
   const updateOrderStatus = async (id: string, status: string) => {
+    // Optimistically update orders in UI instantly
+    setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
+    
     try {
       const res = await adminFetch(`/api/orders/${id}`, { 
         method: 'PATCH', 
@@ -332,11 +402,55 @@ export default function AdminPage() {
         body: JSON.stringify({ status }) 
       });
       if (res.ok) {
+        // Fetch only updated orders to synchronize state quickly without full reload
+        const updatedOrders = await adminFetch('/api/orders').then(r => r.json()).catch(() => null);
+        if (updatedOrders) {
+          setOrders(updatedOrders);
+        }
+      } else {
+        // Revert to full reload if patch failed
         fetchData();
       }
     } catch (err) { 
       console.error(err); 
+      fetchData();
     }
+  };
+
+  const handleSendStatusNotification = async (orderObj: any) => {
+    if (!orderObj) return;
+    setSendingNotificationId(orderObj.id);
+    setNotificationStatus('Sending notifications...');
+    try {
+      const res = await adminFetch(`/api/orders/${orderObj.id}/notify-status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: orderObj.status,
+          trackingInfo,
+          sendWhatsApp: notifyWhatsApp,
+          sendEmail: notifyEmail,
+          customMessage: customMessageText
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        let msg = '✅ Notification sent successfully!';
+        const parts: string[] = [];
+        if (data.whatsapp?.error) parts.push(`WhatsApp: ${data.whatsapp.error}`);
+        if (data.email?.error) parts.push(`Email: ${data.email.error}`);
+        if (parts.length > 0) {
+          msg += ' (' + parts.join(', ') + ')';
+        }
+        setNotificationStatus(msg);
+      } else {
+        setNotificationStatus(`❌ Failed: ${data.error || 'Notification dispatch failed'}`);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setNotificationStatus(`❌ Error: ${err.message || 'Connection failed'}`);
+    }
+    setSendingNotificationId(null);
   };
 
   const seedProducts = async () => {
@@ -1966,6 +2080,156 @@ export default function AdminPage() {
                   />
                 </div>
 
+                {/* WHATSAPP API & NOTIFICATIONS SETTINGS */}
+                <div className="border-t border-[#2A2A24]/60 pt-6 space-y-6">
+                  <div>
+                    <h3 className="text-sm font-bold font-display text-[var(--color-gold)]">WhatsApp API & Notifications Settings</h3>
+                    <p className="text-[10px] text-[#A0A090] mt-1">Configure automated notifications via Meta Business API or UltraMsg</p>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#A0A090] mb-2 uppercase tracking-wider">WhatsApp Provider *</label>
+                      <select 
+                        value={settings.whatsapp_provider || 'none'} 
+                        onChange={(e) => setSettings({...settings, whatsapp_provider: e.target.value})} 
+                        className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-4 py-3 text-xs text-[#F5F5F0] focus:border-[var(--color-gold)] focus:outline-none cursor-pointer"
+                      >
+                        <option value="none">None / Disabled</option>
+                        <option value="ultramsg">UltraMsg (Unofficial Gateway)</option>
+                        <option value="whatsapp_business">Meta WhatsApp Business API (Official)</option>
+                      </select>
+                    </div>
+
+                    {(settings.whatsapp_provider === 'whatsapp_business') && (
+                      <div>
+                        <label className="block text-[10px] font-bold text-[#A0A090] mb-2 uppercase tracking-wider">Meta Template Name *</label>
+                        <input 
+                          value={settings.whatsapp_template_name || ''} 
+                          onChange={(e) => setSettings({...settings, whatsapp_template_name: e.target.value})} 
+                          className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-4 py-3 text-xs text-[#F5F5F0] focus:border-[var(--color-gold)] focus:outline-none" 
+                          placeholder="e.g. order_status_update"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {settings.whatsapp_provider === 'whatsapp_business' && (
+                    <div className="grid sm:grid-cols-2 gap-6 bg-[#1C1C18]/40 p-4 border border-[#2A2A24] rounded-xl">
+                      <div>
+                        <label className="block text-[10px] font-bold text-[#A0A090] mb-2 uppercase tracking-wider">Meta Phone Number ID *</label>
+                        <input 
+                          value={settings.whatsapp_business_phone_number_id || ''} 
+                          onChange={(e) => setSettings({...settings, whatsapp_business_phone_number_id: e.target.value})} 
+                          className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-4 py-3 text-xs text-[#F5F5F0] focus:border-[var(--color-gold)] focus:outline-none" 
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-[#A0A090] mb-2 uppercase tracking-wider">Meta System User Access Token *</label>
+                        <input 
+                          type="password" 
+                          value={settings.whatsapp_business_access_token || ''} 
+                          onChange={(e) => setSettings({...settings, whatsapp_business_access_token: e.target.value})} 
+                          className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-4 py-3 text-xs text-[#F5F5F0] focus:border-[var(--color-gold)] focus:outline-none" 
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {settings.whatsapp_provider === 'ultramsg' && (
+                    <div className="grid sm:grid-cols-2 gap-6 bg-[#1C1C18]/40 p-4 border border-[#2A2A24] rounded-xl">
+                      <div>
+                        <label className="block text-[10px] font-bold text-[#A0A090] mb-2 uppercase tracking-wider">UltraMsg Instance ID *</label>
+                        <input 
+                          value={settings.whatsapp_ultramsg_instance_id || ''} 
+                          onChange={(e) => setSettings({...settings, whatsapp_ultramsg_instance_id: e.target.value})} 
+                          className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-4 py-3 text-xs text-[#F5F5F0] focus:border-[var(--color-gold)] focus:outline-none" 
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-[#A0A090] mb-2 uppercase tracking-wider">UltraMsg Access Token *</label>
+                        <input 
+                          type="password" 
+                          value={settings.whatsapp_ultramsg_token || ''} 
+                          onChange={(e) => setSettings({...settings, whatsapp_ultramsg_token: e.target.value})} 
+                          className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-4 py-3 text-xs text-[#F5F5F0] focus:border-[var(--color-gold)] focus:outline-none" 
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Status Custom Messages */}
+                  <div className="space-y-4 bg-[#1C1C18]/20 p-4 border border-[#2A2A24]/40 rounded-2xl">
+                    <div className="text-[10px] font-bold text-[#A0A090] uppercase tracking-wider">Status Update Message Templates (WhatsApp & Email)</div>
+                    <p className="text-[9px] text-[#A0A090] -mt-1 leading-normal">
+                      Use placeholders like <code className="text-[var(--color-gold)] font-mono font-bold">{"{{customer_name}}"}</code>, <code className="text-[var(--color-gold)] font-mono font-bold">{"{{order_number}}"}</code>, and <code className="text-[var(--color-gold)] font-mono font-bold">{"{{tracking_info}}"}</code> to insert values dynamically.
+                    </p>
+
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Pending Status Message</label>
+                        <textarea 
+                          rows={2} 
+                          value={settings.whatsapp_msg_pending || ''} 
+                          onChange={(e) => setSettings({...settings, whatsapp_msg_pending: e.target.value})} 
+                          className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2 text-xs text-[#F5F5F0] focus:border-[var(--color-gold)] focus:outline-none resize-none" 
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Confirmed Status Message</label>
+                        <textarea 
+                          rows={2} 
+                          value={settings.whatsapp_msg_confirmed || ''} 
+                          onChange={(e) => setSettings({...settings, whatsapp_msg_confirmed: e.target.value})} 
+                          className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2 text-xs text-[#F5F5F0] focus:border-[var(--color-gold)] focus:outline-none resize-none" 
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Processing Status Message</label>
+                        <textarea 
+                          rows={2} 
+                          value={settings.whatsapp_msg_processing || ''} 
+                          onChange={(e) => setSettings({...settings, whatsapp_msg_processing: e.target.value})} 
+                          className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2 text-xs text-[#F5F5F0] focus:border-[var(--color-gold)] focus:outline-none resize-none" 
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Shipped Status Message</label>
+                        <textarea 
+                          rows={2} 
+                          value={settings.whatsapp_msg_shipped || ''} 
+                          onChange={(e) => setSettings({...settings, whatsapp_msg_shipped: e.target.value})} 
+                          className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2 text-xs text-[#F5F5F0] focus:border-[var(--color-gold)] focus:outline-none resize-none" 
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Delivered Status Message</label>
+                        <textarea 
+                          rows={2} 
+                          value={settings.whatsapp_msg_delivered || ''} 
+                          onChange={(e) => setSettings({...settings, whatsapp_msg_delivered: e.target.value})} 
+                          className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2 text-xs text-[#F5F5F0] focus:border-[var(--color-gold)] focus:outline-none resize-none" 
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Cancelled Status Message</label>
+                        <textarea 
+                          rows={2} 
+                          value={settings.whatsapp_msg_cancelled || ''} 
+                          onChange={(e) => setSettings({...settings, whatsapp_msg_cancelled: e.target.value})} 
+                          className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2 text-xs text-[#F5F5F0] focus:border-[var(--color-gold)] focus:outline-none resize-none" 
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="flex items-center justify-between pt-4">
                   <span className="text-xs text-[var(--color-gold)] font-bold">{settingsStatus}</span>
                   <button 
@@ -2132,6 +2396,93 @@ export default function AdminPage() {
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* WhatsApp & Email Status Notification Card */}
+                <div className="bg-[#1C1C18]/60 border border-[#2A2A24] rounded-xl p-4 mt-4 space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] text-[#A0A090] font-bold uppercase tracking-wider">Status Notification</span>
+                    <span className="text-[9px] bg-green-wa/10 text-green-wa border border-green-wa/20 px-2 py-0.5 rounded-md uppercase font-bold">Semi-Automatic</span>
+                  </div>
+
+                  {/* Checkboxes */}
+                  <div className="flex items-center gap-4 text-[11px] font-bold">
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={notifyWhatsApp} 
+                        onChange={(e) => setNotifyWhatsApp(e.target.checked)} 
+                        className="rounded bg-[#1C1C18] border-[#2A2A24] text-[var(--color-gold)] focus:ring-[var(--color-gold)]"
+                      />
+                      WhatsApp Update
+                    </label>
+                    <label className="flex items-center gap-1.5 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={notifyEmail} 
+                        onChange={(e) => setNotifyEmail(e.target.checked)} 
+                        className="rounded bg-[#1C1C18] border-[#2A2A24] text-[var(--color-gold)] focus:ring-[var(--color-gold)]"
+                      />
+                      Email Update
+                    </label>
+                  </div>
+
+                  {/* Tracking details (shown only if status is shipped) */}
+                  {inspectedOrder.status === 'shipped' && (
+                    <div>
+                      <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Transport / Lorry Tracking Info</label>
+                      <input 
+                        value={trackingInfo} 
+                        onChange={(e) => setTrackingInfo(e.target.value)} 
+                        className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2 text-xs text-[#F5F5F0] focus:border-[var(--color-gold)] focus:outline-none" 
+                        placeholder="e.g. VRL Logistics, LR No: 48291"
+                      />
+                    </div>
+                  )}
+
+                  {/* Message Preview */}
+                  <div>
+                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Message Preview (Editable)</label>
+                    <textarea 
+                      rows={3} 
+                      value={customMessageText} 
+                      onChange={(e) => setCustomMessageText(e.target.value)} 
+                      className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2 text-xs text-[#F5F5F0] focus:border-[var(--color-gold)] focus:outline-none resize-none font-medium" 
+                    />
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="space-y-2 pt-1">
+                    <button 
+                      type="button"
+                      onClick={() => handleSendStatusNotification(inspectedOrder)}
+                      disabled={sendingNotificationId === inspectedOrder.id || (!notifyWhatsApp && !notifyEmail)}
+                      className="w-full py-2.5 bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] disabled:from-[#2A2A24] disabled:to-[#2A2A24] text-[#1a1400] disabled:text-[#A0A090] font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all shadow-md"
+                    >
+                      <Send size={13} /> {sendingNotificationId === inspectedOrder.id ? 'Sending...' : 'Send Status Notification'}
+                    </button>
+
+                    {notifyWhatsApp && (
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          const cleanPhone = inspectedOrder.customer_phone.replace(/[^0-9]/g, '');
+                          const phone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+                          window.open(`https://wa.me/${phone}?text=${encodeURIComponent(customMessageText)}`, '_blank');
+                        }}
+                        className="w-full py-2 bg-transparent hover:bg-white/5 border border-[#2A2A24] hover:border-[#A0A090] text-[#F5F5F0] font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-all"
+                      >
+                        <MessageCircle size={12} /> Open in WhatsApp Web
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Status indicator */}
+                  {notificationStatus && (
+                    <p className={`text-[10px] font-bold text-center mt-1.5 ${notificationStatus.startsWith('❌') ? 'text-rose-400' : 'text-[var(--color-gold)]'}`}>
+                      {notificationStatus}
+                    </p>
+                  )}
                 </div>
               </div>
 

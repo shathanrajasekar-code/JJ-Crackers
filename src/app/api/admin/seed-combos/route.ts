@@ -11,6 +11,7 @@ const combos = [
     offer_price: 3000,
     combo_type: "Special Brown Box",
     description: "Low-smoke, low-noise, maximum visual delight. Perfect for the little ones.",
+    image_url: "/images/combos/children_pack.png",
     products: [
       "2 3/4 KURUVI", "GROUND CHAKKAR BIG (10 PCS)", "GROUND CHAKKAR SPECIAL", "FLOWER POT BIG", 
       "FLOWER POT COLOR KOTI", "SELFIE STICK", "1 1/2 TWINKLING STAR", "4 TWINKLING STAR", 
@@ -29,6 +30,7 @@ const combos = [
     offer_price: 4000,
     combo_type: "Special Brown Box",
     description: "The perfect balance for a memorable evening. A curated mix of floor wonders and sky-high bursts.",
+    image_url: "/images/combos/family_pack.png",
     products: [
       "4 LAKSHMI DELUXE", "BHAKUBALI CATEGORY", "GROUND CHAKKAR BIG (10 PCS)", "GROUND CHAKKAR DELUXE", 
       "FLOWER POT ASHOKA", "FLOWER POT COLOR KOTI", "CLASSIC BOMB", "NAYAGARA FALLS", "SELFIE STICK", 
@@ -47,6 +49,7 @@ const combos = [
     offer_price: 5000,
     combo_type: "Special Brown Box",
     description: "Command the sky with Sivakasi's elite collection. Professional-grade multi-shots.",
+    image_url: "/images/combos/youngsters_pack.png",
     products: [
       "60 SHOTS - MULTI COLOURS", "5000 WALA", "2 ROCK STAR - 3 PCS", "3 1/2 NAYAGARA FALLS", 
       "3 1/2 XXX SEVEN", "3 1/2 KING FISHER", "3 1/2 FANCY PIPE", "12 SHOTS", "1000 WALA", 

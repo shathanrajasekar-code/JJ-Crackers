@@ -14,6 +14,18 @@ const DEFAULT_SETTINGS = {
   whatsapp_number: '7092300252',
   email_address: 'jjcrackersworld@gmail.com',
   marquee: 'Welcome to Jegajothi Crackers Sivakasi - Direct Factory Price Quality Fireworks!',
+  whatsapp_provider: 'none',
+  whatsapp_business_phone_number_id: '',
+  whatsapp_business_access_token: '',
+  whatsapp_ultramsg_instance_id: '',
+  whatsapp_ultramsg_token: '',
+  whatsapp_template_name: 'order_status_update',
+  whatsapp_msg_pending: 'Hello {{customer_name}}, your order {{order_number}} is received and is pending verification. We will contact you shortly to confirm!',
+  whatsapp_msg_confirmed: 'Hello {{customer_name}}, your order {{order_number}} is confirmed! We are packaging your crackers now.',
+  whatsapp_msg_processing: 'Hello {{customer_name}}, your order {{order_number}} is being processed at our Sivakasi factory.',
+  whatsapp_msg_shipped: 'Hello {{customer_name}}, your order {{order_number}} has been shipped! Transport tracking details: {{tracking_info}}',
+  whatsapp_msg_delivered: 'Hello {{customer_name}}, your order {{order_number}} has been successfully delivered. Happy and safe celebrating! 🎆',
+  whatsapp_msg_cancelled: 'Hello {{customer_name}}, your order {{order_number}} has been cancelled. Please contact support if you have questions.',
 };
 
 // GET — Retrieve all settings

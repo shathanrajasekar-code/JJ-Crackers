@@ -263,7 +263,7 @@ export async function generateReceipt(data: ReceiptData): Promise<jsPDF> {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(6);
     doc.setTextColor(...C.mid);
-    doc.text('Premium Friendly Sivakasi Fireworks Since 1984  |  Contact: +91 70923 00252', PAGE_W / 2, fy + 9, { align: 'center' });
+    doc.text('Premium Friendly Sivakasi Fireworks Since 2015  |  Contact: +91 70923 00252', PAGE_W / 2, fy + 9, { align: 'center' });
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(6.5);

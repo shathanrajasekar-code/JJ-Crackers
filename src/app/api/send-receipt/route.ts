@@ -61,13 +61,13 @@ export async function POST(req: Request) {
                     
                     <tr>
                       <td style="padding-bottom:16px;">
-                        <h2 style="margin:0;font-size:22px;font-weight:800;color:#1A1400;">Thank you for your order, ${customerName}!</h2>
+                        <h2 style="margin:0;font-size:22px;font-weight:800;color:#1A1400;">Welcome to the JJ Crackers Family, ${customerName}! 🎆</h2>
                       </td>
                     </tr>
                     
                     <tr>
                       <td style="padding-bottom:30px;">
-                        <p style="margin:0;font-size:14px;color:#8B735B;line-height:1.6;">Your order has been successfully recorded and is now being processed. A copy of your PDF receipt has been generated and downloaded to your device.</p>
+                        <p style="margin:0;font-size:14px;color:#8B735B;line-height:1.6;font-weight:500;">We are absolutely thrilled to celebrate this festive season with you! Your order has been successfully recorded and is now being processed. A copy of your PDF receipt/invoice has been generated and is attached to this email for your reference.</p>
                       </td>
                     </tr>
                     

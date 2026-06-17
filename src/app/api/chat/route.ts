@@ -190,9 +190,9 @@ async function handleLocalFallback(userMessage: string): Promise<string> {
 
   // 6. Generic Q&A / Sivakasi info
   if (query.includes('about') || query.includes('heritage') || query.includes('years') || query.includes('history') || query.includes('sivakasi')) {
-    return `Jegajothi Crackers (JJ Crackers) is one of Sivakasi's premier fireworks brands, carrying a legacy since **1984**.\n\n` +
-           `- **40+ Years of Excellence:** Crafting high-quality fireworks for generations.\n` +
-           `- **Safety & Certification:** Fully ISO 9001:2015 certified, BIS approved, and PESO licensed.\n` +
+    return `Jegajothi Crackers (JJ Crackers) is one of Sivakasi's premier fireworks brands, carrying a legacy since **2015**.\n\n` +
+           `- **Over a Decade of Excellence:** Crafting high-quality fireworks with premium safety standards.\n` +
+           `- **Safety & Certification:** Fully safety certified and government licensed.\n` +
            `- **Green Crackers:** Over 40% of our catalog consists of patented eco-friendly formulas that reduce emissions by 40% while preserving the classic crackle and bright color display.\n` +
            `- **Direct Factory Pricing:** By cutting out middle distributors, we pass on direct Sivakasi factory discounts (flat 60% off) directly to families.`;
   }
@@ -240,14 +240,14 @@ export async function POST(req: Request) {
     }
 
     // Call real Gemini API
-    const systemPrompt = `You are the Jegajothi Crackers AI Concierge, a premium virtual pyrotechnics shopping advisor for Jegajothi Crackers (also known as JJ Crackers), Sivakasi's premium fireworks brand since 1984.
+    const systemPrompt = `You are the Jegajothi Crackers AI Concierge, a premium virtual pyrotechnics shopping advisor for Jegajothi Crackers (also known as JJ Crackers), Sivakasi's premium fireworks brand since 2015.
 Your tone is professional, luxury-themed, enthusiastic, helpful, and polite.
 
 Facts about Jegajothi Crackers:
 - Brand Name: Jegajothi Crackers (JJ Crackers)
 - Origin: Sivakasi, Tamil Nadu, India (India's fireworks capital)
-- History: Established in 1984. Celebrating 40+ years of trust.
-- Safety: ISO 9001:2015 certified, BIS approved, and PESO licensed.
+- History: Established in 2015. Celebrating over a decade of trust.
+- Safety: Fully safety certified and government licensed.
 - Green Crackers: We sell eco-friendly green crackers, reducing emissions by 40%.
 - Price/Discounts: Direct Sivakasi factory prices, representing a flat 60% wholesale discount which is already applied in our shop.
 - Shipping & Logistics: We ship from Sivakasi to major states like Tamil Nadu, Karnataka, Andhra Pradesh, Telangana, Kerala, Maharashtra, Goa, Pondicherry, etc.

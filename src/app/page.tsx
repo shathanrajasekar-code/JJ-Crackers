@@ -199,7 +199,7 @@ export default function HomePage() {
               transition={{ delay: 0.5 }} 
               className="inline-flex items-center gap-2 py-2 px-6 rounded-full border border-[var(--color-gold)]/40 bg-[var(--color-gold)]/10 text-[var(--color-gold)] text-xs font-black mb-10 tracking-[0.4em] uppercase backdrop-blur-md shadow-[0_0_20px_rgba(212,175,55,0.2)]"
             >
-              <Sparkles size={14} className="animate-pulse" /> Sivakasi&apos;s Royal Legacy Since 1984 <Sparkles size={14} className="animate-pulse" />
+              <Sparkles size={14} className="animate-pulse" /> Sivakasi&apos;s Royal Legacy Since 2015 <Sparkles size={14} className="animate-pulse" />
             </motion.span>
             
             <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-display font-bold leading-[1.1] mb-10 tracking-tighter text-center lg:text-left">
@@ -261,7 +261,7 @@ export default function HomePage() {
                   </div>
                   <div>
                     <div className="text-white font-bold text-sm tracking-tight">Jegajothi Crackers</div>
-                    <div className="text-[var(--color-gold)] text-xs font-black tracking-widest">SINCE 1984</div>
+                    <div className="text-[var(--color-gold)] text-xs font-black tracking-widest">SINCE 2015</div>
                   </div>
                 </div>
               </div>
@@ -282,7 +282,7 @@ export default function HomePage() {
       {/* TRUST BADGES - Ultra Premium */}
       <section className="py-12 border-y border-[var(--border)]/10 bg-[var(--surface-high)] relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-12">
-          {[{ icon: Shield, title: 'Uncompromising Safety', desc: 'ISO 9001:2015 Certified' }, { icon: Leaf, title: 'Eco-Conscious', desc: 'Sustainable Green Crackers' }, { icon: Factory, title: 'Direct Source', desc: 'Authentic Sivakasi Pricing' }, { icon: Package, title: 'Premium Logistics', desc: 'White-glove Global Delivery' }].map((b, i) => (
+          {[{ icon: Shield, title: 'Uncompromising Safety', desc: 'Fully Safety Certified' }, { icon: Leaf, title: 'Eco-Conscious', desc: 'Sustainable Green Crackers' }, { icon: Factory, title: 'Direct Source', desc: 'Authentic Sivakasi Pricing' }, { icon: Package, title: 'Premium Logistics', desc: 'White-glove Global Delivery' }].map((b, i) => (
             <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="flex flex-col items-center text-center gap-4 group">
               <div className="w-16 h-16 rounded-3xl bg-[var(--surface)] text-[var(--color-gold)] flex items-center justify-center border border-[var(--border)]/10 group-hover:border-[var(--color-gold)]/50 group-hover:bg-[var(--color-gold)]/5 transition-all duration-500">
                 <b.icon size={28} className="group-hover:scale-110 transition-transform" />

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 
 export async function POST(req: Request) {
   try {
@@ -8,7 +9,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Phone number is required' }, { status: 400 });
     }
 
-    const provider = process.env.WHATSAPP_PROVIDER || 'none';
+    // Fetch settings from database first
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+    let dbSettings: Record<string, string> = {};
+    if (supabaseUrl && !supabaseUrl.includes('your_supabase')) {
+      try {
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        const { data } = await supabase.from('site_settings').select('key, value');
+        if (data) {
+          data.forEach(row => {
+            dbSettings[row.key] = row.value;
+          });
+        }
+      } catch (err) {
+        console.error('Error loading settings in notify-whatsapp:', err);
+      }
+    }
+
+    const provider = dbSettings.whatsapp_provider || process.env.WHATSAPP_PROVIDER || 'none';
     const caption = `Hello ${customerName || 'Customer'}, thank you for shopping with JJ Crackers! 🎆 Here is your Order Receipt for ${orderNumber}.`;
 
     // Normalizing phone number (removing non-digits, ensuring it starts with country code, no + or spacing)
@@ -25,8 +44,8 @@ export async function POST(req: Request) {
 
     // ── Option A: UltraMsg (Cost-Friendly, Unlimited Unofficial API) ──
     if (provider === 'ultramsg') {
-      const instanceId = process.env.ULTRAMSG_INSTANCE_ID;
-      const token = process.env.ULTRAMSG_TOKEN;
+      const instanceId = dbSettings.whatsapp_ultramsg_instance_id || process.env.ULTRAMSG_INSTANCE_ID;
+      const token = dbSettings.whatsapp_ultramsg_token || process.env.ULTRAMSG_TOKEN;
 
       if (!instanceId || !token) {
         return NextResponse.json({ error: 'UltraMsg credentials not configured' }, { status: 500 });
@@ -73,8 +92,8 @@ export async function POST(req: Request) {
 
     // ── Option B: Meta WhatsApp Business Cloud API (Official Template-Based) ──
     if (provider === 'whatsapp_business') {
-      const phoneId = process.env.WHATSAPP_BUSINESS_PHONE_NUMBER_ID;
-      const token = process.env.WHATSAPP_BUSINESS_ACCESS_TOKEN;
+      const phoneId = dbSettings.whatsapp_business_phone_number_id || process.env.WHATSAPP_BUSINESS_PHONE_NUMBER_ID;
+      const token = dbSettings.whatsapp_business_access_token || process.env.WHATSAPP_BUSINESS_ACCESS_TOKEN;
 
       if (!phoneId || !token) {
         return NextResponse.json({ error: 'WhatsApp Business credentials not configured' }, { status: 500 });

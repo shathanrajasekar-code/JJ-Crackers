@@ -4,7 +4,6 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { ToastContainer } from '@/components/ui/Toast';
-import { AIChatbot } from '@/components/ui/AIChatbot';
 import "./globals.css";
 
 import { ClientEffects } from '@/components/effects/ClientEffects';
@@ -24,10 +23,19 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://jegajothi-crackers.vercel.app'),
   title: {
-    default: "Jegajothi Crackers | Premium Sivakasi Fireworks Since 1984",
+    default: "Jegajothi Crackers | Premium Sivakasi Fireworks Since 2015",
     template: "%s | Jegajothi Crackers",
   },
-  description: "Sivakasi's most trusted fireworks manufacturer since 1984. Premium quality, safety-certified, eco-friendly crackers with direct factory prices. Four decades lighting up Indian celebrations.",
+  icons: {
+    icon: [
+      { url: '/logo/logo.png', type: 'image/png' },
+      { url: '/logo/logo.png', sizes: '32x32', type: 'image/png' },
+      { url: '/logo/logo.png', sizes: '192x192', type: 'image/png' },
+    ],
+    shortcut: '/logo/logo.png',
+    apple: '/logo/logo.png',
+  },
+  description: "Sivakasi's most trusted fireworks manufacturer since 2015. Premium quality, safety-certified, eco-friendly crackers with direct factory prices. Over a decade lighting up Indian celebrations.",
   keywords: ["crackers", "fireworks", "Sivakasi", "Diwali", "premium crackers", "Jegajothi", "JJ Crackers", "eco-friendly fireworks", "green crackers", "pyrotechnics", "Tamil Nadu crackers"],
   authors: [{ name: "Jegajothi Crackers" }],
   creator: "Jegajothi Crackers",
@@ -36,7 +44,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
   openGraph: {
     title: "Jegajothi Crackers | Premium Sivakasi Fireworks",
-    description: "Four decades of brilliance. Premium, safety-certified fireworks delivered from Sivakasi at direct factory prices.",
+    description: "Over a decade of brilliance. Premium, safety-certified fireworks delivered from Sivakasi at direct factory prices.",
     type: "website",
     locale: "en_IN",
     siteName: "Jegajothi Crackers",
@@ -45,7 +53,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Jegajothi Crackers | Premium Sivakasi Fireworks",
-    description: "Four decades of brilliance. Premium, safety-certified fireworks delivered from Sivakasi.",
+    description: "Over a decade of brilliance. Premium, safety-certified fireworks delivered from Sivakasi.",
     images: ["/family-festive.png"],
   },
   verification: { google: "", yandex: "" },
@@ -75,8 +83,8 @@ export default function RootLayout({
                 alternateName: 'JJ Crackers',
                 url: process.env.NEXT_PUBLIC_SITE_URL || 'https://jegajothi-crackers.vercel.app',
                 logo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://jegajothi-crackers.vercel.app'}/logo/logo.png`,
-                foundingDate: '1984',
-                description: "Sivakasi's most trusted fireworks manufacturer since 1984.",
+                foundingDate: '2015',
+                description: "Sivakasi's most trusted fireworks manufacturer since 2015.",
                 telephone: '+91-70923-00252',
                 email: 'jjcrackersworld@gmail.com',
                 address: {
@@ -124,8 +132,7 @@ export default function RootLayout({
           <main className="pt-20 min-h-screen">
             {children}
           </main>
-          <Footer />
-          <AIChatbot />
+           <Footer />
           <ToastContainer />
         </ThemeProvider>
       </body>

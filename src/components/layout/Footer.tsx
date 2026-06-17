@@ -66,7 +66,7 @@ export function Footer() {
               </div>
             </Link>
             <p className="text-[var(--text-muted)] max-w-sm mb-6 leading-relaxed">
-              Sivakasi&apos;s most trusted fireworks manufacturer since 1984. Lighting up millions of homes with uncompromising safety and premium quality.
+              Sivakasi&apos;s most trusted fireworks manufacturer since 2015. Lighting up millions of homes with uncompromising safety and premium quality.
             </p>
 
             {/* Newsletter */}

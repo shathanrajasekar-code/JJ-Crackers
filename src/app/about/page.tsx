@@ -8,23 +8,21 @@ import { AnimatedCounter } from '@/components/ui/AnimatedCounter';
 import { Shield, Leaf, Factory, Award, Users, Clock, Target, Heart, ArrowRight, Sparkles, Star, MapPin } from 'lucide-react';
 
 const timeline = [
-  { year: '1984', title: 'The Beginning', desc: 'Founded in Sivakasi by master craftsmen with a vision to create premium fireworks for every Indian celebration.' },
-  { year: '1995', title: 'First Expansion', desc: 'Expanded manufacturing facility with modern equipment. Introduced 200+ new product lines for festivals and events.' },
-  { year: '2005', title: 'ISO Certification', desc: 'Achieved ISO 9001:2015 certification, setting new benchmarks for quality and safety in the fireworks industry.' },
-  { year: '2015', title: 'Green Revolution', desc: 'Pioneered eco-friendly crackers with reduced emissions. 40% of our product line is now green-certified.' },
-  { year: '2020', title: 'Digital Transformation', desc: 'Launched online ordering platform, reaching customers across India with direct factory pricing.' },
-  { year: '2024', title: 'Global Reach', desc: '40 years of excellence. Serving 10,000+ families with 500+ premium products. The legacy continues.' },
+  { year: '2015', title: 'The Beginning', desc: 'Founded in Sivakasi with a vision to create premium fireworks for every celebration.' },
+  { year: '2018', title: 'Facility Expansion', desc: 'Expanded manufacturing capabilities and introduced 200+ premium product lines.' },
+  { year: '2021', title: 'Digital Transformation', desc: 'Launched direct-to-consumer online booking, offering factory pricing across India.' },
+  { year: '2024', title: 'National Presence', desc: 'Over a decade of excellence. Serving 10,000+ families with 500+ safe, high-quality products.' },
 ];
 
 const values = [
   { icon: Shield, title: 'Safety First', desc: 'Every product undergoes rigorous quality testing. We follow the highest safety standards in manufacturing.' },
   { icon: Leaf, title: 'Eco-Conscious', desc: 'Our green crackers reduce pollution by 40%. We invest in sustainable practices for a better tomorrow.' },
   { icon: Heart, title: 'Customer Love', desc: 'Every order is handled with personal care. From selection to delivery, we ensure a premium experience.' },
-  { icon: Target, title: 'Quality Promise', desc: 'Four decades of perfecting our craft. Each sparkle, each burst is a testament to our unwavering quality.' },
+  { icon: Target, title: 'Quality Promise', desc: 'Over a decade of perfecting our craft. Each sparkle, each burst is a testament to our unwavering quality.' },
 ];
 
 const teamMembers = [
-  { name: 'Founder', role: 'Managing Director', desc: 'With 40+ years of experience in pyrotechnics, our founder laid the foundation of JJ Crackers in 1984.' },
+  { name: 'Founder', role: 'Managing Director', desc: 'With over a decade of experience in pyrotechnics, our founder laid the foundation of JJ Crackers in 2015.' },
   { name: 'Operations Head', role: 'Production Director', desc: 'Overseeing 500+ product lines with precision. Ensuring every cracker meets our quality standards.' },
   { name: 'Quality Team', role: 'Safety & Compliance', desc: 'Our dedicated QC team tests every batch. ISO certified processes ensure the highest safety margins.' },
 ];
@@ -45,13 +43,13 @@ export default function AboutPage() {
           </motion.span>
           
           <motion.h1 initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-5xl md:text-7xl lg:text-8xl font-display font-bold leading-[0.9] mb-8 tracking-tighter">
-            Four Decades of
+            Over a Decade of
             <span className="block text-gradient-gold text-glow">Brilliance</span>
           </motion.h1>
           
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="text-xl text-[var(--text-muted)] max-w-3xl mx-auto leading-relaxed font-light">
             Born in the heart of Sivakasi, refined by time, and celebrated across the nation. Jegajothi Crackers has been 
-            crafting moments of joy since 1984.
+            crafting moments of joy since 2015.
           </motion.p>
         </div>
       </section>
@@ -77,7 +75,7 @@ export default function AboutPage() {
               From a Workshop to a <span className="text-gradient-gold">Legacy</span>
             </h2>
             <p className="text-lg text-[var(--text)]/60 leading-relaxed mb-6">
-              In 1984, a master craftsman in Sivakasi — India&apos;s fireworks capital — set out with a singular vision: 
+              In 2015, our founder set out in Sivakasi — India&apos;s fireworks capital — with a singular vision: 
               to create fireworks that don&apos;t just light up the sky, but illuminate hearts.
             </p>
             <p className="text-lg text-[var(--text)]/60 leading-relaxed mb-8">
@@ -90,7 +88,7 @@ export default function AboutPage() {
                 <MapPin size={14} /> Sivakasi, Tamil Nadu
               </div>
               <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--color-gold)]/10 text-[var(--color-gold)] text-sm font-bold">
-                <Award size={14} /> Est. 1984
+                <Award size={14} /> Est. 2015
               </div>
             </div>
           </motion.div>
@@ -101,7 +99,7 @@ export default function AboutPage() {
       <section className="py-24">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-12">
           {[
-            { value: 40, suffix: '+', label: 'Years of Excellence', icon: Clock },
+            { value: 11, suffix: '+', label: 'Years of Excellence', icon: Clock },
             { value: 10000, suffix: '+', label: 'Happy Families', icon: Users },
             { value: 500, suffix: '+', label: 'Premium Products', icon: Factory },
             { value: 100, suffix: '%', label: 'Safety Certified', icon: Shield },
@@ -203,24 +201,23 @@ export default function AboutPage() {
       {/* Certifications */}
       <section className="py-24">
         <div className="max-w-7xl mx-auto px-6">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-20">
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
             <span className="inline-flex items-center gap-3 text-sm font-black text-[var(--color-gold)] uppercase tracking-[0.4em] mb-6">Trust & Quality</span>
             <h2 className="text-5xl md:text-6xl font-display font-bold text-[var(--text)] tracking-tighter">Certifications</h2>
           </motion.div>
           
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              { title: 'ISO 9001:2015', desc: 'International quality management certification ensuring consistent product quality.', icon: '🏆' },
-              { title: 'BIS Approved', desc: 'Bureau of Indian Standards approved manufacturing processes and materials.', icon: '✅' },
-              { title: 'PESO Licensed', desc: 'Petroleum and Explosives Safety Organisation licensed for safe manufacturing.', icon: '🛡️' },
-            ].map((cert, i) => (
-              <motion.div key={cert.title} initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-                className="glass-card rounded-3xl p-8 text-center group">
-                <div className="text-5xl mb-6">{cert.icon}</div>
-                <h3 className="text-xl font-bold font-display text-[var(--text)] mb-3">{cert.title}</h3>
-                <p className="text-sm text-[var(--text-muted)] leading-relaxed">{cert.desc}</p>
-              </motion.div>
-            ))}
+          <div className="max-w-3xl mx-auto text-center">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
+              className="glass-card rounded-3xl p-10 md:p-12 hover:border-[var(--color-gold)]/40 transition-all relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-6 text-5xl opacity-20">🛡️</div>
+              <div className="text-5xl mb-6">🏆</div>
+              <h3 className="text-2xl font-bold font-display text-[var(--text)] mb-4">Fully Certified Manufacturer</h3>
+              <p className="text-base text-[var(--text-muted)] leading-relaxed max-w-2xl mx-auto">
+                We are a fully safety-certified and government-licensed fireworks manufacturer. 
+                Our production processes follow the highest standards of safety and quality control to ensure 
+                a secure and joyful celebration for you and your family.
+              </p>
+            </motion.div>
           </div>
         </div>
       </section>
