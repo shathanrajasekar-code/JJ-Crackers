@@ -42,6 +42,52 @@ export default function ProductsPage() {
   const [totalProducts, setTotalProducts] = useState(0);
   const [searchDebounce, setSearchDebounce] = useState('');
   const [categoriesList, setCategoriesList] = useState(categories);
+  const [highlightedCategory, setHighlightedCategory] = useState('all');
+
+  // Keep highlightedCategory in sync when activeCategory changes manually
+  useEffect(() => {
+    setHighlightedCategory(activeCategory);
+  }, [activeCategory]);
+
+  // Scroll-spy: Detect and highlight category section in viewport
+  useEffect(() => {
+    if (activeCategory !== 'all' || !mounted) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries.filter(e => e.isIntersecting);
+      if (visible.length > 0) {
+        // Find the top-most visible section in the viewport
+        visible.sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        const topSection = visible[0];
+        const catId = topSection.target.id.replace('category-sec-', '');
+        setHighlightedCategory(catId);
+      }
+    }, {
+      root: null,
+      rootMargin: '-10% 0px -70% 0px', // Focus region in viewport
+      threshold: 0
+    });
+
+    categoriesList.forEach(cat => {
+      if (cat.id === 'all') return;
+      const el = document.getElementById(`category-sec-${cat.id}`);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [activeCategory, categoriesList, mounted]);
+
+  // Auto-scroll the active category button into view inside the sticky container
+  useEffect(() => {
+    const btn = document.getElementById(`cat-btn-${highlightedCategory}`);
+    if (btn) {
+      btn.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'nearest'
+      });
+    }
+  }, [highlightedCategory]);
 
   useEffect(() => { 
     setMounted(true); 
@@ -210,48 +256,36 @@ export default function ProductsPage() {
         </div>
       </motion.div>
 
-      {/* Mobile Horizontal Categories (scrollable) */}
-      <div className="md:hidden w-full overflow-x-auto flex gap-2 pb-3 mb-6 scrollbar-none -mx-4 px-4">
-        {categoriesList.map((cat) => {
-          const isActive = activeCategory === cat.id;
-          return (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
-                isActive
-                  ? 'bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] shadow-md'
-                  : 'bg-[var(--surface)] border border-[var(--border)] text-[var(--text-muted)]'
-              }`}
-            >
-              <span className="text-sm shrink-0">{cat.emoji}</span>
-              <span>{cat.label}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      <div className="flex flex-col md:flex-row gap-8">
-        {/* Sidebar Filters - Desktop Only */}
-        <aside className="hidden md:block w-48 lg:w-60 flex-shrink-0">
-          <div className="glass-card rounded-2xl p-5 sticky top-28">
-            <div className="flex items-center gap-1.5 font-bold text-sm mb-4 border-b border-[var(--border)] pb-2.5 text-[var(--text)]">
+      <div className="flex flex-row gap-3 md:gap-8">
+        {/* Categories Sidebar */}
+        <aside className="w-[75px] md:w-48 lg:w-60 flex-shrink-0">
+          <div className="glass-card rounded-xl md:rounded-2xl p-1 md:p-5 sticky top-20 md:top-28 max-h-[80vh] overflow-y-auto scrollbar-none">
+            <div className="hidden md:flex items-center gap-1.5 font-bold text-sm mb-4 border-b border-[var(--border)] pb-2.5 text-[var(--text)]">
               <SlidersHorizontal size={14} className="shrink-0" /> Categories
             </div>
             <div className="flex flex-col gap-1">
               {categoriesList.map((cat) => {
                 const count = getCategoryCount(cat.id);
+                const isActive = highlightedCategory === cat.id;
                 return (
-                  <button key={cat.id} onClick={() => setActiveCategory(cat.id)}
-                    className={`text-left px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-between ${activeCategory === cat.id
-                      ? 'bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold shadow-sm'
-                      : 'text-[var(--text-muted)] hover:bg-[var(--surface-high)] hover:text-[var(--text)]'} min-w-0`}>
-                    <span className="flex items-center gap-1.5 min-w-0">
+                  <button
+                    key={cat.id}
+                    id={`cat-btn-${cat.id}`}
+                    onClick={() => setActiveCategory(cat.id)}
+                    className={`text-center md:text-left px-1 py-2 md:px-3 md:py-2 rounded-lg text-sm transition-all flex flex-col md:flex-row items-center md:justify-between ${
+                      isActive
+                        ? 'bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold shadow-sm'
+                        : 'text-[var(--text-muted)] hover:bg-[var(--surface-high)] hover:text-[var(--text)]'
+                    } min-w-0`}
+                  >
+                    <span className="flex flex-col md:flex-row items-center gap-1 md:gap-1.5 min-w-0">
                       <span className="text-sm shrink-0">{cat.emoji}</span>
-                      <span className="truncate">{cat.label}</span>
+                      <span className="text-[9px] md:text-sm truncate leading-tight md:leading-normal">{cat.label.replace(' Products', '')}</span>
                     </span>
                     {count !== null && count > 0 && (
-                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${activeCategory === cat.id ? 'bg-[#1a1400]/20' : 'bg-[var(--surface-high)]'}`}>
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0 hidden md:inline-block ${
+                        isActive ? 'bg-[#1a1400]/20' : 'bg-[var(--surface-high)]'
+                      }`}>
                         {count}
                       </span>
                     )}
@@ -304,7 +338,7 @@ export default function ProductsPage() {
                   const catProducts = products.filter(p => p.category === cat.id);
                   if (catProducts.length === 0) return null;
                   return (
-                    <section key={cat.id} className="scroll-mt-28">
+                    <section key={cat.id} id={`category-sec-${cat.id}`} className="scroll-mt-28">
                       {/* Category Header */}
                       <div className="flex items-center justify-between mb-2">
                         <h2 className="text-2xl font-bold font-display flex items-center gap-2.5 text-[var(--text)]">
