@@ -499,10 +499,18 @@ export default function AdminPage() {
         setConfirmConfig(prev => ({ ...prev, isOpen: false }));
         try {
           // DELETE endpoints for orders
-          await adminFetch(`/api/orders/${id}`, { method: 'DELETE' });
-          setInspectedOrder(null);
-          fetchData();
-        } catch (err) { console.error(err); }
+          const res = await adminFetch(`/api/orders/${id}`, { method: 'DELETE' });
+          if (res.ok) {
+            setInspectedOrder(null);
+            fetchData();
+          } else {
+            const data = await res.json().catch(() => ({}));
+            alert(`Failed to delete order: ${data.error || res.statusText || 'Unknown error'}`);
+          }
+        } catch (err: any) { 
+          console.error(err);
+          alert(`Failed to delete order: ${err.message || String(err)}`);
+        }
       }
     });
   };
@@ -552,9 +560,17 @@ export default function AdminPage() {
       action: async () => {
         setConfirmConfig(prev => ({ ...prev, isOpen: false }));
         try {
-          await adminFetch(`/api/contact?id=${id}`, { method: 'DELETE' });
-          fetchData();
-        } catch (err) { console.error(err); }
+          const res = await adminFetch(`/api/contact?id=${id}`, { method: 'DELETE' });
+          if (res.ok) {
+            fetchData();
+          } else {
+            const data = await res.json().catch(() => ({}));
+            alert(`Failed to delete message: ${data.error || res.statusText || 'Unknown error'}`);
+          }
+        } catch (err: any) { 
+          console.error(err);
+          alert(`Failed to delete message: ${err.message || String(err)}`);
+        }
       }
     });
   };
@@ -569,18 +585,34 @@ export default function AdminPage() {
       action: async () => {
         setConfirmConfig(prev => ({ ...prev, isOpen: false }));
         try {
-          await adminFetch('/api/contact', { method: 'DELETE' });
-          fetchData();
-        } catch (err) { console.error(err); }
+          const res = await adminFetch('/api/contact', { method: 'DELETE' });
+          if (res.ok) {
+            fetchData();
+          } else {
+            const data = await res.json().catch(() => ({}));
+            alert(`Failed to clear inbox: ${data.error || res.statusText || 'Unknown error'}`);
+          }
+        } catch (err: any) { 
+          console.error(err);
+          alert(`Failed to clear inbox: ${err.message || String(err)}`);
+        }
       }
     });
   };
 
   const handleDeleteErrorLog = async (id: string) => {
     try {
-      await adminFetch(`/api/admin/tracking?type=errors&id=${id}`, { method: 'DELETE' });
-      fetchData();
-    } catch (err) { console.error(err); }
+      const res = await adminFetch(`/api/admin/tracking?type=errors&id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        fetchData();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(`Failed to delete log: ${data.error || res.statusText || 'Unknown error'}`);
+      }
+    } catch (err: any) { 
+      console.error(err);
+      alert(`Failed to delete log: ${err.message || String(err)}`);
+    }
   };
 
   const handleDeleteAllErrorLogs = () => {
@@ -593,9 +625,17 @@ export default function AdminPage() {
       action: async () => {
         setConfirmConfig(prev => ({ ...prev, isOpen: false }));
         try {
-          await adminFetch('/api/admin/tracking?type=errors', { method: 'DELETE' });
-          fetchData();
-        } catch (err) { console.error(err); }
+          const res = await adminFetch('/api/admin/tracking?type=errors', { method: 'DELETE' });
+          if (res.ok) {
+            fetchData();
+          } else {
+            const data = await res.json().catch(() => ({}));
+            alert(`Failed to clear error logs: ${data.error || res.statusText || 'Unknown error'}`);
+          }
+        } catch (err: any) { 
+          console.error(err);
+          alert(`Failed to clear error logs: ${err.message || String(err)}`);
+        }
       }
     });
   };
@@ -610,9 +650,17 @@ export default function AdminPage() {
       action: async () => {
         setConfirmConfig(prev => ({ ...prev, isOpen: false }));
         try {
-          await adminFetch('/api/admin/tracking?type=analytics', { method: 'DELETE' });
-          fetchData();
-        } catch (err) { console.error(err); }
+          const res = await adminFetch('/api/admin/tracking?type=analytics', { method: 'DELETE' });
+          if (res.ok) {
+            fetchData();
+          } else {
+            const data = await res.json().catch(() => ({}));
+            alert(`Failed to clear analytics events: ${data.error || res.statusText || 'Unknown error'}`);
+          }
+        } catch (err: any) { 
+          console.error(err);
+          alert(`Failed to clear analytics events: ${err.message || String(err)}`);
+        }
       }
     });
   };
