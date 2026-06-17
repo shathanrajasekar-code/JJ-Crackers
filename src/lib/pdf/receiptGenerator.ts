@@ -75,6 +75,10 @@ function renderTamilEnglishSectionToImage(title: string, lines: string[], fontSi
   const ctx = canvas.getContext('2d');
   if (!ctx) return { dataUrl: '', heightMm: 0 };
   
+  // Fill background with white to support JPEG conversion (no transparency)
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
   ctx.scale(scale, scale);
   ctx.textBaseline = 'top';
   
@@ -100,7 +104,7 @@ function renderTamilEnglishSectionToImage(title: string, lines: string[], fontSi
   });
   
   return {
-    dataUrl: canvas.toDataURL('image/png'),
+    dataUrl: canvas.toDataURL('image/jpeg', 0.7),
     heightMm: heightMm
   };
 }
@@ -202,7 +206,7 @@ export async function generateReceipt(data: ReceiptData): Promise<jsPDF> {
 
     // Logo
     if (logoLoaded && logoImg.complete && logoImg.naturalHeight > 0) {
-      doc.addImage(logoImg, 'PNG', M, y, 20, 20);
+      doc.addImage(logoImg, 'PNG', M, y, 20, 20, undefined, 'FAST');
     }
 
     // Company name block
@@ -608,7 +612,7 @@ export async function generateReceipt(data: ReceiptData): Promise<jsPDF> {
   const sigX = 44;
   const sigLineY = y - 1; // Aligned near the top of the Net Payable bar
   if (logoLoaded && logoImg.complete && logoImg.naturalHeight > 0) {
-    doc.addImage(logoImg, 'PNG', 57.5, sigLineY - 20, 18, 18);
+    doc.addImage(logoImg, 'PNG', 57.5, sigLineY - 20, 18, 18, undefined, 'FAST');
   }
   doc.setDrawColor(...C.border);
   doc.setLineWidth(0.3);
@@ -668,7 +672,7 @@ export async function generateReceipt(data: ReceiptData): Promise<jsPDF> {
       doc.addPage();
       drawCompanyHeader(false);
     }
-    doc.addImage(termsRes.dataUrl, 'PNG', M, y, CW, termsRes.heightMm);
+    doc.addImage(termsRes.dataUrl, 'JPEG', M, y, CW, termsRes.heightMm);
     y += termsRes.heightMm + 6;
   }
 
@@ -679,7 +683,7 @@ export async function generateReceipt(data: ReceiptData): Promise<jsPDF> {
       doc.addPage();
       drawCompanyHeader(false);
     }
-    doc.addImage(safetyRes.dataUrl, 'PNG', M, y, CW, safetyRes.heightMm);
+    doc.addImage(safetyRes.dataUrl, 'JPEG', M, y, CW, safetyRes.heightMm);
     y += safetyRes.heightMm;
   }
 

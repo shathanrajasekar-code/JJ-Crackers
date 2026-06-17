@@ -542,6 +542,81 @@ export default function AdminPage() {
     });
   };
 
+  const handleDeleteMessage = (id: string, senderName: string) => {
+    setConfirmConfig({
+      isOpen: true,
+      title: 'Delete Contact Message?',
+      message: `Are you sure you want to delete the message from "${senderName}"? This action is permanent.`,
+      confirmLabel: 'Delete Message',
+      isDanger: true,
+      action: async () => {
+        setConfirmConfig(prev => ({ ...prev, isOpen: false }));
+        try {
+          await adminFetch(`/api/contact?id=${id}`, { method: 'DELETE' });
+          fetchData();
+        } catch (err) { console.error(err); }
+      }
+    });
+  };
+
+  const handleDeleteAllMessages = () => {
+    setConfirmConfig({
+      isOpen: true,
+      title: 'Delete All Messages?',
+      message: 'Are you sure you want to delete ALL contact messages in your inbox? This action is permanent.',
+      confirmLabel: 'Delete All',
+      isDanger: true,
+      action: async () => {
+        setConfirmConfig(prev => ({ ...prev, isOpen: false }));
+        try {
+          await adminFetch('/api/contact', { method: 'DELETE' });
+          fetchData();
+        } catch (err) { console.error(err); }
+      }
+    });
+  };
+
+  const handleDeleteErrorLog = async (id: string) => {
+    try {
+      await adminFetch(`/api/admin/tracking?type=errors&id=${id}`, { method: 'DELETE' });
+      fetchData();
+    } catch (err) { console.error(err); }
+  };
+
+  const handleDeleteAllErrorLogs = () => {
+    setConfirmConfig({
+      isOpen: true,
+      title: 'Clear All Error Logs?',
+      message: 'Are you sure you want to delete ALL error logs? This action is permanent.',
+      confirmLabel: 'Clear All',
+      isDanger: true,
+      action: async () => {
+        setConfirmConfig(prev => ({ ...prev, isOpen: false }));
+        try {
+          await adminFetch('/api/admin/tracking?type=errors', { method: 'DELETE' });
+          fetchData();
+        } catch (err) { console.error(err); }
+      }
+    });
+  };
+
+  const handleDeleteAllAnalyticsEvents = () => {
+    setConfirmConfig({
+      isOpen: true,
+      title: 'Clear All Analytics Events?',
+      message: 'Are you sure you want to delete ALL tracking events? This action is permanent.',
+      confirmLabel: 'Clear All',
+      isDanger: true,
+      action: async () => {
+        setConfirmConfig(prev => ({ ...prev, isOpen: false }));
+        try {
+          await adminFetch('/api/admin/tracking?type=analytics', { method: 'DELETE' });
+          fetchData();
+        } catch (err) { console.error(err); }
+      }
+    });
+  };
+
   const handleUpload = async () => {
     if (!file) return;
     setUploadStatus('Uploading spreadsheet data...');
@@ -1760,9 +1835,19 @@ export default function AdminPage() {
           {/* MESSAGES TAB */}
           {activeTab === 'messages' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-              <div>
-                <h2 className="text-xl font-bold font-display text-[#F5F5F0]">Inbox Messages</h2>
-                <p className="text-xs text-[#A0A090] mt-1">Review details from customers submitted through the web contact support forms</p>
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-xl font-bold font-display text-[#F5F5F0]">Inbox Messages</h2>
+                  <p className="text-xs text-[#A0A090] mt-1">Review details from customers submitted through the web contact support forms</p>
+                </div>
+                {messages.length > 0 && (
+                  <button 
+                    onClick={handleDeleteAllMessages}
+                    className="px-4 py-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 font-bold text-xs flex items-center gap-1.5 hover:bg-rose-500/20 transition-all"
+                  >
+                    <Trash2 size={14} /> Clear Inbox
+                  </button>
+                )}
               </div>
 
               <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl overflow-hidden">
@@ -1774,7 +1859,16 @@ export default function AdminPage() {
                           <span className="font-bold text-sm text-[#F5F5F0]">{m.name}</span>
                           <span className="text-xs text-[#A0A090] ml-2">Email: {m.email}</span>
                         </div>
-                        <span className="text-[10px] text-[#A0A090] font-semibold">{new Date(m.created_at).toLocaleString()}</span>
+                        <div className="flex items-center gap-3">
+                          <span className="text-[10px] text-[#A0A090] font-semibold">{new Date(m.created_at).toLocaleString()}</span>
+                          <button 
+                            onClick={() => handleDeleteMessage(m.id, m.name)}
+                            className="p-1.5 text-[#A0A090] hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
+                            title="Delete Message"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
                       </div>
                       <div className="text-sm font-bold text-[var(--color-gold)] mb-2">{m.subject}</div>
                       <p className="text-xs text-[#A0A090] leading-relaxed bg-[#1C1C18]/40 border border-[#2A2A24]/60 p-4 rounded-xl">{m.message}</p>
@@ -2260,6 +2354,14 @@ export default function AdminPage() {
                       <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
                       Trapped Error Logs ({errorLogs.length})
                     </h3>
+                    {errorLogs.length > 0 && (
+                      <button 
+                        onClick={handleDeleteAllErrorLogs}
+                        className="text-[10px] text-rose-400 hover:underline flex items-center gap-1 font-bold"
+                      >
+                        <Trash2 size={11} /> Clear All
+                      </button>
+                    )}
                   </div>
                   
                   <div className="flex-grow overflow-y-auto divide-y divide-[#2A2A24]/60 pr-1 scrollbar-thin">
@@ -2269,9 +2371,18 @@ export default function AdminPage() {
                           <span className="font-mono text-[9px] font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded-md">
                             {log.error_type}
                           </span>
-                          <span className="text-[8px] text-[#A0A090] font-semibold">
-                            {new Date(log.created_at).toLocaleString()}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[8px] text-[#A0A090] font-semibold">
+                              {new Date(log.created_at).toLocaleString()}
+                            </span>
+                            <button 
+                              onClick={() => handleDeleteErrorLog(log.id)}
+                              className="text-[#A0A090] hover:text-rose-400 p-0.5 rounded transition-colors"
+                              title="Delete log"
+                            >
+                              <Trash2 size={10} />
+                            </button>
+                          </div>
                         </div>
                         <p className="text-[11px] text-[#F5F5F0] font-medium leading-normal">
                           {log.message}
@@ -2291,6 +2402,14 @@ export default function AdminPage() {
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                       Live Event Activity Stream ({analyticsEvents.length})
                     </h3>
+                    {analyticsEvents.length > 0 && (
+                      <button 
+                        onClick={handleDeleteAllAnalyticsEvents}
+                        className="text-[10px] text-rose-400 hover:underline flex items-center gap-1 font-bold"
+                      >
+                        <Trash2 size={11} /> Clear All
+                      </button>
+                    )}
                   </div>
 
                   <div className="flex-grow overflow-y-auto divide-y divide-[#2A2A24]/60 pr-1 scrollbar-thin">
@@ -2305,7 +2424,7 @@ export default function AdminPage() {
                           </span>
                         </div>
                         <p className="text-[11px] text-[#A0A090]">
-                          Context: {JSON.stringify(event.event_data)}
+                          Context: {JSON.stringify(event.metadata || event.event_data)}
                         </p>
                       </div>
                     ))}

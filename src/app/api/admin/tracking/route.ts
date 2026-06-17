@@ -44,3 +44,40 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: error.message || 'Failed to fetch tracking data' }, { status: 500 });
   }
 }
+
+export async function DELETE(req: Request) {
+  const denied = requireAdmin(req);
+  if (denied) return denied;
+  try {
+    const { searchParams } = new URL(req.url);
+    const type = searchParams.get('type');
+    const id = searchParams.get('id');
+
+    if (!type || (type !== 'errors' && type !== 'analytics')) {
+      return NextResponse.json({ error: 'Type must be errors or analytics' }, { status: 400 });
+    }
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+    if (!supabaseUrl || supabaseUrl.includes('your_supabase')) {
+      return NextResponse.json({ success: true });
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const table = type === 'errors' ? 'error_logs' : 'analytics_events';
+
+    if (id) {
+      const { error } = await supabase.from(table).delete().eq('id', id);
+      if (error) throw error;
+    } else {
+      const { error } = await supabase.from(table).delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (error) throw error;
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error('Error deleting tracking logs:', error);
+    return NextResponse.json({ error: error.message || 'Failed to delete' }, { status: 500 });
+  }
+}

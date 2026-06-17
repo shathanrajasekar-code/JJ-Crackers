@@ -117,3 +117,34 @@ export async function GET(req: Request) {
     return NextResponse.json([], { status: 500 });
   }
 }
+
+export async function DELETE(req: Request) {
+  const denied = requireAdmin(req);
+  if (denied) return denied;
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+    if (!supabaseUrl || supabaseUrl.includes('your_supabase')) {
+      return NextResponse.json({ success: true });
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    if (id) {
+      const { error } = await supabase.from('contact_messages').delete().eq('id', id);
+      if (error) throw error;
+    } else {
+      const { error } = await supabase.from('contact_messages').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (error) throw error;
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error('Error deleting contact message:', error);
+    return NextResponse.json({ error: error.message || 'Failed to delete' }, { status: 500 });
+  }
+}
