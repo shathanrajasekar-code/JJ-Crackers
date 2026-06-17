@@ -51,9 +51,10 @@ export async function POST(req: Request) {
                   
                   <!-- Top Banner -->
                   <tr>
-                    <td style="background:linear-gradient(135deg,#1A1400 0%,#2D2200 100%);padding:45px 32px;text-align:center;">
-                      <h1 style="color:#D4AF37;margin:0;font-size:26px;font-weight:800;letter-spacing:3px;">JJ CRACKERS</h1>
-                      <p style="color:#F4E296;margin:8px 0 0;font-size:11px;letter-spacing:4px;text-transform:uppercase;font-weight:600;">Light Up Your Legacy</p>
+                    <td style="background:linear-gradient(135deg,#1A1400 0%,#2D2200 100%);padding:35px 32px;text-align:center;">
+                      <img src="https://www.jjcrackersworld.com/logo/logo.png" alt="JJ Crackers Logo" style="width:70px;height:70px;border-radius:50%;margin-bottom:15px;border:2px solid #D4AF37;background-color:#ffffff;display:inline-block;" />
+                      <h1 style="color:#D4AF37;margin:0;font-size:24px;font-weight:800;letter-spacing:3px;font-family:'Playfair Display', Georgia, serif;">JEGAJOTHI CRACKERS</h1>
+                      <p style="color:#F4E296;margin:8px 0 0;font-size:10px;letter-spacing:4px;text-transform:uppercase;font-weight:600;font-family:'Inter', Arial, sans-serif;">Light Up Your Legacy</p>
                     </td>
                   </tr>
                   

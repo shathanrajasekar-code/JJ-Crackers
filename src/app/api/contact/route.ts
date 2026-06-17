@@ -50,8 +50,12 @@ export async function POST(req: Request) {
           to: [email],
           subject: `We received your message — JJ Crackers`,
           html: `
-            <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 8px;">
-              <h2 style="color: #b8860b;">Welcome to JJ Crackers!</h2>
+            <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 30px 20px; border-radius: 8px; background-color: #ffffff;">
+              <div style="text-align: center; margin-bottom: 20px; border-bottom: 1px solid #f0eada; padding-bottom: 15px;">
+                <img src="https://www.jjcrackersworld.com/logo/logo.png" alt="JJ Crackers" style="width: 60px; height: 60px; border-radius: 50%; border: 1px solid #D4AF37; display: inline-block; background-color: #ffffff;" />
+                <h3 style="color: #D4AF37; margin: 8px 0 0; font-size: 16px; font-weight: bold; letter-spacing: 2px; font-family: Georgia, serif;">JEGAJOTHI CRACKERS</h3>
+              </div>
+              <h2 style="color: #b8860b; margin-top: 0;">Welcome to JJ Crackers!</h2>
               <p>Hello <strong>${name}</strong>,</p>
               <p>Thank you for reaching out to us. We have received your message regarding "<strong>${subject}</strong>".</p>
               <p>Our team will review your query and respond back to you within 24 hours.</p>
@@ -68,8 +72,12 @@ export async function POST(req: Request) {
           to: [adminEmail],
           subject: `New Contact Message: ${subject} | JJ Crackers`,
           html: `
-            <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 8px;">
-              <h2 style="color: #d9534f;">New Contact Inquiry</h2>
+            <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 30px 20px; border-radius: 8px; background-color: #ffffff;">
+              <div style="text-align: center; margin-bottom: 20px; border-bottom: 1px solid #f0eada; padding-bottom: 15px;">
+                <img src="https://www.jjcrackersworld.com/logo/logo.png" alt="JJ Crackers" style="width: 60px; height: 60px; border-radius: 50%; border: 1px solid #D4AF37; display: inline-block; background-color: #ffffff;" />
+                <h3 style="color: #D4AF37; margin: 8px 0 0; font-size: 16px; font-weight: bold; letter-spacing: 2px; font-family: Georgia, serif;">JEGAJOTHI CRACKERS</h3>
+              </div>
+              <h2 style="color: #d9534f; margin-top: 0;">New Contact Inquiry</h2>
               <p><strong>Name:</strong> ${name}</p>
               <p><strong>Email:</strong> ${email}</p>
               <p><strong>Phone:</strong> ${phone || 'N/A'}</p>

@@ -184,9 +184,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
                 <td align="center">
                   <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:600px;background-color:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.05);border:1px solid #E8E2D1;">
                     <tr>
-                      <td style="background:linear-gradient(135deg,#1A1400 0%,#2D2200 100%);padding:30px 24px;text-align:center;">
-                        <h1 style="color:#D4AF37;margin:0;font-size:24px;font-weight:800;letter-spacing:2px;">JJ CRACKERS</h1>
-                        <p style="color:#F4E296;margin:4px 0 0;font-size:10px;letter-spacing:3px;text-transform:uppercase;font-weight:600;">Premium Sivakasi Fireworks</p>
+                      <td style="background:linear-gradient(135deg,#1A1400 0%,#2D2200 100%);padding:35px 24px;text-align:center;">
+                        <img src="https://www.jjcrackersworld.com/logo/logo.png" alt="JJ Crackers Logo" style="width:65px;height:65px;border-radius:50%;margin-bottom:12px;border:2px solid #D4AF37;background-color:#ffffff;display:inline-block;" />
+                        <h1 style="color:#D4AF37;margin:0;font-size:22px;font-weight:800;letter-spacing:2px;font-family:'Playfair Display', Georgia, serif;">JEGAJOTHI CRACKERS</h1>
+                        <p style="color:#F4E296;margin:4px 0 0;font-size:10px;letter-spacing:3px;text-transform:uppercase;font-weight:600;font-family:'Inter', Arial, sans-serif;">Premium Sivakasi Fireworks</p>
                       </td>
                     </tr>
                     <tr>

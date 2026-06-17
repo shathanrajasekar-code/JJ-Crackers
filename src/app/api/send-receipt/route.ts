@@ -59,9 +59,10 @@ export async function POST(req: Request) {
               
               <!-- Top Banner & Logo -->
               <tr>
-                <td style="background:linear-gradient(135deg,#1A1400 0%,#2D2200 100%);padding:40px 32px;text-align:center;">
-                  <h1 style="color:#D4AF37;margin:0;font-size:26px;font-weight:800;letter-spacing:3px;text-shadow:0 2px 4px rgba(0,0,0,0.2);">JJ CRACKERS</h1>
-                  <p style="color:#F4E296;margin:8px 0 0;font-size:11px;letter-spacing:4px;text-transform:uppercase;font-weight:600;">Premium Sivakasi Fireworks</p>
+                <td style="background:linear-gradient(135deg,#1A1400 0%,#2D2200 100%);padding:35px 32px;text-align:center;">
+                  <img src="https://www.jjcrackersworld.com/logo/logo.png" alt="JJ Crackers Logo" style="width:70px;height:70px;border-radius:50%;margin-bottom:15px;border:2px solid #D4AF37;background-color:#ffffff;display:inline-block;" />
+                  <h1 style="color:#D4AF37;margin:0;font-size:24px;font-weight:800;letter-spacing:3px;text-shadow:0 2px 4px rgba(0,0,0,0.2);font-family:'Playfair Display', Georgia, serif;">JEGAJOTHI CRACKERS</h1>
+                  <p style="color:#F4E296;margin:8px 0 0;font-size:10px;letter-spacing:4px;text-transform:uppercase;font-weight:600;font-family:'Inter', Arial, sans-serif;">Premium Sivakasi Fireworks</p>
                 </td>
               </tr>
               
@@ -262,9 +263,10 @@ export async function POST(req: Request) {
                 
                 <!-- Top Banner -->
                 <tr>
-                  <td style="background:linear-gradient(135deg,#8B0000 0%,#B22222 100%);padding:40px 32px;text-align:center;">
-                    <h1 style="color:#D4AF37;margin:0;font-size:24px;font-weight:800;letter-spacing:2px;text-shadow:0 2px 4px rgba(0,0,0,0.2);">NEW ORDER RECEIVED! 🔔</h1>
-                    <p style="color:#F4E296;margin:8px 0 0;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:600;">JJ Crackers Administration</p>
+                  <td style="background:linear-gradient(135deg,#8B0000 0%,#B22222 100%);padding:35px 32px;text-align:center;">
+                    <img src="https://www.jjcrackersworld.com/logo/logo.png" alt="JJ Crackers Logo" style="width:70px;height:70px;border-radius:50%;margin-bottom:15px;border:2px solid #D4AF37;background-color:#ffffff;display:inline-block;" />
+                    <h1 style="color:#D4AF37;margin:0;font-size:22px;font-weight:800;letter-spacing:2px;text-shadow:0 2px 4px rgba(0,0,0,0.2);font-family:'Playfair Display', Georgia, serif;">NEW ORDER RECEIVED! 🔔</h1>
+                    <p style="color:#F4E296;margin:8px 0 0;font-size:10px;letter-spacing:3px;text-transform:uppercase;font-weight:600;font-family:'Inter', Arial, sans-serif;">JJ Crackers Administration</p>
                   </td>
                 </tr>
                 
