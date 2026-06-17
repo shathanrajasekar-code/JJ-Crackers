@@ -207,9 +207,11 @@ export async function POST(req: Request) {
     </html>
     `;
 
+    const adminEmail = process.env.ADMIN_EMAIL || 'jjcrackersworld@gmail.com';
     const emailPayload: any = {
       from: `JJ Crackers <${senderEmail}>`,
       to: [to],
+      bcc: [adminEmail],
       subject: `Order Confirmed — ${orderNumber} | JJ Crackers`,
       html: emailHtml,
     };

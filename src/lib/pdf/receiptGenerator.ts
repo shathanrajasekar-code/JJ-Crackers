@@ -6,7 +6,7 @@ function renderTamilEnglishSectionToImage(title: string, lines: string[], fontSi
     return { dataUrl: '', heightMm: 0 };
   }
   
-  const scale = 4; // High resolution scale
+  const scale = 2; // Moderate resolution scale to prevent payload size issues (413 Payload Too Large)
   const mmToPx = 3.78; // 1mm ≈ 3.78px at standard 96 DPI
   const widthPx = widthMm * mmToPx;
   
