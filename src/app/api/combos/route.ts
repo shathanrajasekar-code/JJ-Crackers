@@ -20,7 +20,11 @@ export async function GET() {
       .order('original_price', { ascending: true });
 
     if (error) throw error;
-    return NextResponse.json(data || []);
+    return NextResponse.json(data || [], {
+      headers: {
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400'
+      }
+    });
   } catch (error: any) {
     console.error('Error fetching combos:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

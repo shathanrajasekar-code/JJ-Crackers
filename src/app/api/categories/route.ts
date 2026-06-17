@@ -36,7 +36,11 @@ export async function GET() {
       .order('sort_order', { ascending: true });
 
     if (error) throw error;
-    return NextResponse.json(data && data.length > 0 ? data : DEFAULT_CATEGORIES);
+    return NextResponse.json(data && data.length > 0 ? data : DEFAULT_CATEGORIES, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400'
+      }
+    });
   } catch (error: any) {
     console.error('Error getting categories:', error);
     return NextResponse.json(DEFAULT_CATEGORIES);

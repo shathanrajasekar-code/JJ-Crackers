@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, SlidersHorizontal, Sparkles, ChevronDown } from 'lucide-react';
 import { ProductCard } from '@/components/products/ProductCard';
@@ -31,7 +31,7 @@ const sortOptions = [
 ];
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState('all');
@@ -73,39 +73,74 @@ export default function ProductsPage() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Fetch products from API
-  const fetchProducts = useCallback(async () => {
+  // Fetch all products once on page load
+  const fetchAllProducts = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams();
-      if (activeCategory !== 'all') params.set('category', activeCategory);
-      if (searchDebounce) params.set('search', searchDebounce);
-      if (sortBy !== 'default') params.set('sort', sortBy);
-      params.set('limit', '200');
-
-      const res = await fetch(`/api/products?${params.toString()}`);
+      const res = await fetch('/api/products?limit=500');
       if (!res.ok) throw new Error('Failed to fetch products');
       const data = await res.json();
 
-      // Handle both new paginated response and old array response
+      let list: Product[] = [];
       if (Array.isArray(data)) {
-        setProducts(data);
-        setTotalProducts(data.length);
+        list = data;
       } else {
-        setProducts(data.products || []);
-        setTotalProducts(data.total || 0);
+        list = data.products || [];
       }
+      setAllProducts(list);
+      setTotalProducts(list.length);
     } catch (err: any) {
       console.error('Failed to fetch products:', err);
       setError('Failed to load products. Please try again.');
-      setProducts([]);
+      setAllProducts([]);
+      setTotalProducts(0);
     } finally {
       setLoading(false);
     }
-  }, [activeCategory, searchDebounce, sortBy]);
+  }, []);
 
-  useEffect(() => { fetchProducts(); }, [fetchProducts]);
+  useEffect(() => {
+    fetchAllProducts();
+  }, [fetchAllProducts]);
+
+  // Compute filtered and sorted products instantaneously on the client side
+  const products = useMemo(() => {
+    let filtered = [...allProducts];
+
+    // Category filter
+    if (activeCategory !== 'all') {
+      filtered = filtered.filter(p => p.category === activeCategory);
+    }
+
+    // Search filter
+    if (searchDebounce) {
+      const q = searchDebounce.toLowerCase();
+      filtered = filtered.filter(p => 
+        (p.name_en || '').toLowerCase().includes(q) ||
+        (p.name_ta || '').toLowerCase().includes(q) ||
+        (p.category || '').toLowerCase().includes(q)
+      );
+    }
+
+    // Sort
+    switch (sortBy) {
+      case 'price-low':
+        filtered.sort((a, b) => (a.price || 0) - (b.price || 0));
+        break;
+      case 'price-high':
+        filtered.sort((a, b) => (b.price || 0) - (a.price || 0));
+        break;
+      case 'name':
+        filtered.sort((a, b) => (a.name_en || '').localeCompare(b.name_en || ''));
+        break;
+      case 'discount':
+        filtered.sort((a, b) => (b.discount_percent || 0) - (a.discount_percent || 0));
+        break;
+    }
+
+    return filtered;
+  }, [allProducts, activeCategory, searchDebounce, sortBy]);
 
   // Category counts from current products (only when showing all)
   const getCategoryCount = (catId: string) => {
@@ -222,7 +257,7 @@ export default function ProductsPage() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-card rounded-2xl p-8 text-center mb-6">
               <div className="text-3xl mb-3">⚠️</div>
               <h3 className="text-lg font-bold mb-2 text-rose-400">{error}</h3>
-              <button onClick={fetchProducts} className="px-4 py-2 rounded-lg bg-[var(--color-gold)] text-[#1a1400] font-bold text-sm mt-2">Retry</button>
+              <button onClick={fetchAllProducts} className="px-4 py-2 rounded-lg bg-[var(--color-gold)] text-[#1a1400] font-bold text-sm mt-2">Retry</button>
             </motion.div>
           )}
 
