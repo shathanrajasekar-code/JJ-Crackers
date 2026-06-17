@@ -6,11 +6,40 @@ import Image from 'next/image';
 import { Traditional3DHero } from '@/components/effects/Traditional3DHero';
 import { RealisticFirework } from '@/components/effects/RealisticFirework';
 import { AnimatedKolam } from '@/components/ui/AnimatedKolam';
-import { Shield, Leaf, Factory, Package, ArrowRight, Sparkles } from 'lucide-react';
+import { Shield, Leaf, Factory, Package, ArrowRight, Sparkles, Send, Mail, Heart } from 'lucide-react';
 import { useState, useCallback, useEffect } from 'react';
 
 export default function HomePage() {
   const [bursts, setBursts] = useState<Array<{ id: number; x: number; y: number; type: 'burst' | 'fountain' | 'spin' | 'sparkle' }>>([]);
+  const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [subscribed, setSubscribed] = useState(false);
+  const [subscribeError, setSubscribeError] = useState('');
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    setIsSubmitting(true);
+    setSubscribeError('');
+    try {
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSubscribed(true);
+        setEmail('');
+      } else {
+        setSubscribeError(data.error || 'Failed to subscribe. Please try again.');
+      }
+    } catch (err) {
+      setSubscribeError('Something went wrong. Please check your connection.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     // Launch festive firework bursts on page entry
@@ -296,8 +325,87 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* EXCLUSIVE CIRCLE OF LIGHT - Newsletter Subscription */}
+      <section className="py-24 relative overflow-hidden bg-[var(--surface-high)] border-y border-[var(--border)]/10" id="newsletter">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[var(--color-gold)]/5 rounded-full blur-[120px] pointer-events-none" />
+        
+        <div className="max-w-4xl mx-auto px-6 relative z-10">
+          <div className="glass-card rounded-[3.5rem] p-10 md:p-16 border border-[var(--border)]/60 relative overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)] bg-[var(--surface)]/40 backdrop-blur-xl">
+            <div className="absolute top-0 right-0 p-6 text-[var(--color-gold)]/5 pointer-events-none">
+              <Sparkles size={120} />
+            </div>
+            
+            <div className="max-w-2xl mx-auto text-center space-y-8">
+              <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-[var(--color-gold)]/30 bg-[var(--color-gold)]/5 text-[var(--color-gold)] text-xs font-black tracking-[0.25em] uppercase">
+                ✨ VIP Circle of Celebrations
+              </span>
+              
+              <h2 className="text-4xl md:text-5xl font-display font-bold text-[var(--text)] tracking-tight">
+                Join the Jegajothi Family
+              </h2>
+              
+              <p className="text-sm md:text-base text-[var(--text-muted)] leading-relaxed max-w-lg mx-auto font-medium">
+                Subscribe to our exclusive mailing list to receive early-bird offers, premium festive guides, and a heart-warming welcome gift sent straight to your inbox.
+              </p>
 
+              <AnimatePresence mode="wait">
+                {subscribed ? (
+                  <motion.div
+                    key="subscribed-success"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="p-6 md:p-8 rounded-2xl bg-[var(--color-gold)]/5 border border-[var(--color-gold)]/20 text-center space-y-4"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-[var(--color-gold)]/10 text-[var(--color-gold)] flex items-center justify-center mx-auto border border-[var(--color-gold)]/20 animate-pulse">
+                      <Heart size={20} className="fill-[var(--color-gold)]/20" />
+                    </div>
+                    <p className="text-xl font-bold text-[var(--color-gold)]">
+                      Welcome to the Family! 🎇
+                    </p>
+                    <p className="text-sm text-[var(--text-muted)] leading-relaxed">
+                      A special, heart-touching welcome note has been dispatched to your inbox. 
+                      Thank you for trusting us to light up your legacy with warmth, joy, and uncompromising safety.
+                    </p>
+                  </motion.div>
+                ) : (
+                  <motion.form
+                    key="newsletter-form"
+                    onSubmit={handleSubscribe}
+                    className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto pt-4"
+                  >
+                    <div className="flex-1 relative">
+                      <input
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Enter your email address"
+                        className="w-full bg-[var(--surface-high)] border border-[var(--border)] focus:border-[var(--color-gold)] rounded-xl px-5 py-4 text-sm text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-gold)]/20 transition-all font-medium"
+                        disabled={isSubmitting}
+                      />
+                    </div>
+                    <motion.button
+                      type="submit"
+                      disabled={isSubmitting}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="px-6 py-4 rounded-xl bg-gradient-to-r from-[var(--color-gold)] via-[var(--color-gold-light)] to-[var(--color-gold)] text-[#1a1400] font-black text-sm tracking-wider shadow-lg disabled:opacity-50 whitespace-nowrap flex items-center justify-center gap-2"
+                    >
+                      {isSubmitting ? 'Subscribing...' : 'Subscribe Now'}
+                    </motion.button>
+                  </motion.form>
+                )}
+              </AnimatePresence>
 
+              {subscribeError && (
+                <p className="text-xs text-red-400 font-medium animate-pulse">
+                  ⚠️ {subscribeError}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* CTA BANNER - The Final Flourish */}
       <section className="py-32 relative overflow-hidden" id="cta">

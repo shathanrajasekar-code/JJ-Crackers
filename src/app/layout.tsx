@@ -21,7 +21,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://jegajothi-crackers.vercel.app'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://jjcrackersworld.com'),
   title: {
     default: "Jegajothi Crackers | Premium Sivakasi Fireworks Since 2015",
     template: "%s | Jegajothi Crackers",
@@ -56,7 +56,10 @@ export const metadata: Metadata = {
     description: "Over a decade of brilliance. Premium, safety-certified fireworks delivered from Sivakasi.",
     images: ["/family-festive.png"],
   },
-  verification: { google: "", yandex: "" },
+  verification: { 
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || "", 
+    yandex: "" 
+  },
   category: "E-commerce",
 };
 
