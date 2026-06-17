@@ -6,7 +6,7 @@ function renderTamilEnglishSectionToImage(title: string, lines: string[], fontSi
     return { dataUrl: '', heightMm: 0 };
   }
   
-  const scale = 2; // Moderate resolution scale to prevent payload size issues (413 Payload Too Large)
+  const scale = 1.5; // Optimized scale to prevent payload size issues (413 Payload Too Large)
   const mmToPx = 3.78; // 1mm ≈ 3.78px at standard 96 DPI
   const widthPx = widthMm * mmToPx;
   
@@ -672,7 +672,7 @@ export async function generateReceipt(data: ReceiptData): Promise<jsPDF> {
       doc.addPage();
       drawCompanyHeader(false);
     }
-    doc.addImage(termsRes.dataUrl, 'JPEG', M, y, CW, termsRes.heightMm);
+    doc.addImage(termsRes.dataUrl, 'JPEG', M, y, CW, termsRes.heightMm, undefined, 'FAST');
     y += termsRes.heightMm + 6;
   }
 
@@ -683,7 +683,7 @@ export async function generateReceipt(data: ReceiptData): Promise<jsPDF> {
       doc.addPage();
       drawCompanyHeader(false);
     }
-    doc.addImage(safetyRes.dataUrl, 'JPEG', M, y, CW, safetyRes.heightMm);
+    doc.addImage(safetyRes.dataUrl, 'JPEG', M, y, CW, safetyRes.heightMm, undefined, 'FAST');
     y += safetyRes.heightMm;
   }
 

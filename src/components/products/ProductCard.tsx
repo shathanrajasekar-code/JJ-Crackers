@@ -35,34 +35,34 @@ export function ProductCard({ product }: ProductCardProps) {
       className={`glass-card rounded-2xl overflow-hidden flex flex-col group relative transition-opacity duration-300 ${!product.in_stock ? 'opacity-75' : ''}`}
     >
       {/* Badges */}
-      <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
+      <div className="absolute top-2 left-2 sm:top-3 sm:left-3 z-10 flex flex-col gap-1">
         {product.badge_text && (
-          <span className="bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] text-[10px] font-black px-2.5 py-1 rounded-full shadow-md uppercase tracking-wider">
+          <span className="bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] text-[8px] sm:text-[10px] font-black px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-full shadow-md uppercase tracking-wider">
             {product.badge_text}
           </span>
         )}
         {product.is_eco_friendly && (
-          <span className="bg-emerald-500/20 text-emerald-500 text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 backdrop-blur-sm border border-emerald-500/20">
-            <Leaf size={10} /> Eco
+          <span className="bg-emerald-500/20 text-emerald-500 text-[8px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-full flex items-center gap-0.5 sm:gap-1 backdrop-blur-sm border border-emerald-500/20">
+            <Leaf size={8} className="sm:w-2.5 sm:h-2.5" /> Eco
           </span>
         )}
         {!product.in_stock && (
-          <span className="bg-rose-500/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 backdrop-blur-sm border border-rose-500/20 uppercase tracking-wider shadow-md">
+          <span className="bg-rose-500/90 text-white text-[8px] sm:text-[10px] font-bold px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-full flex items-center gap-0.5 sm:gap-1 backdrop-blur-sm border border-rose-500/20 uppercase tracking-wider shadow-md">
             Out of Stock
           </span>
         )}
       </div>
 
       {/* Right Badges */}
-      <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5 items-end">
+      <div className="absolute top-2 right-2 sm:top-3 sm:right-3 z-10 flex flex-col gap-1 items-end">
         {product.discount_percent && product.discount_percent > 0 && (!product.badge_text || !product.badge_text.includes(`${product.discount_percent}%`)) && (
-          <div className="bg-[#F43F5E] text-white text-[10px] font-black px-2 py-1 rounded-full shadow-md">
+          <div className="bg-[#F43F5E] text-white text-[8px] sm:text-[10px] font-black px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full shadow-md">
             {product.discount_percent}% OFF
           </div>
         )}
         {inCartQty > 0 && !isAdded && (
-          <div className="bg-emerald-500 text-white text-[10px] font-black px-2 py-1 rounded-full shadow-md flex items-center gap-1">
-            <Check size={10} /> {inCartQty} in cart
+          <div className="bg-emerald-500 text-white text-[8px] sm:text-[10px] font-black px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full shadow-md flex items-center gap-0.5 sm:gap-1">
+            <Check size={8} className="sm:w-2.5 sm:h-2.5" /> {inCartQty} in cart
           </div>
         )}
       </div>
@@ -90,39 +90,39 @@ export function ProductCard({ product }: ProductCardProps) {
       </div>
 
       {/* Content */}
-      <div className="p-4 flex flex-col flex-grow">
-        <div className="text-[10px] text-[var(--color-gold)] font-bold mb-1 uppercase tracking-[0.15em] leading-normal">
+      <div className="p-2.5 sm:p-4 flex flex-col flex-grow">
+        <div className="text-[9px] sm:text-[10px] text-[var(--color-gold)] font-bold mb-0.5 sm:mb-1 uppercase tracking-[0.15em] leading-normal">
           {product.category}
         </div>
-        <h3 className={`text-sm font-bold text-[var(--text)] mb-3 leading-normal pb-0.5 line-clamp-2 transition-colors ${product.in_stock ? 'group-hover:text-[var(--color-gold)]' : 'opacity-70'}`}>
+        <h3 className={`text-xs sm:text-sm font-bold text-[var(--text)] mb-2 sm:mb-3 leading-normal pb-0.5 line-clamp-2 transition-colors ${product.in_stock ? 'group-hover:text-[var(--color-gold)]' : 'opacity-70'}`}>
           {product.name_en}
         </h3>
 
         <div className="mt-auto">
-          <div className="flex items-end gap-2 mb-3">
-            <span className="text-xl font-bold text-[var(--text)]">₹{product.price}</span>
-            <span className="text-xs text-[var(--text-muted)] line-through mb-0.5">₹{product.mrp}</span>
+          <div className="flex items-end gap-1.5 sm:gap-2 mb-2.5 sm:mb-3">
+            <span className="text-base sm:text-xl font-bold text-[var(--text)]">₹{product.price}</span>
+            <span className="text-[10px] sm:text-xs text-[var(--text-muted)] line-through mb-0.5">₹{product.mrp}</span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 sm:gap-2">
             {/* Quantity Selector */}
-            <div className={`flex items-center bg-[var(--surface-high)] rounded-lg border border-[var(--border)] overflow-hidden h-9 ${!product.in_stock ? 'opacity-40 cursor-not-allowed' : ''}`}>
+            <div className={`flex items-center justify-between bg-[var(--surface-high)] rounded-lg border border-[var(--border)] overflow-hidden h-8 sm:h-9 w-full sm:w-auto ${!product.in_stock ? 'opacity-40 cursor-not-allowed' : ''}`}>
               <button
                 disabled={!product.in_stock}
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="w-7 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)] disabled:pointer-events-none"
+                className="w-8 sm:w-7 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)] disabled:pointer-events-none"
               >
-                <Minus size={12} />
+                <Minus size={10} className="sm:w-3 sm:h-3" />
               </button>
-              <div className="w-7 text-center text-xs font-bold text-[var(--text)] h-full flex items-center justify-center border-x border-[var(--border)] select-none">
+              <div className="flex-grow sm:w-7 text-center text-[11px] sm:text-xs font-bold text-[var(--text)] h-full flex items-center justify-center border-x border-[var(--border)] select-none">
                 {product.in_stock ? quantity : 0}
               </div>
               <button
                 disabled={!product.in_stock}
                 onClick={() => setQuantity(quantity + 1)}
-                className="w-7 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)] disabled:pointer-events-none"
+                className="w-8 sm:w-7 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)] disabled:pointer-events-none"
               >
-                <Plus size={12} />
+                <Plus size={10} className="sm:w-3 sm:h-3" />
               </button>
             </div>
 
@@ -131,7 +131,7 @@ export function ProductCard({ product }: ProductCardProps) {
               disabled={!product.in_stock}
               onClick={handleAdd}
               whileTap={product.in_stock ? { scale: 0.95 } : {}}
-              className={`flex-1 h-9 rounded-lg flex items-center justify-center gap-1.5 text-xs font-bold transition-all duration-300 ${
+              className={`w-full sm:flex-1 h-8 sm:h-9 rounded-lg flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-bold transition-all duration-300 ${
                 !product.in_stock
                   ? 'bg-[var(--surface-high)] text-[var(--text-muted)] border border-[var(--border)] cursor-not-allowed opacity-60'
                   : isAdded
@@ -144,11 +144,11 @@ export function ProductCard({ product }: ProductCardProps) {
               {!product.in_stock ? (
                 'Out of Stock'
               ) : isAdded ? (
-                <><Check size={14} /> Added</>
+                <><Check size={12} className="sm:w-3.5 sm:h-3.5" /> Added</>
               ) : inCartQty > 0 ? (
-                <><Plus size={14} /> Add More</>
+                <><Plus size={12} className="sm:w-3.5 sm:h-3.5" /> Add More</>
               ) : (
-                <><ShoppingCart size={14} /> Add</>
+                <><ShoppingCart size={12} className="sm:w-3.5 sm:h-3.5" /> Add</>
               )}
             </motion.button>
           </div>

@@ -175,26 +175,27 @@ export default function ProductsPage() {
         </div>
       </motion.div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-row gap-3 sm:gap-8">
         {/* Sidebar Filters */}
-        <aside className="w-full lg:w-60 flex-shrink-0">
-          <div className="glass-card rounded-2xl p-5 sticky top-28">
-            <div className="flex items-center gap-2 font-bold text-sm mb-5 border-b border-[var(--border)] pb-3 text-[var(--text)]">
-              <SlidersHorizontal size={16} /> Categories
+        <aside className="w-[110px] sm:w-48 lg:w-60 flex-shrink-0">
+          <div className="glass-card rounded-2xl p-2 sm:p-5 sticky top-28">
+            <div className="flex items-center gap-1.5 font-bold text-xs sm:text-sm mb-4 border-b border-[var(--border)] pb-2.5 text-[var(--text)]">
+              <SlidersHorizontal size={14} className="shrink-0" /> Categories
             </div>
             <div className="flex flex-col gap-1">
               {categoriesList.map((cat) => {
                 const count = getCategoryCount(cat.id);
                 return (
                   <button key={cat.id} onClick={() => setActiveCategory(cat.id)}
-                    className={`text-left px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-between ${activeCategory === cat.id
+                    className={`text-left px-1.5 py-1.5 sm:px-3 sm:py-2 rounded-lg text-[11px] sm:text-sm transition-all flex items-center justify-between ${activeCategory === cat.id
                       ? 'bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold shadow-sm'
-                      : 'text-[var(--text-muted)] hover:bg-[var(--surface-high)] hover:text-[var(--text)]'}`}>
-                    <span className="flex items-center gap-2">
-                      <span className="text-xs">{cat.emoji}</span> {cat.label}
+                      : 'text-[var(--text-muted)] hover:bg-[var(--surface-high)] hover:text-[var(--text)]'} min-w-0`}>
+                    <span className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-xs sm:text-sm shrink-0">{cat.emoji}</span>
+                      <span className="truncate">{cat.label}</span>
                     </span>
                     {count !== null && count > 0 && (
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${activeCategory === cat.id ? 'bg-[#1a1400]/20' : 'bg-[var(--surface-high)]'}`}>
+                      <span className={`text-[9px] font-bold px-1 py-0.5 rounded-full shrink-0 hidden sm:inline-block ${activeCategory === cat.id ? 'bg-[#1a1400]/20' : 'bg-[var(--surface-high)]'}`}>
                         {count}
                       </span>
                     )}
@@ -227,7 +228,7 @@ export default function ProductsPage() {
 
           {/* Loading State */}
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
               {[...Array(8)].map((_, i) => (
                 <div key={i} className="glass-card rounded-2xl overflow-hidden">
                   <div className="w-full pt-[100%] bg-[var(--surface-high)] shimmer" />
@@ -263,7 +264,7 @@ export default function ProductsPage() {
                       <div className="h-px bg-gradient-to-r from-[var(--color-gold)]/40 via-[var(--border)]/30 to-transparent mb-6" />
 
                       {/* Responsive Grid */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
+                      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
                         {catProducts.map((product) => (
                           <ProductCard key={product.id} product={product} />
                         ))}
@@ -290,7 +291,7 @@ export default function ProductsPage() {
                 <div className="h-px bg-gradient-to-r from-[var(--color-gold)]/40 via-[var(--border)]/30 to-transparent mb-6" />
 
                 {/* Responsive Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
                   {products.map((product) => (
                     <ProductCard key={product.id} product={product} />
                   ))}
