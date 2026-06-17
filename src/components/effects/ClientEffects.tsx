@@ -15,10 +15,9 @@ const GlobalAtmosphere = dynamic(
 );
 
 export function ClientEffects() {
-  const checkCartExpiry = useEnquiryStore((state) => state.checkCartExpiry);
-  const setLastActive = useEnquiryStore((state) => state.setLastActive);
-
   useEffect(() => {
+    const { checkCartExpiry, setLastActive } = useEnquiryStore.getState();
+
     // 1. Suppress THREE.Clock deprecation warnings from the browser console
     const originalWarn = console.warn;
     console.warn = (...args) => {
@@ -31,9 +30,11 @@ export function ClientEffects() {
     // 2. Check cart expiration on client-side mount
     checkCartExpiry();
 
-    // 3. Keep updating the lastActive timestamp every 10 seconds while active on the site
+    // 3. Keep updating the lastActive timestamp every 10 seconds while active and visible on the site
     const interval = setInterval(() => {
-      setLastActive(Date.now());
+      if (document.visibilityState === 'visible') {
+        setLastActive(Date.now());
+      }
     }, 10000);
 
     // 4. Update on visibility and unloading changes (leaves or returns to site)
@@ -57,7 +58,7 @@ export function ClientEffects() {
       window.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [checkCartExpiry, setLastActive]);
+  }, []);
 
   return (
     <>

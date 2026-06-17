@@ -12,20 +12,20 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const [quantity, setQuantity] = useState(1);
-  const addItem = useEnquiryStore((state) => state.addItem);
   const items = useEnquiryStore((state) => state.items);
   const [isAdded, setIsAdded] = useState(false);
 
+  // Retrieve actions statically to avoid SSR / React 19 hydration issues
+  const { addItem, updateQuantity } = useEnquiryStore.getState();
+
   // Check if this product is already in the cart and get its quantity
-  const cartItem = useMemo(() => items.find(i => i.product.id === product.id), [items, product.id]);
+  const cartItem = useMemo(() => items.find(i => String(i.product.id) === String(product.id)), [items, product.id]);
   const inCartQty = cartItem ? cartItem.quantity : 0;
 
   const handleAdd = () => {
-    addItem({ product, quantity });
+    addItem({ product, quantity: 1 });
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 2000);
-    setQuantity(1);
   };
 
   return (
@@ -104,53 +104,48 @@ export function ProductCard({ product }: ProductCardProps) {
             <span className="text-[10px] sm:text-xs text-[var(--text-muted)] line-through mb-0.5">₹{product.mrp}</span>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 sm:gap-2">
-            {/* Quantity Selector */}
-            <div className={`flex items-center justify-between bg-[var(--surface-high)] rounded-lg border border-[var(--border)] overflow-hidden h-8 sm:h-9 w-full sm:w-auto ${!product.in_stock ? 'opacity-40 cursor-not-allowed' : ''}`}>
-              <button
-                disabled={!product.in_stock}
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="w-8 sm:w-7 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)] disabled:pointer-events-none"
-              >
-                <Minus size={10} className="sm:w-3 sm:h-3" />
-              </button>
-              <div className="flex-grow sm:w-7 text-center text-[11px] sm:text-xs font-bold text-[var(--text)] h-full flex items-center justify-center border-x border-[var(--border)] select-none">
-                {product.in_stock ? quantity : 0}
+          <div className="flex items-center w-full">
+            {!product.in_stock ? (
+              <span className="w-full h-8 sm:h-9 bg-[var(--surface-high)] text-[var(--text-muted)] border border-[var(--border)] rounded-lg flex items-center justify-center text-[11px] sm:text-xs font-bold opacity-60">
+                Out of Stock
+              </span>
+            ) : inCartQty > 0 ? (
+              /* Inline Quantity Controller directly on the card */
+              <div className="flex items-center justify-between bg-[var(--surface-high)] rounded-lg border border-[var(--border)] overflow-hidden h-8 sm:h-9 w-full shadow-sm">
+                <button
+                  onClick={() => updateQuantity(product.id, inCartQty - 1)}
+                  className="w-8 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)]"
+                >
+                  <Minus size={10} className="sm:w-3 sm:h-3" />
+                </button>
+                <div className="flex-grow text-center text-[11px] sm:text-xs font-bold text-[var(--text)] h-full flex items-center justify-center border-x border-[var(--border)] select-none">
+                  {inCartQty}
+                </div>
+                <button
+                  onClick={() => updateQuantity(product.id, inCartQty + 1)}
+                  className="w-8 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)]"
+                >
+                  <Plus size={10} className="sm:w-3 sm:h-3" />
+                </button>
               </div>
-              <button
-                disabled={!product.in_stock}
-                onClick={() => setQuantity(quantity + 1)}
-                className="w-8 sm:w-7 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)] disabled:pointer-events-none"
-              >
-                <Plus size={10} className="sm:w-3 sm:h-3" />
-              </button>
-            </div>
-
-            {/* Add Button */}
-            <motion.button
-              disabled={!product.in_stock}
-              onClick={handleAdd}
-              whileTap={product.in_stock ? { scale: 0.95 } : {}}
-              className={`w-full sm:flex-1 h-8 sm:h-9 rounded-lg flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-bold transition-all duration-300 ${
-                !product.in_stock
-                  ? 'bg-[var(--surface-high)] text-[var(--text-muted)] border border-[var(--border)] cursor-not-allowed opacity-60'
-                  : isAdded
+            ) : (
+              /* Clean "Add" Button */
+              <motion.button
+                onClick={handleAdd}
+                whileTap={{ scale: 0.95 }}
+                className={`w-full h-8 sm:h-9 rounded-lg flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-bold transition-all duration-300 ${
+                  isAdded
                     ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]'
-                    : inCartQty > 0
-                      ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/25'
-                      : 'bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]'
-              }`}
-            >
-              {!product.in_stock ? (
-                'Out of Stock'
-              ) : isAdded ? (
-                <><Check size={12} className="sm:w-3.5 sm:h-3.5" /> Added</>
-              ) : inCartQty > 0 ? (
-                <><Plus size={12} className="sm:w-3.5 sm:h-3.5" /> Add More</>
-              ) : (
-                <><ShoppingCart size={12} className="sm:w-3.5 sm:h-3.5" /> Add</>
-              )}
-            </motion.button>
+                    : 'bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]'
+                }`}
+              >
+                {isAdded ? (
+                  <><Check size={12} className="sm:w-3.5 sm:h-3.5" /> Added</>
+                ) : (
+                  <><ShoppingCart size={12} className="sm:w-3.5 sm:h-3.5" /> Add</>
+                )}
+              </motion.button>
+            )}
           </div>
         </div>
       </div>

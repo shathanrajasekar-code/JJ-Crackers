@@ -23,7 +23,10 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
-  const itemCount = useEnquiryStore((state) => state.getItemCount());
+  
+  // SSR/React 19 Safe: Select items array reference, compute count inside the component
+  const items = useEnquiryStore((state) => state.items);
+  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   useEffect(() => {
     setMounted(true);
@@ -38,15 +41,15 @@ export function Navbar() {
     <>
       <header suppressHydrationWarning
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled ? 'py-2 bg-[var(--bg)]/70 backdrop-blur-2xl border-b border-[var(--border)]/50 shadow-[0_4px_30px_rgba(0,0,0,0.1)]' : 'py-4 bg-transparent'}`}>
-        <div suppressHydrationWarning className="max-w-[1400px] mx-auto px-6 flex items-center justify-between">
-          <Link href="/" suppressHydrationWarning className="flex items-center gap-3 group" id="nav-logo">
+        <div suppressHydrationWarning className="max-w-[1400px] mx-auto px-4 sm:px-6 flex items-center justify-between">
+          <Link href="/" suppressHydrationWarning className="flex items-center gap-2 sm:gap-3 group" id="nav-logo">
             <motion.div suppressHydrationWarning whileHover={{ scale: 1.1, rotate: 5 }}
-              className="relative w-11 h-11 rounded-full overflow-hidden shadow-[0_0_20px_rgba(212,175,55,0.3)] border-2 border-[var(--color-gold)]/30 bg-white">
-              <Image src="/logo/logo.png" alt="JJ Crackers" fill className="object-cover dark:brightness-[0.9] dark:contrast-[1.1] transition-all duration-300" sizes="44px" />
+              className="relative w-9 h-9 sm:w-11 sm:h-11 rounded-full overflow-hidden shadow-[0_0_20px_rgba(212,175,55,0.3)] border-2 border-[var(--color-gold)]/30 bg-white">
+              <Image src="/logo/logo.png" alt="JJ Crackers" fill className="object-cover dark:brightness-[0.9] dark:contrast-[1.1] transition-all duration-300" sizes="(max-width: 640px) 36px, 44px" />
             </motion.div>
             <div className="flex flex-col">
-              <span className="font-display text-lg font-bold tracking-tight text-[var(--text)] leading-none">Jegajothi</span>
-              <span className="text-[10px] uppercase tracking-[0.2em] text-[var(--color-gold)] font-semibold leading-none mt-0.5">Premium Crackers</span>
+              <span className="font-display text-base sm:text-lg font-bold tracking-tight text-[var(--text)] leading-none">Jegajothi</span>
+              <span className="text-[8px] sm:text-[10px] uppercase tracking-[0.2em] text-[var(--color-gold)] font-semibold leading-none mt-0.5">Premium Crackers</span>
             </div>
           </Link>
 
@@ -66,7 +69,7 @@ export function Navbar() {
             })}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <a href="tel:+917092300252" className="hidden lg:flex items-center gap-2 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--color-gold)] transition-colors">
               <Phone size={14} /><span>+91 70923 00252</span>
             </a>
@@ -74,11 +77,11 @@ export function Navbar() {
             <div className="hidden sm:block"><ThemeToggle /></div>
             <Link href="/enquiry" id="nav-enquiry-btn">
               <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                className="relative flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] text-sm font-bold shadow-[0_4px_15px_rgba(212,175,55,0.3)]">
-                <ShoppingCart size={16} /><span className="hidden sm:inline">Cart</span>
+                className="relative flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-2.5 rounded-full bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] text-xs sm:text-sm font-bold shadow-[0_4px_15px_rgba(212,175,55,0.3)]">
+                <ShoppingCart size={14} className="sm:w-4 sm:h-4" /><span className="hidden sm:inline">Cart</span>
                 {mounted && itemCount > 0 && (
                   <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}
-                    className="absolute -top-2 -right-2 bg-[#F43F5E] text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-md">
+                    className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-[#F43F5E] text-white text-[9px] sm:text-[10px] font-black w-4.5 h-4.5 sm:w-5 sm:h-5 rounded-full flex items-center justify-center shadow-md">
                     {itemCount}
                   </motion.span>
                 )}

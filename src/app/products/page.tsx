@@ -210,11 +210,32 @@ export default function ProductsPage() {
         </div>
       </motion.div>
 
-      <div className="flex flex-row gap-3 sm:gap-8">
-        {/* Sidebar Filters */}
-        <aside className="w-[110px] sm:w-48 lg:w-60 flex-shrink-0">
-          <div className="glass-card rounded-2xl p-2 sm:p-5 sticky top-28">
-            <div className="flex items-center gap-1.5 font-bold text-xs sm:text-sm mb-4 border-b border-[var(--border)] pb-2.5 text-[var(--text)]">
+      {/* Mobile Horizontal Categories (scrollable) */}
+      <div className="md:hidden w-full overflow-x-auto flex gap-2 pb-3 mb-6 scrollbar-none -mx-4 px-4">
+        {categoriesList.map((cat) => {
+          const isActive = activeCategory === cat.id;
+          return (
+            <button
+              key={cat.id}
+              onClick={() => setActiveCategory(cat.id)}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+                isActive
+                  ? 'bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] shadow-md'
+                  : 'bg-[var(--surface)] border border-[var(--border)] text-[var(--text-muted)]'
+              }`}
+            >
+              <span className="text-sm shrink-0">{cat.emoji}</span>
+              <span>{cat.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="flex flex-col md:flex-row gap-8">
+        {/* Sidebar Filters - Desktop Only */}
+        <aside className="hidden md:block w-48 lg:w-60 flex-shrink-0">
+          <div className="glass-card rounded-2xl p-5 sticky top-28">
+            <div className="flex items-center gap-1.5 font-bold text-sm mb-4 border-b border-[var(--border)] pb-2.5 text-[var(--text)]">
               <SlidersHorizontal size={14} className="shrink-0" /> Categories
             </div>
             <div className="flex flex-col gap-1">
@@ -222,15 +243,15 @@ export default function ProductsPage() {
                 const count = getCategoryCount(cat.id);
                 return (
                   <button key={cat.id} onClick={() => setActiveCategory(cat.id)}
-                    className={`text-left px-1.5 py-1.5 sm:px-3 sm:py-2 rounded-lg text-[11px] sm:text-sm transition-all flex items-center justify-between ${activeCategory === cat.id
+                    className={`text-left px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-between ${activeCategory === cat.id
                       ? 'bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold shadow-sm'
                       : 'text-[var(--text-muted)] hover:bg-[var(--surface-high)] hover:text-[var(--text)]'} min-w-0`}>
                     <span className="flex items-center gap-1.5 min-w-0">
-                      <span className="text-xs sm:text-sm shrink-0">{cat.emoji}</span>
+                      <span className="text-sm shrink-0">{cat.emoji}</span>
                       <span className="truncate">{cat.label}</span>
                     </span>
                     {count !== null && count > 0 && (
-                      <span className={`text-[9px] font-bold px-1 py-0.5 rounded-full shrink-0 hidden sm:inline-block ${activeCategory === cat.id ? 'bg-[#1a1400]/20' : 'bg-[var(--surface-high)]'}`}>
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${activeCategory === cat.id ? 'bg-[#1a1400]/20' : 'bg-[var(--surface-high)]'}`}>
                         {count}
                       </span>
                     )}

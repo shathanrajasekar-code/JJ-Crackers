@@ -11,7 +11,7 @@ import Image from 'next/image';
 
 export default function CombosPage() {
   const { addToast } = useToast();
-  const { addItem } = useEnquiryStore();
+  const addItem = useEnquiryStore.getState().addItem;
   const [combos, setCombos] = useState<ComboPack[]>([]);
   const [loading, setLoading] = useState(true);
   const [phone, setPhone] = useState('');
@@ -219,11 +219,11 @@ export default function CombosPage() {
               </div>
 
               {/* Modal Footer */}
-              <div className="p-6 border-t border-[var(--border)] bg-[var(--surface)] flex gap-4">
-                <button onClick={() => { handleAddToEnquiry(selectedCombo); setSelectedCombo(null); }} className="flex-1 py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] transition-all">
+              <div className="p-4 sm:p-6 border-t border-[var(--border)] bg-[var(--surface)] flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <button onClick={() => { handleAddToEnquiry(selectedCombo); setSelectedCombo(null); }} className="w-full sm:flex-1 py-3 sm:py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] transition-all">
                   <ShoppingCart size={18} /> Add to Cart
                 </button>
-                <button onClick={() => handleWhatsAppOrder(selectedCombo)} className="flex-1 py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-[#25D366] text-white hover:shadow-[0_0_20px_rgba(37,211,102,0.4)] transition-all">
+                <button onClick={() => handleWhatsAppOrder(selectedCombo)} className="w-full sm:flex-1 py-3 sm:py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 bg-[#25D366] text-white hover:shadow-[0_0_20px_rgba(37,211,102,0.4)] transition-all">
                   <MessageCircle size={18} /> WhatsApp Order
                 </button>
               </div>

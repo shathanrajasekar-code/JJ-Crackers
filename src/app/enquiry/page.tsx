@@ -10,7 +10,8 @@ import { useState, useEffect } from 'react';
 import { RealisticFirework } from '@/components/effects/RealisticFirework';
 
 export default function EnquiryPage() {
-  const { items, removeItem, updateQuantity, getTotal, getSavings, clearCart } = useEnquiryStore();
+  const items = useEnquiryStore((state) => state.items);
+  const { removeItem, updateQuantity, getTotal, getSavings, clearCart } = useEnquiryStore.getState();
   const [step, setStep] = useState(1);
   const [customerInfo, setCustomerInfo] = useState({ name: '', email: '', phone: '', address: '', city: '', pincode: '', state: '', district: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -506,23 +507,77 @@ export default function EnquiryPage() {
               <div className="divide-y divide-[var(--border)]">
                 <AnimatePresence>
                   {items.map((item) => (
-                    <motion.div key={item.product.id} exit={{ opacity: 0, x: -100, height: 0 }} className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 items-center">
-                      <div className="col-span-1 md:col-span-5 flex items-center gap-4">
+                    <motion.div
+                      key={item.product.id}
+                      exit={{ opacity: 0, x: -100, height: 0 }}
+                      className="p-4 flex flex-col md:flex-row items-stretch md:items-center gap-4"
+                    >
+                      {/* Left: Image & Details */}
+                      <div className="flex items-center gap-4 flex-1">
                         <div className="w-14 h-14 rounded-xl bg-[var(--surface-high)] overflow-hidden flex-shrink-0 border border-[var(--border)] flex items-center justify-center relative">
-                          {item.product.image_url ? <Image src={item.product.image_url} alt={item.product.name_en} fill className="object-cover" sizes="56px" /> : <span className="text-lg opacity-30">🎇</span>}
+                          {item.product.image_url ? (
+                            <Image src={item.product.image_url} alt={item.product.name_en} fill className="object-cover" sizes="56px" />
+                          ) : (
+                            <span className="text-lg opacity-30">🎇</span>
+                          )}
                         </div>
-                        <div><div className="text-[10px] text-[var(--color-gold)] font-bold uppercase tracking-[0.15em]">{item.product.category}</div><h3 className="font-bold text-sm">{item.product.name_en}</h3></div>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-[10px] text-[var(--color-gold)] font-bold uppercase tracking-[0.15em] block mb-0.5">
+                            {item.product.category}
+                          </span>
+                          <h3 className="font-bold text-sm text-[var(--text)] truncate">
+                            {item.product.name_en}
+                          </h3>
+                          {/* Price - Mobile Only */}
+                          <div className="flex items-baseline gap-2 mt-1 md:hidden">
+                            <span className="font-bold text-sm text-[var(--text)]">₹{item.product.price}</span>
+                            <span className="text-[10px] text-[var(--text-muted)] line-through">₹{item.product.mrp}</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="col-span-1 md:col-span-2 text-center"><span className="font-bold text-sm">₹{item.product.price}</span><br/><span className="text-[10px] text-[var(--text-muted)] line-through">₹{item.product.mrp}</span></div>
-                      <div className="col-span-1 md:col-span-2 flex justify-center">
+
+                      {/* Right: Price, Qty, Total, Remove */}
+                      <div className="flex items-center justify-between md:justify-end gap-4 md:gap-8 border-t border-[var(--border)]/30 md:border-t-0 pt-3 md:pt-0">
+                        {/* Price - Desktop Only */}
+                        <div className="hidden md:block text-center w-20">
+                          <span className="font-bold text-sm">₹{item.product.price}</span>
+                          <div className="text-[10px] text-[var(--text-muted)] line-through">₹{item.product.mrp}</div>
+                        </div>
+
+                        {/* Quantity Selector */}
                         <div className="flex items-center bg-[var(--surface-high)] rounded-lg border border-[var(--border)] overflow-hidden h-8">
-                          <button onClick={() => updateQuantity(item.product.id, Math.max(1, item.quantity - 1))} className="w-7 flex justify-center items-center h-full hover:bg-[var(--surface-highest)]"><Minus size={12} /></button>
-                          <div className="w-7 text-center text-xs font-bold border-x border-[var(--border)] h-full flex items-center justify-center">{item.quantity}</div>
-                          <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="w-7 flex justify-center items-center h-full hover:bg-[var(--surface-highest)]"><Plus size={12} /></button>
+                          <button
+                            onClick={() => updateQuantity(item.product.id, Math.max(1, item.quantity - 1))}
+                            className="w-7 flex justify-center items-center h-full hover:bg-[var(--surface-highest)] transition-colors"
+                          >
+                            <Minus size={12} />
+                          </button>
+                          <div className="w-8 text-center text-xs font-bold border-x border-[var(--border)] h-full flex items-center justify-center">
+                            {item.quantity}
+                          </div>
+                          <button
+                            onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
+                            className="w-7 flex justify-center items-center h-full hover:bg-[var(--surface-highest)] transition-colors"
+                          >
+                            <Plus size={12} />
+                          </button>
+                        </div>
+
+                        {/* Total Price & Delete Button */}
+                        <div className="flex items-center gap-4 md:w-32 justify-end">
+                          <div className="text-right">
+                            <span className="font-bold text-lg text-[var(--color-gold)]">
+                              ₹{(item.product.price * item.quantity).toLocaleString('en-IN')}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => removeItem(item.product.id)}
+                            className="p-2 text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
+                          >
+                            <Trash2 size={16} />
+                          </button>
                         </div>
                       </div>
-                      <div className="col-span-1 md:col-span-2 text-right"><span className="font-bold text-lg text-[var(--color-gold)]">₹{(item.product.price * item.quantity).toLocaleString('en-IN')}</span></div>
-                      <div className="col-span-1 flex justify-end md:justify-center"><button onClick={() => removeItem(item.product.id)} className="p-2 text-rose-400 hover:bg-rose-400/10 rounded-lg"><Trash2 size={16} /></button></div>
                     </motion.div>
                   ))}
                 </AnimatePresence>

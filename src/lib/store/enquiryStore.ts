@@ -74,7 +74,7 @@ export const useEnquiryStore = create<EnquiryState>()(
         const { lastActive, items } = get();
         if (lastActive && items.length > 0) {
           const diff = Date.now() - lastActive;
-          if (diff > 10 * 60 * 1000) { // 10 minutes in ms
+          if (diff > 5 * 60 * 1000) { // 5 minutes in ms
             set({ items: [], lastActive: null });
           }
         }

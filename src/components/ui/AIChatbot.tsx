@@ -24,7 +24,8 @@ export function AIChatbot() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { addItem, items } = useEnquiryStore();
+  const items = useEnquiryStore((state) => state.items);
+  const addItem = useEnquiryStore.getState().addItem;
   const { addToast } = useToast();
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
