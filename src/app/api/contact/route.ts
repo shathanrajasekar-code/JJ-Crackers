@@ -7,7 +7,28 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, email, phone, subject, message } = body;
+    const { name, email, phone, subject, message, website, numA, numB, securityAnswer } = body;
+
+    // Honeypot validation - if website contains any value, we assume it's a bot submission.
+    // We return a 201 success response with dummy data but do NOT store it or send an email.
+    if (website && website.trim() !== '') {
+      console.warn('Spam submission detected via honeypot field. Silently dropping.');
+      return NextResponse.json({
+        id: crypto.randomUUID(),
+        name, email, phone, subject, message,
+        is_read: false,
+        created_at: new Date().toISOString(),
+      }, { status: 201 });
+    }
+
+    // Validate Math Challenge
+    if (numA === undefined || numB === undefined || securityAnswer === undefined) {
+      return NextResponse.json({ error: 'Security verification is required' }, { status: 400 });
+    }
+
+    if (Number(numA) + Number(numB) !== Number(securityAnswer)) {
+      return NextResponse.json({ error: 'Security verification failed. Please try again.' }, { status: 400 });
+    }
 
     if (!name || !email || !subject || !message) {
       return NextResponse.json({ error: 'Name, email, subject, and message are required' }, { status: 400 });

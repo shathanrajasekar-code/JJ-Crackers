@@ -20,8 +20,11 @@ const DEFAULT_CATEGORIES = [
 ];
 
 // GET — List categories
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const { searchParams } = new URL(req.url);
+    const isAdmin = searchParams.get('admin') === 'true';
+
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
@@ -36,10 +39,16 @@ export async function GET() {
       .order('sort_order', { ascending: true });
 
     if (error) throw error;
+
+    const responseHeaders: Record<string, string> = {};
+    if (isAdmin) {
+      responseHeaders['Cache-Control'] = 'no-store, max-age=0, must-revalidate';
+    } else {
+      responseHeaders['Cache-Control'] = 'public, s-maxage=30, stale-while-revalidate=300';
+    }
+
     return NextResponse.json(data && data.length > 0 ? data : DEFAULT_CATEGORIES, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400'
-      }
+      headers: responseHeaders
     });
   } catch (error: any) {
     console.error('Error getting categories:', error);

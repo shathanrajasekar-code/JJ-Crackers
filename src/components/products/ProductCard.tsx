@@ -9,9 +9,10 @@ import type { Product } from '@/lib/supabase/types';
 
 interface ProductCardProps {
   product: Product;
+  viewMode?: 'grid' | 'list';
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, viewMode = 'grid' }: ProductCardProps) {
   const items = useEnquiryStore((state) => state.items);
   const [isAdded, setIsAdded] = useState(false);
 
@@ -27,6 +28,111 @@ export function ProductCard({ product }: ProductCardProps) {
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 2000);
   };
+
+  if (viewMode === 'list') {
+    return (
+      <motion.div
+        whileHover={product.in_stock ? { x: 4 } : {}}
+        transition={{ duration: 0.2 }}
+        className={`glass-card rounded-2xl p-3 sm:p-4 flex gap-3 sm:gap-6 items-center relative transition-opacity duration-300 ${!product.in_stock ? 'opacity-75' : ''}`}
+      >
+        {/* Badges */}
+        <div className="absolute top-2 left-2 z-10 flex flex-col gap-0.5 pointer-events-none">
+          {product.badge_text && (
+            <span className="bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] text-[6px] sm:text-[8px] font-black px-1.5 py-0.5 rounded-full shadow-sm uppercase tracking-wider">
+              {product.badge_text}
+            </span>
+          )}
+        </div>
+
+        {/* Image */}
+        <div className="relative w-20 h-20 sm:w-28 sm:h-28 rounded-xl bg-[var(--surface-high)] overflow-hidden flex-shrink-0 border border-[var(--border)]/30">
+          {product.image_url ? (
+            <Image
+              src={product.image_url}
+              alt={product.name_en}
+              fill
+              sizes="120px"
+              className="object-cover"
+              loading="lazy"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center shimmer">
+              <span className="text-xl opacity-30">🎇</span>
+            </div>
+          )}
+        </div>
+
+        {/* Content Details */}
+        <div className="flex-grow min-w-0 pr-2">
+          <span className="text-[8px] sm:text-[9px] text-[var(--color-gold)] font-bold uppercase tracking-[0.12em] block mb-0.5 sm:mb-1">
+            {product.category}
+          </span>
+          <h3 className="text-xs sm:text-base font-bold text-[var(--text)] leading-snug line-clamp-1 hover:text-[var(--color-gold)] transition-colors">
+            {product.name_en}
+          </h3>
+          {product.name_ta && (
+            <p className="text-[10px] sm:text-xs text-[var(--text-muted)] truncate mt-0.5">
+              {product.name_ta}
+            </p>
+          )}
+
+          <div className="flex items-center gap-1.5 sm:gap-2 mt-2">
+            <span className="text-sm sm:text-lg font-bold text-[var(--text)]">₹{product.price}</span>
+            <span className="text-[9px] sm:text-xs text-[var(--text-muted)] line-through">₹{product.mrp}</span>
+            {product.discount_percent && product.discount_percent > 0 && (
+              <span className="text-[8px] sm:text-[10px] font-black bg-[#F43F5E]/10 text-[#F43F5E] px-1.5 py-0.5 rounded">
+                {product.discount_percent}% OFF
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Action Button Area */}
+        <div className="flex-shrink-0 w-24 sm:w-32">
+          {!product.in_stock ? (
+            <span className="w-full h-8 sm:h-9 bg-[var(--surface-high)] text-[var(--text-muted)] border border-[var(--border)] rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-bold opacity-60">
+              Out of Stock
+            </span>
+          ) : inCartQty > 0 ? (
+            <div className="flex items-center justify-between bg-[var(--surface-high)] rounded-lg border border-[var(--border)] overflow-hidden h-8 sm:h-9 w-full shadow-sm">
+              <button
+                onClick={() => updateQuantity(product.id, inCartQty - 1)}
+                className="w-7 sm:w-9 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)]"
+              >
+                <Minus size={10} />
+              </button>
+              <div className="flex-grow text-center text-[10px] sm:text-xs font-bold text-[var(--text)] h-full flex items-center justify-center border-x border-[var(--border)] select-none">
+                {inCartQty}
+              </div>
+              <button
+                onClick={() => updateQuantity(product.id, inCartQty + 1)}
+                className="w-7 sm:w-9 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)]"
+              >
+                <Plus size={10} />
+              </button>
+            </div>
+          ) : (
+            <motion.button
+              onClick={handleAdd}
+              whileTap={{ scale: 0.95 }}
+              className={`w-full h-8 sm:h-9 rounded-lg flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold transition-all duration-300 ${
+                isAdded
+                  ? 'bg-emerald-500 text-white shadow-md'
+                  : 'bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] hover:shadow-md'
+              }`}
+            >
+              {isAdded ? (
+                <><Check size={10} /> Added</>
+              ) : (
+                <><ShoppingCart size={10} /> Add</>
+              )}
+            </motion.button>
+          )}
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div

@@ -13,8 +13,8 @@ const DEFAULT_SETTINGS = {
   mobile_number_2: '7092300252',
   whatsapp_number: '7092300252',
   email_address: 'jjcrackersworld@gmail.com',
-  marquee: 'Welcome to Jegajothi Crackers Sivakasi - Direct Factory Price Quality Fireworks!',
-  whatsapp_provider: 'none',
+  marquee: 'Welcome to Jegajothi Crackers Sivakasi - Direct Factory Price Quality Fireworks! We Give Special Festive Discounts!',
+  whatsapp_provider: 'whatsapp_business',
   whatsapp_business_phone_number_id: '',
   whatsapp_business_access_token: '',
   whatsapp_ultramsg_instance_id: '',
@@ -29,8 +29,11 @@ const DEFAULT_SETTINGS = {
 };
 
 // GET — Retrieve all settings
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const { searchParams } = new URL(req.url);
+    const isAdmin = searchParams.get('admin') === 'true';
+
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
@@ -50,7 +53,16 @@ export async function GET() {
       });
     }
 
-    return NextResponse.json(settings);
+    const responseHeaders: Record<string, string> = {};
+    if (isAdmin) {
+      responseHeaders['Cache-Control'] = 'no-store, max-age=0, must-revalidate';
+    } else {
+      responseHeaders['Cache-Control'] = 'public, s-maxage=30, stale-while-revalidate=300';
+    }
+
+    return NextResponse.json(settings, {
+      headers: responseHeaders
+    });
   } catch (error: any) {
     console.error('Error getting settings:', error);
     return NextResponse.json(DEFAULT_SETTINGS);
@@ -109,13 +121,13 @@ export async function POST(req: Request) {
         if (fetchError) throw fetchError;
         
         if (products && products.length > 0) {
-          // Perform bulk price updates (keep mrp constant, calculate price from mrp based on new discount)
+          // Perform bulk price updates (keep selling price constant, calculate mrp from selling price based on new discount)
           const updates = products.map(p => {
-            const mrp = p.mrp || 0;
-            const price = Math.round(mrp * (1 - discountVal / 100));
+            const price = p.price || 0;
+            const mrp = discountVal < 100 ? Math.round(price / (1 - discountVal / 100)) : price;
             return {
               ...p,
-              price,
+              mrp,
               discount_percent: discountVal,
               badge_text: discountVal > 0 ? `🔥 ${discountVal}% OFF` : null,
             };

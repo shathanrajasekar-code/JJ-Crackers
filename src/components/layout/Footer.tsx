@@ -57,8 +57,8 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
           <div className="lg:col-span-2">
             <Link href="/" suppressHydrationWarning className="inline-flex items-center gap-3 mb-6 group">
-              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-[var(--color-gold)]/30 shadow-[0_0_20px_rgba(212,175,55,0.3)] bg-white">
-                <Image src="/logo/logo.png" alt="JJ Crackers" width={48} height={48} className="object-cover dark:brightness-[0.9] dark:contrast-[1.1] transition-all duration-300" />
+              <div className="relative w-12 h-12 overflow-hidden flex-shrink-0">
+                <Image src="/logo/logo.png" alt="JJ Crackers" fill className="object-contain dark:brightness-[0.9] dark:contrast-[1.1] transition-all duration-300" sizes="48px" />
               </div>
               <div className="flex flex-col">
                 <span className="font-display font-bold text-2xl tracking-tight leading-none">Jegajothi Crackers</span>
@@ -69,19 +69,7 @@ export function Footer() {
               Sivakasi&apos;s most trusted fireworks manufacturer since 2015. Lighting up millions of homes with uncompromising safety and premium quality.
             </p>
 
-            {/* Newsletter */}
-            <div className="mb-6">
-              <h4 className="text-sm font-bold mb-3">Subscribe to Offers</h4>
-              {subscribed ? (
-                <p className="text-sm text-emerald-500 font-bold">✅ Subscribed! You&apos;ll get exclusive deals.</p>
-              ) : (
-                <form onSubmit={handleNewsletter} className="flex gap-2">
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Your email"
-                    className="flex-1 bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-2.5 text-sm focus:border-[var(--color-gold)] focus:outline-none" required />
-                  <button type="submit" className="px-4 py-2.5 rounded-xl bg-[var(--color-gold)] text-[#1a1400] font-bold"><Send size={16} /></button>
-                </form>
-              )}
-            </div>
+            {/* Removed Newsletter */}
 
             <div className="flex gap-3">
               {socialLinks.map((social) => (

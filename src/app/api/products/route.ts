@@ -104,7 +104,9 @@ export async function GET(req: Request) {
       const total = count || 0;
       const responseHeaders: Record<string, string> = {};
       if (!isAdmin) {
-        responseHeaders['Cache-Control'] = 'public, s-maxage=300, stale-while-revalidate=1200';
+        responseHeaders['Cache-Control'] = 'public, s-maxage=30, stale-while-revalidate=300';
+      } else {
+        responseHeaders['Cache-Control'] = 'no-store, max-age=0, must-revalidate';
       }
       return NextResponse.json({
         products: data || [],
@@ -157,7 +159,7 @@ export async function GET(req: Request) {
       totalPages: Math.ceil(total / limit),
     }, {
       headers: {
-        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=1200'
+        'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=300'
       }
     });
   } catch (error) {
@@ -188,9 +190,7 @@ export async function POST(req: Request) {
     const supabase = createClient(supabaseUrl, supabaseKey);
     const body = await req.json();
 
-    if (!body.image_url) {
-      return NextResponse.json({ error: 'Product image is required.' }, { status: 400 });
-    }
+    // Product image is no longer required.
 
     const slug = body.name_en.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Math.random().toString(36).substring(2, 6);
     const mrp = body.mrp || body.original_price || 0;

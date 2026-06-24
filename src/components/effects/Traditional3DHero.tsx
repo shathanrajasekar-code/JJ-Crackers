@@ -141,7 +141,7 @@ function SceneContent() {
         </Float>
       ))}
 
-      <GoldenEmbers count={400} />
+      <GoldenEmbers count={150} />
     </group>
   );
 }
@@ -157,7 +157,7 @@ export function Traditional3DHero() {
 
   return (
     <div className="absolute inset-0 z-0 overflow-hidden">
-      <Canvas shadows dpr={[1, 2]}>
+      <Canvas shadows dpr={[1, 1.5]}>
         <Suspense fallback={null}>
           <PerspectiveCamera makeDefault position={[0, 2, 25]} fov={45} />
           
@@ -178,7 +178,7 @@ export function Traditional3DHero() {
           
           <SceneContent />
           
-          <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1.5} />
+          <Stars radius={100} depth={50} count={2000} factor={4} saturation={0} fade speed={1.5} />
           <Cloud position={[-15, 15, -20]} speed={0.3} opacity={0.2} color="#1a1a1a" />
           <Cloud position={[15, 18, -25]} speed={0.3} opacity={0.2} color="#1a1a1a" />
           

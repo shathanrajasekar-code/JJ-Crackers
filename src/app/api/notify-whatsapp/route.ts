@@ -27,7 +27,13 @@ export async function POST(req: Request) {
       }
     }
 
-    const provider = dbSettings.whatsapp_provider || process.env.WHATSAPP_PROVIDER || 'none';
+    let provider = dbSettings.whatsapp_provider || process.env.WHATSAPP_PROVIDER || 'none';
+
+    // Explicit override if database is 'none' but env has a valid provider configured
+    if (provider === 'none' && process.env.WHATSAPP_PROVIDER && process.env.WHATSAPP_PROVIDER !== 'none') {
+      provider = process.env.WHATSAPP_PROVIDER;
+    }
+
     const caption = `Hello ${customerName || 'Customer'}, thank you for shopping with JJ Crackers! 🎆 Here is your Order Receipt for ${orderNumber}.`;
 
     // Normalizing phone number (removing non-digits, ensuring it starts with country code, no + or spacing)
@@ -92,8 +98,8 @@ export async function POST(req: Request) {
 
     // ── Option B: Meta WhatsApp Business Cloud API (Official Template-Based) ──
     if (provider === 'whatsapp_business') {
-      const phoneId = dbSettings.whatsapp_business_phone_number_id || process.env.WHATSAPP_BUSINESS_PHONE_NUMBER_ID;
-      const token = dbSettings.whatsapp_business_access_token || process.env.WHATSAPP_BUSINESS_ACCESS_TOKEN;
+      const phoneId = (provider === process.env.WHATSAPP_PROVIDER ? process.env.WHATSAPP_BUSINESS_PHONE_NUMBER_ID : dbSettings.whatsapp_business_phone_number_id) || dbSettings.whatsapp_business_phone_number_id || process.env.WHATSAPP_BUSINESS_PHONE_NUMBER_ID;
+      const token = (provider === process.env.WHATSAPP_PROVIDER ? process.env.WHATSAPP_BUSINESS_ACCESS_TOKEN : dbSettings.whatsapp_business_access_token) || dbSettings.whatsapp_business_access_token || process.env.WHATSAPP_BUSINESS_ACCESS_TOKEN;
 
       if (!phoneId || !token) {
         return NextResponse.json({ error: 'WhatsApp Business credentials not configured' }, { status: 500 });
@@ -112,7 +118,7 @@ export async function POST(req: Request) {
           formData.append('type', 'application/pdf');
           formData.append('messaging_product', 'whatsapp');
 
-          const uploadUrl = `https://graph.facebook.com/v18.0/${phoneId}/media`;
+          const uploadUrl = `https://graph.facebook.com/v25.0/${phoneId}/media`;
           const uploadRes = await fetch(uploadUrl, {
             method: 'POST',
             headers: {
@@ -136,11 +142,14 @@ export async function POST(req: Request) {
       // Step 2: Dispatch template message
       // Note: Template names must be pre-approved on Meta developer console.
       // - Standard header parameter: 'document' using media id or hosted link.
-      const sendUrl = `https://graph.facebook.com/v18.0/${phoneId}/messages`;
+      const sendUrl = `https://graph.facebook.com/v25.0/${phoneId}/messages`;
       
       const templateComponents: any[] = [];
+      const templateName = dbSettings.whatsapp_template_name === 'hello_world'
+        ? 'hello_world'
+        : (mediaId ? 'order_receipt_document' : 'order_receipt_text_only');
       
-      if (mediaId) {
+      if (mediaId && templateName !== 'hello_world') {
         templateComponents.push({
           type: 'header',
           parameters: [
@@ -155,26 +164,31 @@ export async function POST(req: Request) {
         });
       }
 
-      templateComponents.push({
-        type: 'body',
-        parameters: [
-          { type: 'text', text: customerName || 'Customer' },
-          { type: 'text', text: orderNumber }
-        ]
-      });
+      if (templateName !== 'hello_world') {
+        templateComponents.push({
+          type: 'body',
+          parameters: [
+            { type: 'text', text: customerName || 'Customer' },
+            { type: 'text', text: orderNumber }
+          ]
+        });
+      }
 
-      const messagePayload = {
+      const messagePayload: any = {
         messaging_product: 'whatsapp',
         to: cleanPhone,
         type: 'template',
         template: {
-          name: mediaId ? 'order_receipt_document' : 'order_receipt_text_only',
+          name: templateName,
           language: {
             code: 'en_US'
-          },
-          components: templateComponents
+          }
         }
       };
+
+      if (templateName !== 'hello_world') {
+        messagePayload.template.components = templateComponents;
+      }
 
       const sendRes = await fetch(sendUrl, {
         method: 'POST',

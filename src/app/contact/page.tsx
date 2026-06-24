@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle2, MessageCircle, Sparkles, ArrowRight } from 'lucide-react';
 
@@ -27,28 +27,65 @@ const faqItems = [
 ];
 
 export default function ContactPage() {
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: '', message: '', website: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
+  // Security Verification (Math Challenge)
+  const [numA, setNumA] = useState(0);
+  const [numB, setNumB] = useState(0);
+  const [securityAnswer, setSecurityAnswer] = useState('');
+  const [securityError, setSecurityError] = useState('');
+
+  const generateChallenge = () => {
+    const a = Math.floor(Math.random() * 10) + 1;
+    const b = Math.floor(Math.random() * 9) + 1;
+    setNumA(a);
+    setNumB(b);
+    setSecurityAnswer('');
+    setSecurityError('');
+  };
+
+  useEffect(() => {
+    generateChallenge();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Client-side math verification to save API requests
+    if (Number(securityAnswer) !== numA + numB) {
+      setSecurityError('Incorrect answer. Please solve the security check to continue.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          numA,
+          numB,
+          securityAnswer,
+        }),
       });
 
       if (res.ok) {
         setSubmitted(true);
-        setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+        setFormData({ name: '', email: '', phone: '', subject: '', message: '', website: '' });
+        generateChallenge();
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        setSecurityError(errorData.error || 'Failed to submit form. Please try again.');
+        generateChallenge();
       }
     } catch (error) {
       console.error('Error submitting form:', error);
+      setSecurityError('A network error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -154,6 +191,49 @@ export default function ContactPage() {
                       className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--color-gold)] focus:shadow-[0_0_0_3px_rgba(212,175,55,0.1)] transition-all resize-none"
                       placeholder="Tell us about your requirements..." />
                   </div>
+
+                  {/* Honeypot field (hidden from human users, filled by bots) */}
+                  <div style={{ display: 'none' }} aria-hidden="true">
+                    <label htmlFor="website">Website Address</label>
+                    <input
+                      id="website"
+                      name="website"
+                      type="text"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={formData.website}
+                      onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                    />
+                  </div>
+
+                  {/* Math Challenge (Captcha) */}
+                  <div className="grid sm:grid-cols-2 gap-5 items-end">
+                    <div>
+                      <label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">
+                        Security Check *
+                      </label>
+                      <div className="flex items-center gap-3 bg-[var(--surface)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm text-[var(--text)] select-none">
+                        <span>What is <strong className="text-[var(--color-gold)]">{numA} + {numB}</strong>?</span>
+                      </div>
+                    </div>
+                    <div>
+                      <input
+                        required
+                        type="number"
+                        value={securityAnswer}
+                        onChange={(e) => {
+                          setSecurityAnswer(e.target.value);
+                          if (securityError) setSecurityError('');
+                        }}
+                        className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--color-gold)] focus:shadow-[0_0_0_3px_rgba(212,175,55,0.1)] transition-all"
+                        placeholder="Enter the sum"
+                      />
+                    </div>
+                  </div>
+                  {securityError && (
+                    <p className="text-red-500 text-xs font-semibold">{securityError}</p>
+                  )}
+
                   <motion.button type="submit" disabled={isSubmitting} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                     className="w-full py-4 rounded-xl bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold flex items-center justify-center gap-3 shadow-lg disabled:opacity-50">
                     {isSubmitting ? 'Sending...' : <><Send size={18} /> Send Message</>}

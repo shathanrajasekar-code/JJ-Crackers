@@ -26,7 +26,8 @@ export function Navbar() {
   
   // SSR/React 19 Safe: Select items array reference, compute count inside the component
   const items = useEnquiryStore((state) => state.items);
-  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const itemCount = items.length;
+  const totalPrice = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
   useEffect(() => {
     setMounted(true);
@@ -40,12 +41,12 @@ export function Navbar() {
   return (
     <>
       <header suppressHydrationWarning
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled ? 'py-2 bg-[var(--bg)]/70 backdrop-blur-2xl border-b border-[var(--border)]/50 shadow-[0_4px_30px_rgba(0,0,0,0.1)]' : 'py-4 bg-transparent'}`}>
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled ? 'py-2 bg-[var(--bg)]/90 backdrop-blur-xl border-b border-[var(--border)]/50 shadow-[0_4px_30px_rgba(0,0,0,0.1)]' : 'py-2.5 bg-[var(--bg)]/95 backdrop-blur-lg border-b border-[var(--border)]/30 shadow-[0_2px_15px_rgba(0,0,0,0.15)]'}`}>
         <div suppressHydrationWarning className="max-w-[1400px] mx-auto px-4 sm:px-6 flex items-center justify-between">
           <Link href="/" suppressHydrationWarning className="flex items-center gap-2 sm:gap-3 group" id="nav-logo">
             <motion.div suppressHydrationWarning whileHover={{ scale: 1.1, rotate: 5 }}
-              className="relative w-9 h-9 sm:w-11 sm:h-11 rounded-full overflow-hidden shadow-[0_0_20px_rgba(212,175,55,0.3)] border-2 border-[var(--color-gold)]/30 bg-white">
-              <Image src="/logo/logo.png" alt="JJ Crackers" fill className="object-cover dark:brightness-[0.9] dark:contrast-[1.1] transition-all duration-300" sizes="(max-width: 640px) 36px, 44px" />
+              className="relative w-10 h-10 sm:w-12 sm:h-12 overflow-hidden flex-shrink-0">
+              <Image src="/logo/logo.png" alt="JJ Crackers" fill className="object-contain dark:brightness-[0.9] dark:contrast-[1.1] transition-all duration-300" sizes="(max-width: 640px) 40px, 48px" />
             </motion.div>
             <div className="flex flex-col">
               <span className="font-display text-base sm:text-lg font-bold tracking-tight text-[var(--text)] leading-none">Jegajothi</span>
@@ -78,7 +79,10 @@ export function Navbar() {
             <Link href="/enquiry" id="nav-enquiry-btn">
               <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                 className="relative flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-5 sm:py-2.5 rounded-full bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] text-xs sm:text-sm font-bold shadow-[0_4px_15px_rgba(212,175,55,0.3)]">
-                <ShoppingCart size={14} className="sm:w-4 sm:h-4" /><span className="hidden sm:inline">Cart</span>
+                <ShoppingCart size={14} className="sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">
+                  {mounted && itemCount > 0 ? `Cart (₹${totalPrice.toLocaleString('en-IN')})` : 'Cart'}
+                </span>
                 {mounted && itemCount > 0 && (
                   <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}
                     className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-[#F43F5E] text-white text-[9px] sm:text-[10px] font-black w-4.5 h-4.5 sm:w-5 sm:h-5 rounded-full flex items-center justify-center shadow-md">
@@ -123,7 +127,7 @@ export function Navbar() {
                 </a>
                 <Link href="/enquiry" onClick={() => setMobileMenuOpen(false)} className="block">
                   <button className="w-full py-4 rounded-2xl bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold text-sm shadow-lg flex items-center justify-center gap-2">
-                    <ShoppingCart size={16} /> View Cart {mounted && itemCount > 0 && <span className="bg-[#1a1400]/20 px-2 py-0.5 rounded-full text-xs">{itemCount}</span>}
+                    <ShoppingCart size={16} /> View Cart {mounted && itemCount > 0 && <span className="bg-[#1a1400]/20 px-2 py-0.5 rounded-full text-xs">{itemCount} (₹{totalPrice.toLocaleString('en-IN')})</span>}
                   </button>
                 </Link>
               </div>

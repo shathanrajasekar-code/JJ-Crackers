@@ -357,9 +357,9 @@ export default function AdminPage() {
         adminFetch('/api/contact').then(r => r.json()).catch(() => []),
         adminFetch('/api/combos').then(r => r.json()).catch(() => []),
         adminFetch('/api/admin/tracking').then(r => r.json()).catch(() => ({ error_logs: [], analytics_events: [] })),
-        adminFetch('/api/settings').then(r => r.json()).catch(() => ({})),
+        adminFetch('/api/settings?admin=true').then(r => r.json()).catch(() => ({})),
         adminFetch('/api/bank-accounts').then(r => r.json()).catch(() => []),
-        adminFetch('/api/categories').then(r => r.json()).catch(() => []),
+        adminFetch('/api/categories?admin=true').then(r => r.json()).catch(() => []),
         adminFetch('/api/sliders').then(r => r.json()).catch(() => []),
       ]);
       setOrders(Array.isArray(o) ? o : []);
@@ -391,7 +391,7 @@ export default function AdminPage() {
     }
   }, [orders, inspectedOrder]);
 
-  const updateOrderStatus = async (id: string, status: string) => {
+  const updateOrderStatus = async (id: string, status: string, trackingStr?: string) => {
     // Optimistically update orders in UI instantly
     setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
     
@@ -399,7 +399,10 @@ export default function AdminPage() {
       const res = await adminFetch(`/api/orders/${id}`, { 
         method: 'PATCH', 
         headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ status }) 
+        body: JSON.stringify({ 
+          status,
+          trackingInfo: trackingStr || undefined
+        }) 
       });
       if (res.ok) {
         // Fetch only updated orders to synchronize state quickly without full reload
@@ -790,10 +793,6 @@ export default function AdminPage() {
   // CRUD: Products Add / Edit
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentProduct.image_url) {
-      alert('Product image is required.');
-      return;
-    }
     try {
       const method = currentProduct.id ? 'PATCH' : 'POST';
       const endpoint = currentProduct.id ? `/api/products/${currentProduct.id}` : '/api/products';
@@ -1547,7 +1546,8 @@ export default function AdminPage() {
                   <button 
                     onClick={() => {
                       setCurrentProduct({
-                        name_en: '', name_ta: '', category: 'single-sound',
+                        name_en: '', name_ta: '', category: categories[0]?.id || 'single-sound',
+                        discount_percent: parseInt(settings.global_discount) || 60,
                         mrp: 0, price: 0, in_stock: true, is_featured: false
                       });
                       setProductFormOpen(true);
@@ -2552,7 +2552,17 @@ export default function AdminPage() {
                     {['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'].map(s => (
                       <button 
                         key={s} 
-                        onClick={() => updateOrderStatus(inspectedOrder.id, s)}
+                        onClick={() => {
+                          if (s === 'shipped') {
+                            const tracking = prompt("Enter tracking/lorry details (optional):", trackingInfo);
+                            if (tracking !== null) {
+                              setTrackingInfo(tracking);
+                              updateOrderStatus(inspectedOrder.id, s, tracking);
+                            }
+                          } else {
+                            updateOrderStatus(inspectedOrder.id, s);
+                          }
+                        }}
                         className={`py-2 rounded-lg font-bold text-[10px] uppercase border transition-all ${
                           inspectedOrder.status === s 
                             ? 'bg-[var(--color-gold)] text-[#1a1400] border-[var(--color-gold)]' 
@@ -2569,8 +2579,11 @@ export default function AdminPage() {
                 <div className="bg-[#1C1C18]/60 border border-[#2A2A24] rounded-xl p-4 mt-4 space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-[10px] text-[#A0A090] font-bold uppercase tracking-wider">Status Notification</span>
-                    <span className="text-[9px] bg-green-wa/10 text-green-wa border border-green-wa/20 px-2 py-0.5 rounded-md uppercase font-bold">Semi-Automatic</span>
+                    <span className="text-[9px] bg-green-wa/10 text-green-wa border border-green-wa/20 px-2 py-0.5 rounded-md uppercase font-bold">Automatic</span>
                   </div>
+                  <p className="text-[10px] text-[#A0A090] leading-relaxed">
+                    Notifications are automatically sent to both WhatsApp & Email when the order status changes. You can also customize or resend messages below manually.
+                  </p>
 
                   {/* Checkboxes */}
                   <div className="flex items-center gap-4 text-[11px] font-bold">
@@ -2704,7 +2717,7 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                <div className="grid sm:grid-cols-3 gap-4">
+                <div className="grid sm:grid-cols-4 gap-4">
                   <div>
                     <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Category *</label>
                     <select value={currentProduct.category} onChange={(e) => setCurrentProduct({...currentProduct, category: e.target.value})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none cursor-pointer">
@@ -2714,17 +2727,45 @@ export default function AdminPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Standard MRP (₹) *</label>
-                    <input required type="number" value={currentProduct.mrp} onChange={(e) => setCurrentProduct({...currentProduct, mrp: parseInt(e.target.value) || 0})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" />
+                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Selling Price (₹) *</label>
+                    <input required type="number" value={currentProduct.price} 
+                      onChange={(e) => {
+                        const priceVal = parseInt(e.target.value) || 0;
+                        const disc = currentProduct.discount_percent || 0;
+                        const mrpVal = disc < 100 ? Math.round(priceVal / (1 - disc / 100)) : priceVal;
+                        setCurrentProduct({...currentProduct, price: priceVal, mrp: mrpVal});
+                      }} 
+                      className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" />
                   </div>
                   <div>
-                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Selling Price (₹) *</label>
-                    <input required type="number" value={currentProduct.price} onChange={(e) => setCurrentProduct({...currentProduct, price: parseInt(e.target.value) || 0})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" />
+                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Discount Percent (%)</label>
+                    <input type="number" min="0" max="99" value={currentProduct.discount_percent || 0} 
+                      onChange={(e) => {
+                        const discVal = Math.min(99, Math.max(0, parseInt(e.target.value) || 0));
+                        const priceVal = currentProduct.price || 0;
+                        const mrpVal = discVal < 100 ? Math.round(priceVal / (1 - discVal / 100)) : priceVal;
+                        setCurrentProduct({...currentProduct, discount_percent: discVal, mrp: mrpVal});
+                      }} 
+                      className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Standard MRP (₹) *</label>
+                    <input required type="number" value={currentProduct.mrp} 
+                      onChange={(e) => {
+                        const mrpVal = parseInt(e.target.value) || 0;
+                        const priceVal = currentProduct.price || 0;
+                        let discVal = 0;
+                        if (mrpVal > 0 && priceVal < mrpVal) {
+                          discVal = Math.round(((mrpVal - priceVal) / mrpVal) * 100);
+                        }
+                        setCurrentProduct({...currentProduct, mrp: mrpVal, discount_percent: discVal});
+                      }} 
+                      className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Product Image *</label>
+                  <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Product Image</label>
                   <div className="flex gap-3 items-start">
                     <div className="flex-1 space-y-2">
                       <div 
@@ -2750,7 +2791,6 @@ export default function AdminPage() {
                         )}
                       </div>
                       <input 
-                        required
                         value={currentProduct.image_url || ''} 
                         onChange={(e) => setCurrentProduct({...currentProduct, image_url: e.target.value})} 
                         className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2 text-[10px] focus:border-[var(--color-gold)] focus:outline-none text-[#A0A090]" 
@@ -2989,8 +3029,8 @@ export default function AdminPage() {
 
               <form onSubmit={handleSaveSlider} className="space-y-4 text-xs">
                 <div>
-                  <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Banner Image Link URL *</label>
-                  <input required value={currentSlider.image_url} onChange={(e) => setCurrentSlider({...currentSlider, image_url: e.target.value})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" placeholder="https://domain/banner.jpg" />
+                  <label className="block text-[9px] font-bold text-[#A0A090] mb-1.5 uppercase tracking-wider">Banner Image Link URL</label>
+                  <input value={currentSlider.image_url || ''} onChange={(e) => setCurrentSlider({...currentSlider, image_url: e.target.value})} className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" placeholder="https://domain/banner.jpg" />
                 </div>
                 
                 <div>

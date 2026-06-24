@@ -3,7 +3,7 @@
 
 import { useEnquiryStore } from '@/lib/store/enquiryStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, Plus, Minus, ArrowRight, ArrowLeft, PackageOpen, Sparkles, ShoppingCart, CheckCircle2, Mail, Phone, MapPin, User, FileText, Download, AlertCircle } from 'lucide-react';
+import { Trash2, Plus, Minus, ArrowRight, ArrowLeft, PackageOpen, Sparkles, ShoppingCart, CheckCircle2, Mail, Phone, MapPin, User, FileText, Download, AlertCircle, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
@@ -20,6 +20,7 @@ export default function EnquiryPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [emailStatus, setEmailStatus] = useState<'idle' | 'sending' | 'sent' | 'skipped' | 'failed'>('idle');
   const [emailErrorMessage, setEmailErrorMessage] = useState<string | null>(null);
+  const [receiptStatus, setReceiptStatus] = useState<'idle' | 'generating' | 'downloaded' | 'failed'>('idle');
   const [bursts, setBursts] = useState<Array<{ id: number; x: number; y: number; type: 'burst' | 'fountain' | 'spin' | 'sparkle' }>>([]);
 
   const [settings, setSettings] = useState<any>({
@@ -131,6 +132,7 @@ export default function EnquiryPage() {
       setOrderResult(data);
       setStep(4);
       setEmailStatus('sending');
+      setReceiptStatus('generating');
 
       // 1. Generate PDF & Prepare Base64
       let pdfBase64Data = null;
@@ -154,8 +156,10 @@ export default function EnquiryPage() {
         
         // Auto-download to client device
         downloadReceipt(doc, data.order_number);
+        setReceiptStatus('downloaded');
       } catch (pdfErr: any) {
         console.error('PDF generation error:', pdfErr);
+        setReceiptStatus('failed');
         try {
           const { logError } = await import('@/lib/tracking');
           await logError('PDFGenerationError', pdfErr.message || String(pdfErr), pdfErr.stack, { orderNumber: data.order_number });
@@ -201,7 +205,26 @@ export default function EnquiryPage() {
         setEmailErrorMessage(err instanceof Error ? err.message : String(err));
       });
 
-      // 3. Track order placement analytics event
+      // 3. Trigger WhatsApp notification automatically
+      fetch('/api/notify-whatsapp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: customerInfo.phone,
+          orderNumber: data.order_number,
+          customerName: customerInfo.name,
+          pdfBase64: pdfBase64Data,
+        })
+      })
+      .then(async (waRes) => {
+        const waData = await waRes.json();
+        console.log('WhatsApp notification result:', waData);
+      })
+      .catch(err => {
+        console.error('WhatsApp notification dispatch error:', err);
+      });
+
+      // 4. Track order placement analytics event
       try {
         const { trackEvent } = await import('@/lib/tracking');
         await trackEvent('order_placed', 'checkout', { orderNumber: data.order_number, totalAmount: getTotal() });
@@ -220,6 +243,35 @@ export default function EnquiryPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleShareOnWhatsApp = () => {
+    if (!orderResult) return;
+    const orderItems = orderResult.items || [];
+    const itemLines = orderItems.map((item: any) =>
+      `• ${item.quantity} x ${item.name || item.product_name} — ₹${((item.price || 0) * item.quantity).toLocaleString('en-IN')}`
+    ).join('\n');
+
+    const msg = [
+      `Hello Jegajothi Crackers! 🙏`,
+      '',
+      `I have placed a cracker order on your website.`,
+      '',
+      `📄 *Order Reference:* ${orderResult.order_number}`,
+      `👤 *Customer Name:* ${orderResult.customer_name || customerInfo.name}`,
+      `📞 *Phone:* ${orderResult.customer_phone || customerInfo.phone}`,
+      `📍 *Location:* ${[orderResult.customer_city || customerInfo.city, orderResult.customer_pincode || customerInfo.pincode].filter(Boolean).join(' - ')}`,
+      '',
+      `🛒 *Items List:*`,
+      itemLines,
+      '',
+      `💰 *Grand Total (incl. packing):* ₹${orderResult.total_amount?.toLocaleString('en-IN')}`,
+      '',
+      `Please confirm receipt and final shipment tracking. Thank you! 🎆`
+    ].join('\n');
+
+    const url = `https://wa.me/917092300252?text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const handleDownloadReceipt = async () => {
@@ -251,7 +303,7 @@ export default function EnquiryPage() {
   // Step 4: Success
   if (step === 4 && orderResult) {
     return (
-      <div className="relative min-h-[80vh] flex flex-col items-center justify-center p-6 text-center overflow-hidden z-10">
+      <div className="relative min-h-[60vh] md:min-h-[70vh] flex flex-col items-center justify-center p-4 md:p-6 text-center overflow-hidden z-10">
         
         {/* Background Bursting Fireworks */}
         <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
@@ -263,16 +315,16 @@ export default function EnquiryPage() {
         </div>
 
         {/* Traditional Hanging Lamps (Diyas) popping up / hanging down */}
-        <div className="absolute top-0 inset-x-0 flex justify-between px-6 sm:px-20 pointer-events-none z-10 overflow-hidden h-48">
+        <div className="absolute top-0 inset-x-0 flex justify-between px-6 sm:px-20 pointer-events-none z-10 overflow-hidden h-32">
           {/* Left Lamp */}
           <motion.div 
-            initial={{ y: -150, opacity: 0 }}
+            initial={{ y: -100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ type: 'spring', delay: 0.2, duration: 1.5, stiffness: 100 }}
+            transition={{ type: 'spring', delay: 0.2, duration: 1.2, stiffness: 100 }}
             className="flex flex-col items-center"
           >
-            <div className="w-0.5 h-24 bg-gradient-to-b from-[var(--color-gold)]/60 to-[var(--color-gold)]" />
-            <svg width="44" height="44" viewBox="0 0 100 100" className="text-[var(--color-gold)] drop-shadow-[0_0_12px_rgba(212,175,55,0.85)]">
+            <div className="w-0.5 h-12 bg-gradient-to-b from-[var(--color-gold)]/60 to-[var(--color-gold)]" />
+            <svg width="28" height="28" viewBox="0 0 100 100" className="text-[var(--color-gold)] drop-shadow-[0_0_10px_rgba(212,175,55,0.8)]">
               <path fill="currentColor" d="M50 15 C52 35 75 50 75 70 A25 25 0 0 1 25 70 C25 50 48 35 50 15 Z" />
               <circle cx="50" cy="70" r="10" fill="#E25822" />
               <motion.path 
@@ -286,13 +338,13 @@ export default function EnquiryPage() {
 
           {/* Left-Center Lamp (Hidden on small) */}
           <motion.div 
-            initial={{ y: -180, opacity: 0 }}
+            initial={{ y: -120, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ type: 'spring', delay: 0.5, duration: 1.5, stiffness: 90 }}
+            transition={{ type: 'spring', delay: 0.5, duration: 1.2, stiffness: 90 }}
             className="flex flex-col items-center hidden sm:flex"
           >
-            <div className="w-0.5 h-36 bg-gradient-to-b from-[var(--color-gold)]/40 to-[var(--color-gold)]" />
-            <svg width="34" height="34" viewBox="0 0 100 100" className="text-[var(--color-gold)] drop-shadow-[0_0_8px_rgba(212,175,55,0.65)]">
+            <div className="w-0.5 h-18 bg-gradient-to-b from-[var(--color-gold)]/40 to-[var(--color-gold)]" />
+            <svg width="24" height="24" viewBox="0 0 100 100" className="text-[var(--color-gold)] drop-shadow-[0_0_6px_rgba(212,175,55,0.6)]">
               <path fill="currentColor" d="M50 15 C52 35 75 50 75 70 A25 25 0 0 1 25 70 C25 50 48 35 50 15 Z" />
               <circle cx="50" cy="70" r="10" fill="#E25822" />
               <motion.path 
@@ -306,13 +358,13 @@ export default function EnquiryPage() {
 
           {/* Right-Center Lamp (Hidden on small) */}
           <motion.div 
-            initial={{ y: -180, opacity: 0 }}
+            initial={{ y: -120, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ type: 'spring', delay: 0.6, duration: 1.5, stiffness: 90 }}
+            transition={{ type: 'spring', delay: 0.6, duration: 1.2, stiffness: 90 }}
             className="flex flex-col items-center hidden sm:flex"
           >
-            <div className="w-0.5 h-32 bg-gradient-to-b from-[var(--color-gold)]/40 to-[var(--color-gold)]" />
-            <svg width="34" height="34" viewBox="0 0 100 100" className="text-[var(--color-gold)] drop-shadow-[0_0_8px_rgba(212,175,55,0.65)]">
+            <div className="w-0.5 h-16 bg-gradient-to-b from-[var(--color-gold)]/40 to-[var(--color-gold)]" />
+            <svg width="24" height="24" viewBox="0 0 100 100" className="text-[var(--color-gold)] drop-shadow-[0_0_6px_rgba(212,175,55,0.6)]">
               <path fill="currentColor" d="M50 15 C52 35 75 50 75 70 A25 25 0 0 1 25 70 C25 50 48 35 50 15 Z" />
               <circle cx="50" cy="70" r="10" fill="#E25822" />
               <motion.path 
@@ -326,13 +378,13 @@ export default function EnquiryPage() {
 
           {/* Right Lamp */}
           <motion.div 
-            initial={{ y: -150, opacity: 0 }}
+            initial={{ y: -100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ type: 'spring', delay: 0.3, duration: 1.5, stiffness: 100 }}
+            transition={{ type: 'spring', delay: 0.3, duration: 1.2, stiffness: 100 }}
             className="flex flex-col items-center"
           >
-            <div className="w-0.5 h-24 bg-gradient-to-b from-[var(--color-gold)]/60 to-[var(--color-gold)]" />
-            <svg width="44" height="44" viewBox="0 0 100 100" className="text-[var(--color-gold)] drop-shadow-[0_0_12px_rgba(212,175,55,0.85)]">
+            <div className="w-0.5 h-12 bg-gradient-to-b from-[var(--color-gold)]/60 to-[var(--color-gold)]" />
+            <svg width="28" height="28" viewBox="0 0 100 100" className="text-[var(--color-gold)] drop-shadow-[0_0_10px_rgba(212,175,55,0.8)]">
               <path fill="currentColor" d="M50 15 C52 35 75 50 75 70 A25 25 0 0 1 25 70 C25 50 48 35 50 15 Z" />
               <circle cx="50" cy="70" r="10" fill="#E25822" />
               <motion.path 
@@ -346,27 +398,27 @@ export default function EnquiryPage() {
         </div>
 
         {/* Success Card Wrapper */}
-        <div className="relative z-10 max-w-2xl mx-auto w-full px-4 py-8">
+        <div className="relative z-10 max-w-lg mx-auto w-full px-4 py-2">
           <motion.div 
             initial={{ scale: 0.9, opacity: 0 }} 
             animate={{ scale: 1, opacity: 1 }} 
             transition={{ type: 'spring', damping: 15 }}
-            className="glass-card rounded-[2.5rem] p-8 md:p-12 relative overflow-hidden border border-[var(--color-gold)]/30 shadow-[0_0_50px_rgba(212,175,55,0.1)] animate-pulse-glow"
+            className="glass-card rounded-[2rem] p-5 md:p-6 relative overflow-hidden border border-[var(--color-gold)]/30 shadow-[0_0_35px_rgba(212,175,55,0.1)] animate-pulse-glow"
           >
             <motion.div 
               initial={{ scale: 0 }} 
               animate={{ scale: 1 }} 
               transition={{ type: 'spring', bounce: 0.4, delay: 0.2 }}
-              className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6 border border-emerald-500/20 mx-auto"
+              className="w-12 h-12 bg-emerald-500/10 rounded-full flex items-center justify-center mb-3 border border-emerald-500/20 mx-auto"
             >
-              <CheckCircle2 size={40} className="text-emerald-500" />
+              <CheckCircle2 size={24} className="text-emerald-500" />
             </motion.div>
             
             <motion.h2 
               initial={{ opacity: 0, y: 15 }} 
               animate={{ opacity: 1, y: 0 }} 
               transition={{ delay: 0.3 }} 
-              className="text-4xl md:text-5xl font-bold font-display mb-3 text-gradient-gold text-glow"
+              className="text-xl md:text-2xl font-bold font-display mb-1 text-gradient-gold text-glow"
             >
               Thank You for Using JJ Crackers! 🪔
             </motion.h2>
@@ -374,7 +426,7 @@ export default function EnquiryPage() {
               initial={{ opacity: 0, y: 15 }} 
               animate={{ opacity: 1, y: 0 }} 
               transition={{ delay: 0.4 }} 
-              className="text-lg md:text-xl font-medium text-[var(--text)]/90 mb-8"
+              className="text-xs md:text-sm font-medium text-[var(--text)]/80 mb-4"
             >
               We will contact you soon to finalize shipment details.
             </motion.p>
@@ -383,76 +435,95 @@ export default function EnquiryPage() {
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               transition={{ delay: 0.5 }} 
-              className="bg-[var(--surface-high)] border border-[var(--border)] rounded-2xl p-6 w-full mb-8"
+              className="bg-[var(--surface-high)] border border-[var(--border)] rounded-xl p-3.5 w-full mb-4 text-center"
             >
-              <div className="text-xs text-[var(--text-muted)] uppercase tracking-wider mb-1">Order Reference</div>
-              <div className="text-2xl font-bold text-[var(--color-gold)] font-display mb-3 tracking-wide">{orderResult.order_number}</div>
-              <div className="text-sm text-[var(--text-muted)]">Net Payable (Grand Total): <span className="font-bold text-[var(--text)]">₹{orderResult.total_amount?.toLocaleString('en-IN')}</span></div>
+              <div className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider mb-0.5">Order Reference</div>
+              <div className="text-xl font-bold text-[var(--color-gold)] font-display mb-1 tracking-wide">{orderResult.order_number}</div>
+              <div className="text-xs text-[var(--text-muted)]">Net Payable: <span className="font-bold text-[var(--text)]">₹{orderResult.total_amount?.toLocaleString('en-IN')}</span></div>
             </motion.div>
 
-            {/* Dynamic Email Delivery Status Banner */}
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="w-full mb-8">
+            {/* Dynamic Status Banners */}
+            <div className="grid gap-2 w-full mb-4">
+              
+              {/* Receipt Status Banner */}
+              {receiptStatus === 'generating' && (
+                <div className="flex items-center justify-center gap-2 p-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-xs text-[var(--text-muted)] shadow-sm">
+                  <div className="w-3.5 h-3.5 border-2 border-[var(--color-gold)] border-t-transparent rounded-full animate-spin" />
+                  Generating receipt PDF...
+                </div>
+              )}
+              {receiptStatus === 'downloaded' && (
+                <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-xs text-emerald-400 text-left flex gap-2.5 shadow-sm">
+                  <CheckCircle2 size={16} className="shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="block text-emerald-300">Receipt Downloaded!</strong>
+                    Your PDF invoice has been automatically downloaded to your device.
+                  </div>
+                </div>
+              )}
+              {receiptStatus === 'failed' && (
+                <div className="p-2.5 bg-rose-500/10 border border-rose-500/20 rounded-xl text-xs text-rose-300 text-left flex gap-2.5 shadow-sm">
+                  <AlertCircle size={16} className="shrink-0 mt-0.5 text-rose-450" />
+                  <div>
+                    <strong className="block text-rose-400">Receipt Download Failed</strong>
+                    Could not auto-download the receipt. Please click "Download Receipt" below.
+                  </div>
+                </div>
+              )}
+
+              {/* Email Status Banner */}
               {emailStatus === 'sending' && (
-                <div className="flex items-center justify-center gap-3 p-4 bg-[var(--surface)] border border-[var(--border)] rounded-2xl text-sm text-[var(--text-muted)] shadow-sm">
-                  <div className="w-4 h-4 border-2 border-[var(--color-gold)] border-t-transparent rounded-full animate-spin" />
+                <div className="flex items-center justify-center gap-2 p-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-xs text-[var(--text-muted)] shadow-sm">
+                  <div className="w-3.5 h-3.5 border-2 border-[var(--color-gold)] border-t-transparent rounded-full animate-spin" />
                   Emailing confirmation receipt...
                 </div>
               )}
               {emailStatus === 'sent' && (
-                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-sm text-emerald-400 text-left flex gap-3 shadow-sm">
-                  <CheckCircle2 size={18} className="shrink-0 mt-0.5" />
+                <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-xs text-emerald-400 text-left flex gap-2.5 shadow-sm">
+                  <CheckCircle2 size={16} className="shrink-0 mt-0.5" />
                   <div>
                     <strong className="block text-emerald-300">Receipt Emailed!</strong>
-                    Your PDF invoice receipt has been sent to <strong>{customerInfo.email || orderResult.customer_email}</strong>.
+                    Invoice sent to <strong>{customerInfo.email || orderResult.customer_email}</strong>.
                   </div>
                 </div>
               )}
               {emailStatus === 'skipped' && (
-                <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl text-xs text-amber-300 text-left space-y-2 shadow-sm">
-                  <div className="flex gap-2.5">
-                    <AlertCircle size={16} className="shrink-0 mt-0.5 text-amber-450" />
-                    <div>
-                      <strong className="block text-amber-400 text-sm">Email Status: Sandbox Mode</strong>
-                      The confirmation email was skipped because the Resend API Key is not configured in `.env.local`.
-                    </div>
-                  </div>
-                  <div className="pt-2 border-t border-amber-500/10 text-[10px] text-[var(--text-muted)] space-y-1">
-                    <span className="font-bold text-amber-400/80 block">NEXT STEPS FOR ADMIN / DEVELOPER:</span>
-                    <div>1. Get a key at <a href="https://resend.com" target="_blank" className="underline hover:text-amber-400">resend.com</a>.</div>
-                    <div>2. Set <code className="bg-black/30 px-1 py-0.5 rounded text-amber-300 font-mono">RESEND_API_KEY=your_key</code> in <code className="bg-black/30 px-1 py-0.5 rounded font-mono">.env.local</code>.</div>
+                <div className="p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-[11px] text-amber-300 text-left flex gap-2.5 shadow-sm">
+                  <AlertCircle size={14} className="shrink-0 mt-0.5 text-amber-450" />
+                  <div>
+                    <strong className="block text-amber-400">Email Status: Sandbox Mode</strong>
+                    Confirmation email was skipped because Resend is not configured.
                   </div>
                 </div>
               )}
               {emailStatus === 'failed' && (
-                <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-sm text-rose-300 text-left flex gap-3 shadow-sm">
-                  <AlertCircle size={18} className="shrink-0 mt-0.5 text-rose-450" />
+                <div className="p-2.5 bg-rose-500/10 border border-rose-500/20 rounded-xl text-xs text-rose-300 text-left flex gap-2.5 shadow-sm">
+                  <AlertCircle size={16} className="shrink-0 mt-0.5 text-rose-450" />
                   <div>
                     <strong className="block text-rose-400">Email Delivery Interrupted</strong>
-                    We registered your order but could not send the receipt email.
-                    {emailErrorMessage && <p className="mt-1 text-xs opacity-80 font-mono">Reason: {emailErrorMessage}</p>}
-                    <p className="mt-2 text-xs text-rose-450/80">Please click the button below to download your PDF receipt manually.</p>
+                    Could not send confirmation email to {customerInfo.email || orderResult.customer_email}.
                   </div>
                 </div>
               )}
-            </motion.div>
+            </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <motion.button 
                 onClick={handleDownloadReceipt} 
-                whileHover={{ scale: 1.05 }} 
-                whileTap={{ scale: 0.95 }}
-                className="px-8 py-3.5 rounded-full bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] font-bold text-sm flex items-center justify-center gap-2 hover:border-[var(--color-gold)] hover:text-[var(--color-gold)] transition-colors"
+                whileHover={{ scale: 1.02 }} 
+                whileTap={{ scale: 0.98 }}
+                className="px-6 py-2.5 rounded-full bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] font-bold text-xs flex items-center justify-center gap-1.5 hover:border-[var(--color-gold)] hover:text-[var(--color-gold)] transition-colors"
               >
-                <Download size={16} /> Download Receipt
+                <Download size={14} /> Download Receipt
               </motion.button>
 
               <Link href="/products" className="block">
                 <motion.button 
-                  whileHover={{ scale: 1.05 }} 
-                  whileTap={{ scale: 0.95 }}
-                  className="w-full px-8 py-3.5 rounded-full bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-black text-sm flex items-center justify-center gap-2 shadow-lg hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] transition-all"
+                  whileHover={{ scale: 1.02 }} 
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full px-6 py-2.5 rounded-full bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-black text-xs flex items-center justify-center gap-1.5 shadow-lg hover:shadow-[0_0_15px_rgba(212,175,55,0.3)] transition-all"
                 >
-                  Continue Shopping <ArrowRight size={16} />
+                  Continue Shopping <ArrowRight size={14} />
                 </motion.button>
               </Link>
             </div>
@@ -493,9 +564,21 @@ export default function EnquiryPage() {
       {/* Step 1: Cart Review */}
       {step === 1 && (
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-          <div className="flex items-center gap-2 mb-8">
-            <Sparkles size={16} className="text-[var(--color-gold)]" />
-            <h1 className="text-3xl font-bold font-display">Review Your Cart</h1>
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
+            <div className="flex items-center gap-2">
+              <Sparkles size={16} className="text-[var(--color-gold)]" />
+              <h1 className="text-3xl font-bold font-display">Review Your Cart</h1>
+            </div>
+            <Link href="/products">
+              <motion.button 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="px-5 py-2 rounded-full border border-[var(--border)] hover:border-[var(--color-gold)] text-xs text-[var(--text-muted)] hover:text-[var(--color-gold)] transition-colors flex items-center gap-2 w-fit bg-[var(--surface-high)]/50 backdrop-blur-md font-bold"
+              >
+                <span>Add More Products / Keep Shopping</span>
+                <ArrowRight size={12} className="text-[var(--color-gold)]" />
+              </motion.button>
+            </Link>
           </div>
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             <div className="w-full lg:flex-1 glass-card rounded-2xl overflow-hidden">
@@ -587,8 +670,8 @@ export default function EnquiryPage() {
               <div className="glass-card rounded-2xl p-6">
                 <h3 className="text-lg font-bold font-display mb-5 border-b border-[var(--border)] pb-3 flex items-center gap-2"><ShoppingCart size={16} className="text-[var(--color-gold)]" /> Order Summary</h3>
                 <div className="space-y-3 mb-5 text-sm">
-                  <div className="flex justify-between"><span className="text-[var(--text-muted)]">Actual Total (Gross)</span><span className="font-bold">₹{(getTotal() + getSavings()).toLocaleString('en-IN')}</span></div>
-                  <div className="flex justify-between text-emerald-500 font-bold"><span>Actual Discount</span><span>- ₹{getSavings().toLocaleString('en-IN')}</span></div>
+                  <div className="flex justify-between"><span className="text-[var(--text-muted)]">Gross Total</span><span className="font-bold">₹{(getTotal() + getSavings()).toLocaleString('en-IN')}</span></div>
+                  <div className="flex justify-between text-emerald-500 font-bold"><span>Discount</span><span>- ₹{getSavings().toLocaleString('en-IN')}</span></div>
                   <div className="flex justify-between text-[var(--text-muted)] border-t border-[var(--border)]/30 pt-2"><span>Total Value (Net)</span><span className="font-bold">₹{getTotal().toLocaleString('en-IN')}</span></div>
                   <div className="flex justify-between text-[var(--text-muted)]"><span>Packing Charges (3%)</span><span className="font-bold">₹{Math.round(getTotal() * 0.03).toLocaleString('en-IN')}</span></div>
                 </div>
@@ -611,9 +694,13 @@ export default function EnquiryPage() {
                   disabled={getTotal() < minOrderValue}
                   whileHover={getTotal() >= 2000 ? { scale: 1.02 } : {}} 
                   whileTap={getTotal() >= 2000 ? { scale: 0.98 } : {}}
-                  className="w-full bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold rounded-xl py-3.5 text-sm shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                  className="w-full bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold rounded-xl py-3.5 text-sm shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mb-3">
                   Proceed to Details <ArrowRight size={16} />
                 </motion.button>
+
+                <Link href="/products" className="block text-center text-xs text-[var(--text-muted)] hover:text-[var(--color-gold)] transition-colors mt-2 font-bold py-1 border-t border-[var(--border)]/20 pt-3">
+                  ← Add More Products
+                </Link>
               </div>
             </div>
           </div>
@@ -738,8 +825,8 @@ export default function EnquiryPage() {
                 </div>
               ))}
               <div className="mt-4 pt-4 border-t border-[var(--border)] space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-[var(--text-muted)]">Actual Total (Gross)</span><span>₹{(getTotal() + getSavings()).toLocaleString('en-IN')}</span></div>
-                <div className="flex justify-between text-emerald-500"><span>Actual Discount</span><span>-₹{getSavings().toLocaleString('en-IN')}</span></div>
+                <div className="flex justify-between"><span className="text-[var(--text-muted)]">Gross Total</span><span>₹{(getTotal() + getSavings()).toLocaleString('en-IN')}</span></div>
+                <div className="flex justify-between text-emerald-500"><span>Discount</span><span>-₹{getSavings().toLocaleString('en-IN')}</span></div>
                 <div className="flex justify-between pt-1 border-t border-[var(--border)]/30"><span className="text-[var(--text-muted)]">Total Value (Net)</span><span className="font-bold">₹{getTotal().toLocaleString('en-IN')}</span></div>
                 <div className="flex justify-between"><span className="text-[var(--text-muted)]">Packing Charges (3%)</span><span className="font-bold">₹{Math.round(getTotal() * 0.03).toLocaleString('en-IN')}</span></div>
                 <div className="flex justify-between text-xl font-bold pt-2 border-t border-[var(--border)]"><span>Net Payable</span><span className="text-[var(--color-gold)]">₹{(getTotal() + Math.round(getTotal() * 0.03)).toLocaleString('en-IN')}</span></div>

@@ -15,6 +15,24 @@ export default function HomePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
   const [subscribeError, setSubscribeError] = useState('');
+  const [marqueeText, setMarqueeText] = useState('Welcome to Jegajothi Crackers Sivakasi - Direct Factory Price Quality Fireworks! We Give Special Festive Discounts! Buy More Save More!');
+  const [globalDiscount, setGlobalDiscount] = useState('60');
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data) {
+          if (data.marquee) {
+            setMarqueeText(data.marquee);
+          }
+          if (data.global_discount) {
+            setGlobalDiscount(data.global_discount);
+          }
+        }
+      })
+      .catch(err => console.error('Failed to load settings on home:', err));
+  }, []);
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,36 +60,36 @@ export default function HomePage() {
   };
 
   useEffect(() => {
-    // Launch festive firework bursts on page entry
-    const duration = 6 * 1000;
+    // Launch festive firework bursts on page entry — shorter for snappy feel
+    const duration = 3 * 1000;
     const animationEnd = Date.now() + duration;
     const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
     
-    const interval: any = setInterval(() => {
+    const interval: ReturnType<typeof setInterval> = setInterval(() => {
       const timeLeft = animationEnd - Date.now();
       if (timeLeft <= 0) return clearInterval(interval);
       
-      const particleCount = 45 * (timeLeft / duration);
+      const particleCount = 30 * (timeLeft / duration);
       
       import('canvas-confetti').then((confetti) => {
         confetti.default({
           particleCount,
-          startVelocity: 35,
+          startVelocity: 30,
           spread: 360,
-          ticks: 90,
+          ticks: 70,
           origin: { x: randomInRange(0.1, 0.35), y: randomInRange(0.2, 0.5) },
           colors: ['#D4AF37', '#F4E296', '#F43F5E', '#10B981', '#FF9F1C'],
         });
         confetti.default({
           particleCount,
-          startVelocity: 35,
+          startVelocity: 30,
           spread: 360,
-          ticks: 90,
+          ticks: 70,
           origin: { x: randomInRange(0.65, 0.9), y: randomInRange(0.2, 0.5) },
           colors: ['#D4AF37', '#F4E296', '#F43F5E', '#10B981', '#FF9F1C'],
         });
       });
-    }, 450);
+    }, 500);
     
     return () => clearInterval(interval);
   }, []);
@@ -87,217 +105,149 @@ export default function HomePage() {
     setBursts(prev => prev.filter(b => b.id !== id));
   }, []);
 
+  const displayMarquee = marqueeText.includes('[discount]')
+    ? marqueeText.replace(/\[discount\]/g, `${globalDiscount}%`)
+    : `${marqueeText} — 🔥 FLAT ${globalDiscount}% DISCOUNT ON ALL ITEMS! 🔥`;
+
   return (
-    <div className="flex flex-col bg-[var(--bg)]">
+    <div className="flex flex-col bg-[var(--bg)] -mt-20">
+
       {/* 3D HERO */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden cursor-crosshair" onClick={handleHeroClick} id="hero">
+      <section 
+        className="relative min-h-screen flex flex-col overflow-hidden cursor-crosshair bg-[var(--bg)] transition-colors duration-400" 
+        onClick={handleHeroClick} 
+        id="hero"
+      >
         <Traditional3DHero />
 
-        {/* Left Side Hanging Diya Lights */}
-        <div className="absolute left-6 md:left-16 top-0 z-20 flex gap-4 md:gap-8 pointer-events-none">
-          {/* Diya 1 */}
-          <motion.div 
-            initial={{ y: -200, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ type: 'spring', delay: 0.2, duration: 1.5, stiffness: 80 }}
-            className="flex flex-col items-center"
-          >
-            <div className="w-0.5 h-32 md:h-44 bg-gradient-to-b from-[var(--color-gold)]/20 via-[var(--color-gold)]/60 to-[var(--color-gold)]" />
-            <svg width="36" height="36" viewBox="0 0 100 100" className="text-[var(--color-gold)] drop-shadow-[0_0_10px_rgba(212,175,55,0.75)]">
-              <path fill="currentColor" d="M50 15 C52 35 75 50 75 70 A25 25 0 0 1 25 70 C25 50 48 35 50 15 Z" />
-              <circle cx="50" cy="70" r="10" fill="#E25822" />
-              <motion.path 
-                animate={{ scaleY: [1, 1.3, 0.95, 1.2, 1], scaleX: [1, 1.15, 0.9, 1.1, 1] }} 
-                transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
-                fill="#FFD700" 
-                d="M50 42 C53 52 56 58 50 70 C44 58 47 52 50 42 Z" 
-              />
-            </svg>
-          </motion.div>
-
-          {/* Diya 2 */}
-          <motion.div 
-            initial={{ y: -250, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ type: 'spring', delay: 0.4, duration: 1.8, stiffness: 70 }}
-            className="flex flex-col items-center"
-          >
-            <div className="w-0.5 h-48 md:h-64 bg-gradient-to-b from-[var(--color-gold)]/20 via-[var(--color-gold)]/60 to-[var(--color-gold)]" />
-            <svg width="44" height="44" viewBox="0 0 100 100" className="text-[var(--color-gold)] drop-shadow-[0_0_12px_rgba(212,175,55,0.85)]">
-              <path fill="currentColor" d="M50 15 C52 35 75 50 75 70 A25 25 0 0 1 25 70 C25 50 48 35 50 15 Z" />
-              <circle cx="50" cy="70" r="10" fill="#E25822" />
-              <motion.path 
-                animate={{ scaleY: [1, 1.25, 0.9, 1.15, 1], scaleX: [1, 1.1, 0.95, 1.05, 1] }} 
-                transition={{ repeat: Infinity, duration: 1.3, ease: 'easeInOut' }}
-                fill="#FFD700" 
-                d="M50 42 C53 52 56 58 50 70 C44 58 47 52 50 42 Z" 
-              />
-            </svg>
-          </motion.div>
-
-          {/* Diya 3 */}
-          <motion.div 
-            initial={{ y: -150, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ type: 'spring', delay: 0.6, duration: 1.2, stiffness: 90 }}
-            className="flex flex-col items-center hidden sm:flex"
-          >
-            <div className="w-0.5 h-20 md:h-28 bg-gradient-to-b from-[var(--color-gold)]/20 via-[var(--color-gold)]/60 to-[var(--color-gold)]" />
-            <svg width="28" height="28" viewBox="0 0 100 100" className="text-[var(--color-gold)] drop-shadow-[0_0_8px_rgba(212,175,55,0.65)]">
-              <path fill="currentColor" d="M50 15 C52 35 75 50 75 70 A25 25 0 0 1 25 70 C25 50 48 35 50 15 Z" />
-              <circle cx="50" cy="70" r="10" fill="#E25822" />
-              <motion.path 
-                animate={{ scaleY: [1, 1.2, 0.95, 1.1, 1], scaleX: [1, 1.15, 0.9, 1.1, 1] }} 
-                transition={{ repeat: Infinity, duration: 1.7, ease: 'easeInOut' }}
-                fill="#FFD700" 
-                d="M50 42 C53 52 56 58 50 70 C44 58 47 52 50 42 Z" 
-              />
-            </svg>
-          </motion.div>
+        {/* Dynamic Announcement Marquee Bar — at the top of hero, below fixed navbar */}
+        <div className="relative w-full bg-[rgba(212,175,55,0.15)] border-t border-b border-[rgba(212,175,55,0.25)] py-2 sm:py-2.5 overflow-hidden flex select-none z-30 mt-20 lg:mt-24">
+          <div className="animate-marquee-horizontal flex gap-6 sm:gap-8 whitespace-nowrap uppercase tracking-[0.12em] sm:tracking-[0.15em] font-black text-[9px] sm:text-xs text-[var(--color-gold)]">
+            <span>{displayMarquee}</span>
+            <span>🎆</span>
+            <span>{displayMarquee}</span>
+            <span>🎆</span>
+            {/* Duplicate for seamless looping */}
+            <span>{displayMarquee}</span>
+            <span>🎆</span>
+            <span>{displayMarquee}</span>
+            <span>🎆</span>
+          </div>
         </div>
 
-        {/* Right Side Hanging Diya Lights */}
-        <div className="absolute right-6 md:right-16 top-0 z-20 flex gap-4 md:gap-8 pointer-events-none">
-          {/* Diya 1 */}
-          <motion.div 
-            initial={{ y: -180, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ type: 'spring', delay: 0.3, duration: 1.4, stiffness: 85 }}
-            className="flex flex-col items-center hidden sm:flex"
-          >
-            <div className="w-0.5 h-24 md:h-36 bg-gradient-to-b from-[var(--color-gold)]/20 via-[var(--color-gold)]/60 to-[var(--color-gold)]" />
-            <svg width="30" height="30" viewBox="0 0 100 100" className="text-[var(--color-gold)] drop-shadow-[0_0_8px_rgba(212,175,55,0.65)]">
-              <path fill="currentColor" d="M50 15 C52 35 75 50 75 70 A25 25 0 0 1 25 70 C25 50 48 35 50 15 Z" />
-              <circle cx="50" cy="70" r="10" fill="#E25822" />
-              <motion.path 
-                animate={{ scaleY: [1, 1.25, 0.9, 1.15, 1], scaleX: [1, 1.1, 0.95, 1.05, 1] }} 
-                transition={{ repeat: Infinity, duration: 1.4, ease: 'easeInOut' }}
-                fill="#FFD700" 
-                d="M50 42 C53 52 56 58 50 70 C44 58 47 52 50 42 Z" 
-              />
-            </svg>
-          </motion.div>
-
-          {/* Diya 2 */}
-          <motion.div 
-            initial={{ y: -260, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ type: 'spring', delay: 0.5, duration: 1.9, stiffness: 65 }}
-            className="flex flex-col items-center"
-          >
-            <div className="w-0.5 h-52 md:h-72 bg-gradient-to-b from-[var(--color-gold)]/20 via-[var(--color-gold)]/60 to-[var(--color-gold)]" />
-            <svg width="44" height="44" viewBox="0 0 100 100" className="text-[var(--color-gold)] drop-shadow-[0_0_12px_rgba(212,175,55,0.85)]">
-              <path fill="currentColor" d="M50 15 C52 35 75 50 75 70 A25 25 0 0 1 25 70 C25 50 48 35 50 15 Z" />
-              <circle cx="50" cy="70" r="10" fill="#E25822" />
-              <motion.path 
-                animate={{ scaleY: [1, 1.35, 0.95, 1.2, 1], scaleX: [1, 1.1, 0.9, 1.15, 1] }} 
-                transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
-                fill="#FFD700" 
-                d="M50 42 C53 52 56 58 50 70 C44 58 47 52 50 42 Z" 
-              />
-            </svg>
-          </motion.div>
-
-          {/* Diya 3 */}
-          <motion.div 
-            initial={{ y: -210, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ type: 'spring', delay: 0.7, duration: 1.6, stiffness: 75 }}
-            className="flex flex-col items-center"
-          >
-            <div className="w-0.5 h-36 md:h-48 bg-gradient-to-b from-[var(--color-gold)]/20 via-[var(--color-gold)]/60 to-[var(--color-gold)]" />
-            <svg width="36" height="36" viewBox="0 0 100 100" className="text-[var(--color-gold)] drop-shadow-[0_0_10px_rgba(212,175,55,0.75)]">
-              <path fill="currentColor" d="M50 15 C52 35 75 50 75 70 A25 25 0 0 1 25 70 C25 50 48 35 50 15 Z" />
-              <circle cx="50" cy="70" r="10" fill="#E25822" />
-              <motion.path 
-                animate={{ scaleY: [1, 1.25, 1], scaleX: [1, 1.1, 1] }} 
-                transition={{ repeat: Infinity, duration: 1.2, ease: 'easeInOut' }}
-                fill="#FFD700" 
-                d="M50 42 C53 52 56 58 50 70 C44 58 47 52 50 42 Z" 
-              />
-            </svg>
-          </motion.div>
-        </div>
-        
-        <div className="relative z-10 max-w-7xl mx-auto px-6 py-20 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        {/* Hero Content — side-by-side split screen layout */}
+        <div className="relative z-10 flex-1 grid grid-cols-[45%_55%] sm:grid-cols-[55%_45%] w-full h-full">
+          
           {/* LEFT COLUMN — Text Content */}
-          <motion.div initial={{ opacity: 0, x: -60 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}>
-            <motion.span 
-              initial={{ opacity: 0, scale: 0.8 }} 
-              animate={{ opacity: 1, scale: 1 }} 
-              transition={{ delay: 0.5 }} 
-              className="inline-flex items-center gap-2 py-2 px-6 rounded-full border border-[var(--color-gold)]/40 bg-[var(--color-gold)]/10 text-[var(--color-gold)] text-xs font-black mb-10 tracking-[0.4em] uppercase backdrop-blur-md shadow-[0_0_20px_rgba(212,175,55,0.2)]"
+          <div className="relative flex flex-col justify-center items-start py-6 sm:py-10 lg:py-12 px-4 sm:px-10 md:px-14 lg:px-0" style={{ paddingLeft: 'clamp(1rem, 6vw, 10rem)' }}>
+            {/* Radial Gradient Glow behind headline */}
+            <div 
+              className="absolute inset-0 pointer-events-none -z-10 w-full h-full" 
+              style={{ 
+                background: 'radial-gradient(ellipse 600px 400px at 30% 50%, rgba(212,175,55,0.12) 0%, transparent 70%)'
+              }} 
+            />
+
+            <motion.div 
+              initial={{ opacity: 0, x: -40 }} 
+              animate={{ opacity: 1, x: 0 }} 
+              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+              className="max-w-xl pt-4 sm:pt-10 lg:pt-0"
             >
-              <Sparkles size={14} className="animate-pulse" /> Sivakasi&apos;s Royal Legacy Since 2015 <Sparkles size={14} className="animate-pulse" />
-            </motion.span>
-            
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-display font-bold leading-[1.1] mb-10 tracking-tighter text-center lg:text-left">
-              <motion.span initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.7, duration: 1 }} className="block text-[var(--text)]/90">Elegance in</motion.span>
-              <motion.span initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.9, duration: 1 }} className="block text-gradient-gold text-glow drop-shadow-[0_0_30px_rgba(212,175,55,0.4)]">Every Spark</motion.span>
-            </h1>
-
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.2 }} className="text-lg md:text-xl lg:text-2xl text-[var(--text)]/60 max-w-xl mb-12 leading-relaxed font-light text-center lg:text-left">
-              Experience the pinnacle of pyrotechnic artistry. Hand-crafted excellence from India&apos;s heartland, delivered to light up your legacy.
-            </motion.p>
-
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.4 }} className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-5">
-              <Link href="/products">
-                <motion.button 
-                  whileHover={{ scale: 1.05, boxShadow: '0 0 40px rgba(212,175,55,0.5)' }} 
-                  whileTap={{ scale: 0.97 }} 
-                  className="px-10 py-5 rounded-full bg-gradient-to-r from-[var(--color-gold-light)] via-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-black text-xl flex items-center gap-4 shadow-[0_10px_40px_rgba(212,175,55,0.3)] transition-all"
-                >
-                  Explore Collection <ArrowRight size={24} />
-                </motion.button>
-              </Link>
-              <Link href="/combos">
-                <motion.button 
-                  whileHover={{ scale: 1.05, backgroundColor: 'rgba(212,175,55,0.1)' }} 
-                  whileTap={{ scale: 0.97 }} 
-                  className="px-10 py-5 rounded-full bg-white/5 backdrop-blur-2xl border border-white/10 text-white font-bold text-xl hover:border-[var(--color-gold)] hover:text-[var(--color-gold)] transition-all"
-                >
-                  Combo Packs
-                </motion.button>
-              </Link>
-            </motion.div>
-          </motion.div>
-
-          {/* RIGHT COLUMN — Hero Image */}
-          <motion.div 
-            initial={{ opacity: 0, x: 60 }} 
-            animate={{ opacity: 1, x: 0 }} 
-            transition={{ duration: 1.2, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="order-first lg:order-last"
-          >
-            <div className="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden border border-white/10 hover:border-[var(--color-gold)]/40 shadow-[0_40px_80px_rgba(0,0,0,0.4)] transition-all duration-700 group">
-              <Image 
-                src="/family-festive.png" 
-                alt="Family Diwali Celebration with JJ Crackers" 
-                fill 
-                className="object-cover scale-110 group-hover:scale-100 transition-transform duration-1000 ease-out" 
-                sizes="(max-width: 768px) 100vw, 50vw" 
-                priority
-              />
-              {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-              {/* Subtle gold shimmer on hover */}
-              <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-gold)]/0 to-[var(--color-gold)]/0 group-hover:from-[var(--color-gold)]/5 group-hover:to-transparent transition-all duration-700" />
-              {/* JJ Badge overlay */}
-              <div className="absolute bottom-6 left-6 right-6">
-                <div className="flex items-center gap-4 p-4 rounded-2xl bg-black/30 backdrop-blur-xl border border-white/10 group-hover:border-[var(--color-gold)]/30 transition-all duration-500">
-                  <div className="w-12 h-12 rounded-full overflow-hidden shadow-xl flex-shrink-0 relative bg-white border border-[var(--color-gold)]/30">
-                    <Image src="/logo/logo.png" alt="Jegajothi Crackers" fill className="object-cover dark:brightness-[0.9] dark:contrast-[1.1] transition-all duration-300" />
-                  </div>
-                  <div>
-                    <div className="text-white font-bold text-sm tracking-tight">Jegajothi Crackers</div>
-                    <div className="text-[var(--color-gold)] text-xs font-black tracking-widest">SINCE 2015</div>
-                  </div>
+              {/* JJ Crackers Logo + Branding */}
+              <div className="flex items-center gap-2 sm:gap-4 mb-4 sm:mb-6">
+                <div className="relative w-9 h-9 sm:w-18 sm:h-18 lg:w-22 lg:h-22 overflow-hidden flex-shrink-0">
+                  <Image 
+                    src="/logo/logo.png" 
+                    alt="JJ Crackers Logo" 
+                    fill 
+                    className="object-contain" 
+                    sizes="(max-width: 640px) 45px, 88px"
+                    priority
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-display text-xs sm:text-xl lg:text-2xl font-extrabold text-[var(--color-gold)] tracking-tight leading-none">JJ Crackers</span>
+                  <span className="font-display text-[9px] sm:text-base lg:text-lg font-semibold text-[var(--text)]/90 transition-colors duration-400 leading-tight">Jegajothi Crackers</span>
+                  <span className="text-[6px] sm:text-[10px] uppercase tracking-[0.2em] text-[var(--color-gold)]/70 font-bold mt-0.5">Since 2015 · Sivakasi</span>
                 </div>
               </div>
-            </div>
+
+              {/* Pill Badge */}
+              <div 
+                className="inline-block text-[7px] sm:text-[0.7rem] uppercase tracking-[0.1em] sm:tracking-[0.15em] px-2 py-0.5 sm:px-4 sm:py-1.5 rounded-full mb-3 sm:mb-5 font-semibold"
+                style={{
+                  color: '#D4AF37',
+                  border: '1px solid rgba(212, 175, 55, 0.6)',
+                  backgroundColor: 'rgba(212, 175, 55, 0.1)'
+                }}
+              >
+                Sivakasi&apos;s Royal Legacy Since 2015
+              </div>
+
+              {/* Headline */}
+              <h1 className="font-display leading-[1.1] mb-3 sm:mb-5 flex flex-col tracking-tight text-left">
+                <span className="text-[var(--text)] font-light text-[1.2rem] xs:text-[1.5rem] sm:text-[3rem] lg:text-[4rem] transition-colors duration-400">Elegance in</span>
+                <span className="text-[var(--color-gold)] font-extrabold text-[1.4rem] xs:text-[1.8rem] sm:text-[4rem] lg:text-[5rem] drop-shadow-[0_0_30px_rgba(212,175,55,0.4)]">Every Spark</span>
+              </h1>
+
+              {/* Body text */}
+              <p className="text-[var(--text-muted)] text-[9px] sm:text-[1.05rem] leading-[1.4] sm:leading-[1.7] max-w-[180px] xs:max-w-[220px] sm:max-w-[420px] mb-4 sm:mb-5 font-sans transition-colors duration-400">
+                Experience the pinnacle of pyrotechnic artistry. Hand-crafted excellence from India&apos;s heartland, delivered to light up your legacy.
+              </p>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+                <Link href="/products" className="w-full sm:w-auto">
+                  <motion.button 
+                    whileHover={{ scale: 1.03, backgroundColor: '#FFD700', boxShadow: '0 8px 24px rgba(212,175,55,0.35)' }} 
+                    whileTap={{ scale: 0.98 }} 
+                    className="w-full px-4 py-2 sm:px-9 sm:py-3.5 rounded text-[#0A0A0A] font-bold text-[9px] sm:text-sm uppercase tracking-wider transition-all text-center"
+                    style={{ backgroundColor: '#D4AF37', borderRadius: '4px' }}
+                  >
+                    Shop Now
+                  </motion.button>
+                </Link>
+                <Link href="/products" className="w-full sm:w-auto">
+                  <motion.button 
+                    whileHover={{ scale: 1.03, backgroundColor: 'rgba(212,175,55,0.08)' }} 
+                    whileTap={{ scale: 0.98 }} 
+                    className="w-full px-4 py-2 sm:px-9 sm:py-3.5 rounded border bg-transparent font-bold text-[9px] sm:text-sm uppercase tracking-wider transition-all text-center"
+                    style={{ borderColor: '#D4AF37', color: '#D4AF37', borderRadius: '4px' }}
+                  >
+                    View Catalogue
+                  </motion.button>
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* RIGHT COLUMN — Hero Image (visible side-by-side on all screens) */}
+          <motion.div 
+            initial={{ opacity: 0, x: 40 }} 
+            animate={{ opacity: 1, x: 0 }} 
+            transition={{ duration: 1.2, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="relative overflow-hidden h-full min-h-[250px] sm:min-h-[350px] lg:min-h-[500px]"
+          >
+            <Image 
+              src="/family-festive.png" 
+              alt="Family Diwali Celebration with JJ Crackers" 
+              fill 
+              className="object-cover" 
+              style={{ objectPosition: 'center center' }}
+              priority
+            />
+            {/* Gradient overlays */}
+            <div 
+              className="absolute inset-0 z-10 pointer-events-none" 
+              style={{ background: 'linear-gradient(to right, var(--bg) 0%, transparent 40%)' }}
+            />
+            <div 
+              className="absolute inset-0 z-10 pointer-events-none" 
+              style={{ background: 'linear-gradient(to top, var(--bg) 0%, transparent 60%)' }} 
+            />
           </motion.div>
         </div>
-
 
 
         {/* Realistic Blasts Overlay */}
@@ -309,125 +259,78 @@ export default function HomePage() {
       </section>
 
       {/* TRUST BADGES - Ultra Premium */}
-      <section className="py-12 border-y border-[var(--border)]/10 bg-[var(--surface-high)] relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-12">
+      <section className="py-8 sm:py-12 border-y border-[var(--border)]/10 bg-[var(--surface-high)] relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-12">
           {[{ icon: Shield, title: 'Uncompromising Safety', desc: 'Fully Safety Certified' }, { icon: Leaf, title: 'Eco-Conscious', desc: 'Sustainable Green Crackers' }, { icon: Factory, title: 'Direct Source', desc: 'Authentic Sivakasi Pricing' }, { icon: Package, title: 'Premium Logistics', desc: 'White-glove Global Delivery' }].map((b, i) => (
-            <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="flex flex-col items-center text-center gap-4 group">
-              <div className="w-16 h-16 rounded-3xl bg-[var(--surface)] text-[var(--color-gold)] flex items-center justify-center border border-[var(--border)]/10 group-hover:border-[var(--color-gold)]/50 group-hover:bg-[var(--color-gold)]/5 transition-all duration-500">
-                <b.icon size={28} className="group-hover:scale-110 transition-transform" />
+            <motion.div key={i} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="flex flex-col items-center text-center gap-2 sm:gap-4 group">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl sm:rounded-3xl bg-[var(--surface)] text-[var(--color-gold)] flex items-center justify-center border border-[var(--border)]/10 group-hover:border-[var(--color-gold)]/50 group-hover:bg-[var(--color-gold)]/5 transition-all duration-500">
+                <b.icon size={24} className="sm:w-7 sm:h-7 group-hover:scale-110 transition-transform" />
               </div>
-              <div className="space-y-1">
-                <h3 className="font-bold text-[var(--text)] text-base tracking-tight">{b.title}</h3>
-                <p className="text-xs text-[var(--text-muted)] font-medium">{b.desc}</p>
+              <div className="space-y-0.5 sm:space-y-1">
+                <h3 className="font-bold text-[var(--text)] text-xs sm:text-base tracking-tight">{b.title}</h3>
+                <p className="text-[10px] sm:text-xs text-[var(--text-muted)] font-medium">{b.desc}</p>
               </div>
             </motion.div>
           ))}
         </div>
       </section>
 
-      {/* EXCLUSIVE CIRCLE OF LIGHT - Newsletter Subscription */}
-      <section className="py-24 relative overflow-hidden bg-[var(--surface-high)] border-y border-[var(--border)]/10" id="newsletter">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-[var(--color-gold)]/5 rounded-full blur-[120px] pointer-events-none" />
-        
-        <div className="max-w-4xl mx-auto px-6 relative z-10">
-          <div className="glass-card rounded-[3.5rem] p-10 md:p-16 border border-[var(--border)]/60 relative overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)] bg-[var(--surface)]/40 backdrop-blur-xl">
-            <div className="absolute top-0 right-0 p-6 text-[var(--color-gold)]/5 pointer-events-none">
-              <Sparkles size={120} />
-            </div>
-            
-            <div className="max-w-2xl mx-auto text-center space-y-8">
-              <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-[var(--color-gold)]/30 bg-[var(--color-gold)]/5 text-[var(--color-gold)] text-xs font-black tracking-[0.25em] uppercase">
-                ✨ VIP Circle of Celebrations
-              </span>
-              
-              <h2 className="text-4xl md:text-5xl font-display font-bold text-[var(--text)] tracking-tight">
-                Join the Jegajothi Family
-              </h2>
-              
-              <p className="text-sm md:text-base text-[var(--text-muted)] leading-relaxed max-w-lg mx-auto font-medium">
-                Subscribe to our exclusive mailing list to receive early-bird offers, premium festive guides, and a heart-warming welcome gift sent straight to your inbox.
-              </p>
-
-              <AnimatePresence mode="wait">
-                {subscribed ? (
-                  <motion.div
-                    key="subscribed-success"
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="p-6 md:p-8 rounded-2xl bg-[var(--color-gold)]/5 border border-[var(--color-gold)]/20 text-center space-y-4"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-[var(--color-gold)]/10 text-[var(--color-gold)] flex items-center justify-center mx-auto border border-[var(--color-gold)]/20 animate-pulse">
-                      <Heart size={20} className="fill-[var(--color-gold)]/20" />
-                    </div>
-                    <p className="text-xl font-bold text-[var(--color-gold)]">
-                      Welcome to the Family! 🎇
-                    </p>
-                    <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-                      A special, heart-touching welcome note has been dispatched to your inbox. 
-                      Thank you for trusting us to light up your legacy with warmth, joy, and uncompromising safety.
-                    </p>
-                  </motion.div>
-                ) : (
-                  <motion.form
-                    key="newsletter-form"
-                    onSubmit={handleSubscribe}
-                    className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto pt-4"
-                  >
-                    <div className="flex-1 relative">
-                      <input
-                        type="email"
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Enter your email address"
-                        className="w-full bg-[var(--surface-high)] border border-[var(--border)] focus:border-[var(--color-gold)] rounded-xl px-5 py-4 text-sm text-[var(--text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-gold)]/20 transition-all font-medium"
-                        disabled={isSubmitting}
-                      />
-                    </div>
-                    <motion.button
-                      type="submit"
-                      disabled={isSubmitting}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="px-6 py-4 rounded-xl bg-gradient-to-r from-[var(--color-gold)] via-[var(--color-gold-light)] to-[var(--color-gold)] text-[#1a1400] font-black text-sm tracking-wider shadow-lg disabled:opacity-50 whitespace-nowrap flex items-center justify-center gap-2"
-                    >
-                      {isSubmitting ? 'Subscribing...' : 'Subscribe Now'}
-                    </motion.button>
-                  </motion.form>
-                )}
-              </AnimatePresence>
-
-              {subscribeError && (
-                <p className="text-xs text-red-400 font-medium animate-pulse">
-                  ⚠️ {subscribeError}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Removed Newsletter Section */}
 
       {/* CTA BANNER - The Final Flourish */}
-      <section className="py-32 relative overflow-hidden" id="cta">
-        <div className="max-w-6xl mx-auto px-6 relative z-10">
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="relative rounded-[4rem] overflow-hidden">
+      <section className="py-10 sm:py-20 relative overflow-hidden bg-[var(--bg)] transition-colors duration-400" id="cta">
+        <div className="w-full relative z-10 px-0">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.98 }} 
+            whileInView={{ opacity: 1, scale: 1 }} 
+            viewport={{ once: true }} 
+            className="relative overflow-hidden w-full"
+            style={{ borderRadius: '16px' }}
+          >
             <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-gold-dark)] via-[var(--color-gold)] to-[var(--color-gold-light)]" />
             <div className="absolute inset-0 bg-[url('/hero-bg.png')] bg-cover bg-center opacity-10 mix-blend-overlay scale-125" />
             <div className="absolute -top-20 -left-20 opacity-20"><AnimatedKolam size={400} color="#000" /></div>
             
-            <div className="relative z-10 px-10 py-24 md:px-24 md:py-32 text-center">
-              <Sparkles size={48} className="mx-auto mb-10 text-[#1a1400]/40 animate-bounce" />
-              <h2 className="text-5xl md:text-8xl font-display font-bold text-[#1a1400] mb-10 leading-[0.85] tracking-tighter">Ready to Light Up <br /> Your Next Legacy?</h2>
-              <p className="text-[#1a1400]/60 max-w-2xl mx-auto mb-16 text-xl md:text-2xl font-medium">Browse our master collection or speak with our concierge for bespoke wedding and corporate orders.</p>
+            <div className="relative z-10 py-12 sm:py-20 text-center flex flex-col items-center justify-center px-6 sm:px-12 lg:px-20">
+              <div className="text-[24px] sm:text-[28px] mx-auto mb-4 sm:mb-6 text-center select-none" style={{ color: '#0A0A0A' }}>🎆</div>
+              <h2 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-display font-extrabold text-[#0A0A0A] mb-4 sm:mb-6 leading-[1.1] tracking-tighter">
+                Ready to Light Up <br /> Your Next Legacy?
+              </h2>
+              <p 
+                className="mx-auto mb-8 sm:mb-10 text-center font-medium"
+                style={{ 
+                  color: 'rgba(0,0,0,0.65)', 
+                  fontSize: 'clamp(0.85rem, 2.5vw, 1.05rem)', 
+                  maxWidth: '520px', 
+                  lineHeight: '1.7' 
+                }}
+              >
+                Browse our master collection or speak with our concierge for bespoke wedding and corporate orders.
+              </p>
               
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
                 <Link href="/products">
-                  <motion.button whileHover={{ scale: 1.05, boxShadow: '0 20px 40px rgba(0,0,0,0.3)' }} whileTap={{ scale: 0.97 }} className="px-12 py-6 rounded-full bg-[#1a1400] text-[var(--color-gold)] font-black text-2xl flex items-center gap-4 shadow-2xl transition-all">
-                    Shop Now <ArrowRight size={28} />
+                  <motion.button 
+                    whileHover={{ scale: 1.02, backgroundColor: '#1a1a1a', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }} 
+                    whileTap={{ scale: 0.98 }} 
+                    className="px-6 sm:px-8 py-3 sm:py-4 text-[#D4AF37] font-bold text-base sm:text-lg flex items-center gap-2 transition-all"
+                    style={{ backgroundColor: '#0A0A0A', borderRadius: '6px' }}
+                  >
+                    Shop Now <span className="text-xl">→</span>
                   </motion.button>
                 </Link>
                 <Link href="/contact">
-                  <motion.button whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.3)' }} whileTap={{ scale: 0.97 }} className="px-12 py-6 rounded-full bg-white/20 backdrop-blur-md border border-[#1a1400]/20 text-[#1a1400] font-black text-2xl hover:bg-white/30 transition-all">
+                  <motion.button 
+                    whileHover={{ scale: 1.02, backgroundColor: 'rgba(0,0,0,0.08)' }} 
+                    whileTap={{ scale: 0.98 }} 
+                    className="px-6 sm:px-8 py-3 sm:py-4 font-semibold text-base sm:text-lg transition-all"
+                    style={{ 
+                      border: '2px solid #0A0A0A', 
+                      backgroundColor: 'transparent', 
+                      color: '#0A0A0A', 
+                      borderRadius: '6px' 
+                    }}
+                  >
                     Contact Us
                   </motion.button>
                 </Link>

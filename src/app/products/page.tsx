@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, SlidersHorizontal, Sparkles, ChevronDown } from 'lucide-react';
+import { SlidersHorizontal, Sparkles, ChevronDown, LayoutGrid, List } from 'lucide-react';
 import { ProductCard } from '@/components/products/ProductCard';
 import type { Product } from '@/lib/supabase/types';
 
@@ -38,6 +38,7 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('default');
   const [showSort, setShowSort] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [mounted, setMounted] = useState(false);
   const [totalProducts, setTotalProducts] = useState(0);
   const [searchDebounce, setSearchDebounce] = useState('');
@@ -214,18 +215,24 @@ export default function ProductsPage() {
             </p>
           </div>
 
-          {/* Search & Sort */}
+          {/* View Toggle & Sort */}
           <div className="flex items-center gap-3">
-            <div className="relative w-full md:w-64">
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-xl py-2.5 pl-10 pr-4 text-sm text-[var(--text)] focus:outline-none focus:border-[var(--color-gold)] focus:shadow-[0_0_0_3px_rgba(212,175,55,0.1)] transition-all"
-                id="product-search"
-              />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={16} />
+            {/* View Mode Toggle */}
+            <div className="flex items-center bg-[var(--surface)] border border-[var(--border)] rounded-xl p-1 gap-1">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-2 rounded-lg transition-all duration-300 ${viewMode === 'grid' ? 'bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold shadow-md' : 'text-[var(--text-muted)] hover:text-[var(--text)]'}`}
+                aria-label="Grid View"
+              >
+                <LayoutGrid size={15} />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded-lg transition-all duration-300 ${viewMode === 'list' ? 'bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold shadow-md' : 'text-[var(--text-muted)] hover:text-[var(--text)]'}`}
+                aria-label="List View"
+              >
+                <List size={15} />
+              </button>
             </div>
 
             {/* Sort Dropdown */}
@@ -353,10 +360,12 @@ export default function ProductsPage() {
                       {/* Category Divider */}
                       <div className="h-px bg-gradient-to-r from-[var(--color-gold)]/40 via-[var(--border)]/30 to-transparent mb-6" />
 
-                      {/* Responsive Grid */}
-                      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
+                      {/* Responsive Grid / List */}
+                      <div className={viewMode === 'grid' 
+                        ? "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5" 
+                        : "flex flex-col gap-3 md:gap-4"}>
                         {catProducts.map((product) => (
-                          <ProductCard key={product.id} product={product} />
+                          <ProductCard key={product.id} product={product} viewMode={viewMode} />
                         ))}
                       </div>
                     </section>
@@ -380,10 +389,12 @@ export default function ProductsPage() {
                 {/* Category Divider */}
                 <div className="h-px bg-gradient-to-r from-[var(--color-gold)]/40 via-[var(--border)]/30 to-transparent mb-6" />
 
-                {/* Responsive Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
+                {/* Responsive Grid / List */}
+                <div className={viewMode === 'grid' 
+                  ? "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5" 
+                  : "flex flex-col gap-3 md:gap-4"}>
                   {products.map((product) => (
-                    <ProductCard key={product.id} product={product} />
+                    <ProductCard key={product.id} product={product} viewMode={viewMode} />
                   ))}
                 </div>
               </section>

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { requireAdmin } from '@/lib/admin-auth';
+import { sendOrderStatusNotification } from '@/lib/order-notifications';
 
 export const dynamic = 'force-dynamic';
 
@@ -64,6 +65,22 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       .single();
 
     if (error) throw error;
+
+    // Automatically send status notification to both WhatsApp and Email
+    if (body.status) {
+      try {
+        await sendOrderStatusNotification({
+          order: data,
+          status: body.status,
+          trackingInfo: body.trackingInfo || undefined,
+          sendWhatsApp: true,
+          sendEmail: true
+        });
+      } catch (notifyError) {
+        console.error('Error sending automatic order status notification:', notifyError);
+      }
+    }
+
     return NextResponse.json(data);
   } catch (error: any) {
     console.error('Error updating order:', error);
