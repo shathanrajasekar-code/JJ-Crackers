@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Download, AlertCircle, ArrowLeft, Sparkles, FileText, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
+import { formatOrderDate } from '@/lib/utils';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -55,7 +56,7 @@ export default function ReceiptDownloadPage({ params }: PageProps) {
 
       const doc = await generateReceipt({
         orderNumber: order.order_number,
-        date: new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }),
+        date: formatOrderDate(order.created_at),
         customerName: order.customer_name,
         customerEmail: order.customer_email || '',
         customerPhone: order.customer_phone,

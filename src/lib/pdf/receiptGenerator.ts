@@ -556,12 +556,12 @@ export async function generateReceipt(data: ReceiptData): Promise<jsPDF> {
   doc.text(rs(grossAmount), totValueX, y, { align: 'right' });
   y += 5.5;
 
-  // 2. Less: Special Discount
+  // 2. Less: Discount
   const totalDiscount = data.discountTotal || 0;
   if (totalDiscount > 0) {
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...C.mid);
-    doc.text('Less: Special Discount:', totLabelX, y);
+    doc.text('Less: Discount:', totLabelX, y);
     doc.setTextColor(...C.green);
     doc.setFont('helvetica', 'bold');
     doc.text('-' + rs(totalDiscount), totValueX, y, { align: 'right' });

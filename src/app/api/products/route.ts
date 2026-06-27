@@ -183,8 +183,8 @@ export async function POST(req: Request) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
-    if (!supabaseUrl || supabaseUrl.includes('your_supabase')) {
-      return NextResponse.json({ error: 'Supabase not configured' }, { status: 400 });
+    if (!supabaseUrl || !supabaseKey || supabaseUrl.includes('your_supabase')) {
+      return NextResponse.json({ error: 'Supabase not configured. Please set SUPABASE_SERVICE_ROLE_KEY in your environment variables.' }, { status: 400 });
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);

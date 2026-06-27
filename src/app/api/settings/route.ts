@@ -121,22 +121,35 @@ export async function POST(req: Request) {
         if (fetchError) throw fetchError;
         
         if (products && products.length > 0) {
-          // Perform bulk price updates (keep selling price constant, calculate mrp from selling price based on new discount)
+          // Build updates with only the fields we want to change
           const updates = products.map(p => {
             const price = p.price || 0;
             const mrp = discountVal < 100 ? Math.round(price / (1 - discountVal / 100)) : price;
             return {
-              ...p,
+              id: p.id,
+              name_en: p.name_en,
+              name_ta: p.name_ta,
+              slug: p.slug,
+              category: p.category,
+              price: p.price,
               mrp,
               discount_percent: discountVal,
               badge_text: discountVal > 0 ? `🔥 ${discountVal}% OFF` : null,
+              image_url: p.image_url,
+              in_stock: p.in_stock,
+              is_featured: p.is_featured,
+              is_eco_friendly: p.is_eco_friendly,
+              sort_order: p.sort_order,
             };
           });
 
           // Supabase upsert on products table (replaces matching rows by id)
           for (const chunk of chunkArray(updates, 50)) {
             const { error: updateError } = await supabase.from('products').upsert(chunk);
-            if (updateError) throw updateError;
+            if (updateError) {
+              console.error('Chunk update error:', updateError);
+              throw updateError;
+            }
           }
         }
       }

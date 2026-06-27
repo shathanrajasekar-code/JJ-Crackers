@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { adminAuthHeaders } from '@/lib/admin-auth';
+import { formatOrderDate } from '@/lib/utils';
 
 // --- CUSTOM MODAL CONFIRM DIALOG ---
 interface ConfirmDialogProps {
@@ -107,7 +108,7 @@ function AdminLogin({ onLogin }: { onLogin: (token: string) => void }) {
           <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[var(--color-gold)] to-transparent opacity-65" />
           
           <div className="w-20 h-20 rounded-full overflow-hidden mx-auto mb-6 shadow-[0_0_30px_rgba(212,175,55,0.25)] border-2 border-[var(--color-gold)]/30 bg-white">
-             <Image src="/logo/logo.png" alt="JJ Crackers" width={80} height={80} className="object-cover w-full h-full dark:brightness-[0.9] dark:contrast-[1.1] transition-all duration-300" />
+             <Image src="/logo/logo.png" alt="JJ Crackers" width={80} height={80} priority className="object-cover w-full h-full dark:brightness-[0.9] dark:contrast-[1.1] transition-all duration-300" />
           </div>
           <h1 className="text-3xl font-bold font-display text-[#F5F5F0] mb-2 tracking-tight">Admin Console</h1>
           <p className="text-[#A0A090] text-sm mb-8">Authorize to enter the command center</p>
@@ -706,7 +707,7 @@ export default function AdminPage() {
       const { generateReceipt, downloadReceipt } = await import('@/lib/pdf/receiptGenerator');
       const doc = await generateReceipt({
         orderNumber: order.order_number,
-        date: new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }),
+        date: formatOrderDate(order.created_at),
         customerName: order.customer_name,
         customerEmail: order.customer_email,
         customerPhone: order.customer_phone,
@@ -803,9 +804,11 @@ export default function AdminPage() {
       });
       if (res.ok) {
         setProductFormOpen(false);
+        setCurrentProduct(null);
         fetchData();
       } else {
-        alert('Failed to save product');
+        const d = await res.json().catch(() => ({}));
+        alert(`Failed to save product: ${d.error || res.statusText || 'Unknown error'}`);
       }
     } catch (err) {
       console.error(err);
@@ -877,9 +880,11 @@ export default function AdminPage() {
       });
       if (res.ok) {
         setComboFormOpen(false);
+        setCurrentCombo(null);
         fetchData();
       } else {
-        alert('Failed to save combo');
+        const d = await res.json().catch(() => ({}));
+        alert(`Failed to save combo: ${d.error || res.statusText || 'Unknown error'}`);
       }
     } catch (err) {
       console.error(err);
@@ -898,9 +903,11 @@ export default function AdminPage() {
       });
       if (res.ok) {
         setBankFormOpen(false);
+        setCurrentBank(null);
         fetchData();
       } else {
-        alert('Failed to save bank details');
+        const d = await res.json().catch(() => ({}));
+        alert(`Failed to save bank details: ${d.error || res.statusText || 'Unknown error'}`);
       }
     } catch (err) {
       console.error(err);
@@ -936,9 +943,11 @@ export default function AdminPage() {
       });
       if (res.ok) {
         setCategoryFormOpen(false);
+        setCurrentCategory(null);
         fetchData();
       } else {
-        alert('Failed to save category');
+        const d = await res.json().catch(() => ({}));
+        alert(`Failed to save category: ${d.error || res.statusText || 'Unknown error'}`);
       }
     } catch (err) {
       console.error(err);
@@ -1149,7 +1158,7 @@ export default function AdminPage() {
       <aside className="w-full md:w-64 bg-[#141412] border-b md:border-b-0 md:border-r border-[#2A2A24] flex flex-col shrink-0">
         <div className="p-6 border-b border-[#2A2A24] flex items-center gap-3">
           <div className="w-10 h-10 rounded-full overflow-hidden border border-[var(--color-gold)]/30 relative bg-white shadow-[0_0_15px_rgba(212,175,55,0.15)]">
-            <Image src="/logo/logo.png" alt="JJ Crackers" width={40} height={40} className="object-cover w-full h-full dark:brightness-[0.9] dark:contrast-[1.1] transition-all duration-300" />
+            <Image src="/logo/logo.png" alt="JJ Crackers" width={40} height={40} priority className="object-cover w-full h-full dark:brightness-[0.9] dark:contrast-[1.1] transition-all duration-300" />
           </div>
           <div>
             <h1 className="font-display font-bold text-sm tracking-tight text-[#F5F5F0]">JJ COMMAND</h1>
@@ -2742,9 +2751,15 @@ export default function AdminPage() {
                     <input type="number" min="0" max="99" value={currentProduct.discount_percent || 0} 
                       onChange={(e) => {
                         const discVal = Math.min(99, Math.max(0, parseInt(e.target.value) || 0));
-                        const priceVal = currentProduct.price || 0;
-                        const mrpVal = discVal < 100 ? Math.round(priceVal / (1 - discVal / 100)) : priceVal;
-                        setCurrentProduct({...currentProduct, discount_percent: discVal, mrp: mrpVal});
+                        const mrpVal = currentProduct.mrp || 0;
+                        if (mrpVal > 0) {
+                          const priceVal = Math.round(mrpVal * (1 - discVal / 100));
+                          setCurrentProduct({...currentProduct, discount_percent: discVal, price: priceVal});
+                        } else {
+                          const priceVal = currentProduct.price || 0;
+                          const calculatedMrp = discVal < 100 ? Math.round(priceVal / (1 - discVal / 100)) : priceVal;
+                          setCurrentProduct({...currentProduct, discount_percent: discVal, mrp: calculatedMrp});
+                        }
                       }} 
                       className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" />
                   </div>
@@ -2753,12 +2768,18 @@ export default function AdminPage() {
                     <input required type="number" value={currentProduct.mrp} 
                       onChange={(e) => {
                         const mrpVal = parseInt(e.target.value) || 0;
-                        const priceVal = currentProduct.price || 0;
-                        let discVal = 0;
-                        if (mrpVal > 0 && priceVal < mrpVal) {
-                          discVal = Math.round(((mrpVal - priceVal) / mrpVal) * 100);
+                        const disc = currentProduct.discount_percent || 0;
+                        if (disc > 0) {
+                          const priceVal = Math.round(mrpVal * (1 - disc / 100));
+                          setCurrentProduct({...currentProduct, mrp: mrpVal, price: priceVal});
+                        } else {
+                          const priceVal = currentProduct.price || 0;
+                          let discVal = 0;
+                          if (mrpVal > 0 && priceVal < mrpVal) {
+                            discVal = Math.round(((mrpVal - priceVal) / mrpVal) * 100);
+                          }
+                          setCurrentProduct({...currentProduct, mrp: mrpVal, discount_percent: discVal});
                         }
-                        setCurrentProduct({...currentProduct, mrp: mrpVal, discount_percent: discVal});
                       }} 
                       className="w-full bg-[#1C1C18] border border-[#2A2A24] rounded-xl px-3 py-2.5 text-xs focus:border-[var(--color-gold)] focus:outline-none" />
                   </div>

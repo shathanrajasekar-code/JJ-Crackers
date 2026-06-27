@@ -8,6 +8,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { RealisticFirework } from '@/components/effects/RealisticFirework';
+import { formatOrderDate } from '@/lib/utils';
 
 export default function EnquiryPage() {
   const items = useEnquiryStore((state) => state.items);
@@ -140,7 +141,7 @@ export default function EnquiryPage() {
         const { generateReceipt, downloadReceipt } = await import('@/lib/pdf/receiptGenerator');
         const doc = await generateReceipt({
           orderNumber: data.order_number,
-          date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }),
+          date: formatOrderDate(data.created_at),
           customerName: customerInfo.name, customerEmail: customerInfo.email,
           customerPhone: customerInfo.phone, customerAddress: customerInfo.address,
           customerCity: customerInfo.city, customerPincode: customerInfo.pincode,
@@ -283,7 +284,7 @@ export default function EnquiryPage() {
     
     const { generateReceipt, downloadReceipt } = await import('@/lib/pdf/receiptGenerator');
     const doc = await generateReceipt({
-      orderNumber: orderResult.order_number, date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }),
+      orderNumber: orderResult.order_number, date: formatOrderDate(orderResult.created_at),
       customerName: orderResult.customer_name || customerInfo.name, customerEmail: orderResult.customer_email || customerInfo.email,
       customerPhone: orderResult.customer_phone || customerInfo.phone, 
       customerAddress: orderResult.customer_address || customerInfo.address,

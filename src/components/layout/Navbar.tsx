@@ -46,7 +46,7 @@ export function Navbar() {
           <Link href="/" suppressHydrationWarning className="flex items-center gap-2 sm:gap-3 group" id="nav-logo">
             <motion.div suppressHydrationWarning whileHover={{ scale: 1.1, rotate: 5 }}
               className="relative w-10 h-10 sm:w-12 sm:h-12 overflow-hidden flex-shrink-0">
-              <Image src="/logo/logo.png" alt="JJ Crackers" fill className="object-contain dark:brightness-[0.9] dark:contrast-[1.1] transition-all duration-300" sizes="(max-width: 640px) 40px, 48px" />
+              <Image src="/logo/logo.png" alt="JJ Crackers" fill priority className="object-contain dark:brightness-[0.9] dark:contrast-[1.1] transition-all duration-300" sizes="(max-width: 640px) 40px, 48px" />
             </motion.div>
             <div className="flex flex-col">
               <span className="font-display text-base sm:text-lg font-bold tracking-tight text-[var(--text)] leading-none">Jegajothi</span>
@@ -82,6 +82,9 @@ export function Navbar() {
                 <ShoppingCart size={14} className="sm:w-4 sm:h-4" />
                 <span className="hidden sm:inline">
                   {mounted && itemCount > 0 ? `Cart (₹${totalPrice.toLocaleString('en-IN')})` : 'Cart'}
+                </span>
+                <span className="sm:hidden">
+                  {mounted && itemCount > 0 ? `₹${totalPrice.toLocaleString('en-IN')}` : ''}
                 </span>
                 {mounted && itemCount > 0 && (
                   <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}

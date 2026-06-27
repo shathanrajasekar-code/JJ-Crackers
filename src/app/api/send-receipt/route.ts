@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import { formatOrderDateTime } from '@/lib/utils';
 
 export async function POST(req: Request) {
   let body: any = null;
@@ -99,7 +100,7 @@ export async function POST(req: Request) {
                           </tr>
                           <tr>
                             <td style="font-size:13px;color:#8B735B;">
-                              <strong style="color:#2D241E;font-weight:700;">Order Date:</strong> ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                              <strong style="color:#2D241E;font-weight:700;">Order Date:</strong> ${formatOrderDateTime()}
                             </td>
                           </tr>
                         </table>
