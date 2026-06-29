@@ -1,7 +1,7 @@
 'use client';
 /* eslint-disable @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAdminStore } from '@/lib/store/adminStore';
 import { 
@@ -10,7 +10,8 @@ import {
   Truck, XCircle, Users, DollarSign, TrendingUp, Upload, Database, 
   Zap, Gift, FileText, Download, Send, ChevronRight, X, Eye, 
   SlidersHorizontal, Calendar, MapPin, User, ArrowRight, Settings, 
-  CreditCard, Tags, Sliders, Cpu, LineChart, Plus, Edit, Sparkles, Check
+  CreditCard, Tags, Sliders, Cpu, LineChart, Plus, Edit, Sparkles, Check,
+  Printer
 } from 'lucide-react';
 import Image from 'next/image';
 import { adminAuthHeaders } from '@/lib/admin-auth';
@@ -29,6 +30,9 @@ interface ConfirmDialogProps {
 }
 
 function ConfirmDialog({ isOpen, title, message, confirmLabel, cancelLabel = 'Cancel', isDanger = false, onConfirm, onCancel }: ConfirmDialogProps) {
+  // --- SUCCESS TOAST COMPONENT ---
+  // (Placed above ConfirmDialog for reference but rendered separately)
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -183,8 +187,137 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 // --- MAIN ADMIN COMMAND CENTER ---
+// --- UTILITY: CSV Download ---
+function downloadCSV(data: Record<string, any>[], columns: { key: string; label: string }[], filename: string) {
+  const header = columns.map(c => c.label).join(',');
+  const rows = data.map(row =>
+    columns.map(c => {
+      const val = row[c.key];
+      const str = val === null || val === undefined ? '' : String(val);
+      // Escape commas and quotes in CSV
+      return str.includes(',') || str.includes('"') || str.includes('\n')
+        ? `"${str.replace(/"/g, '""')}"`
+        : str;
+    }).join(',')
+  );
+  const csv = [header, ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${filename}_${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+// --- UTILITY: Print Log ---
+function printLog(title: string, headers: string[], rows: string[][]) {
+  const printWindow = window.open('', '_blank', 'width=900,height=700');
+  if (!printWindow) return;
+  const tableRows = rows.map(row =>
+    `<tr>${row.map(cell => `<td style="border:1px solid #ddd;padding:6px 10px;font-size:11px;">${cell}</td>`).join('')}</tr>`
+  ).join('');
+  const html = `
+    <!DOCTYPE html>
+    <html><head><title>${title} — JJ Crackers</title>
+    <style>
+      body{font-family:Arial,sans-serif;margin:30px;color:#333;}
+      .header{text-align:center;border-bottom:3px solid #D4AF37;padding-bottom:15px;margin-bottom:25px;}
+      .header h1{font-size:20px;margin:5px 0;color:#333;}
+      .header p{font-size:11px;color:#888;margin:0;}
+      .header .brand{font-size:14px;color:#D4AF37;font-weight:bold;letter-spacing:2px;}
+      table{width:100%;border-collapse:collapse;margin-top:10px;}
+      th{border:1px solid #D4AF37;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:1px;background:#FFF9E6;color:#333;text-align:left;}
+      td{border:1px solid #ddd;padding:6px 10px;font-size:11px;}
+      tr:nth-child(even){background:#fafafa;}
+      .footer{text-align:center;margin-top:30px;font-size:9px;color:#aaa;border-top:1px solid #eee;padding-top:10px;}
+      @media print{body{margin:15mm;}.no-print{display:none;}}
+    </style></head>
+    <body>
+      <div class="header">
+        <div class="brand">✦ JEGAJOTHI CRACKERS ✦</div>
+        <h1>${title}</h1>
+        <p>Generated on ${new Date().toLocaleDateString('en-IN', { day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit' })}</p>
+        <p>1/406, Sivakasi-Vembakottai Main Road, Opp. EB Office, Vembakottai | ☎ +91 70923 00252</p>
+      </div>
+      <table>
+        <thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+      <div class="footer">This document is auto-generated from JJ Crackers Command Center. Confidential.</div>
+      <script>window.onload=function(){window.print();}</script>
+    </body></html>`;
+  printWindow.document.write(html);
+  printWindow.document.close();
+}
+
+// --- SUCCESS TOAST OVERLAY ---
+function AdminSuccessToast({ message, onClose }: { message: string; onClose: () => void }) {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30, scale: 0.9 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -20, scale: 0.9 }}
+      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-3 px-6 py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-[0_20px_60px_rgba(16,185,129,0.4)] border border-emerald-400/30 backdrop-blur-xl min-w-[300px] max-w-[90vw]"
+    >
+      {/* Animated checkmark */}
+      <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M5 13l4 4L19 7" className="animate-check-draw" />
+        </svg>
+      </div>
+      <span className="flex-1 font-bold text-sm leading-tight">{message}</span>
+      <button onClick={onClose} className="text-white/60 hover:text-white p-1 transition-colors">
+        <X size={14} />
+      </button>
+      {/* Confetti dots */}
+      {[...Array(6)].map((_, i) => (
+        <motion.div
+          key={i}
+          initial={{ opacity: 1, y: 0, x: 0, scale: 1 }}
+          animate={{
+            opacity: 0,
+            y: -30 - Math.random() * 30,
+            x: (Math.random() - 0.5) * 60,
+            scale: 0.3,
+          }}
+          transition={{ duration: 0.8, delay: 0.1 + i * 0.05 }}
+          className="absolute top-2 left-1/2"
+          style={{ background: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8'][i] }}
+          />
+      ))}
+    </motion.div>
+  );
+}
+
 export default function AdminPage() {
   const { isAuthenticated, login, logout, activeTab, setActiveTab, checkSession } = useAdminStore();
+  const mainContentRef = useRef<HTMLDivElement>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Show success toast helper
+  const showSuccess = useCallback((msg: string) => {
+    setSuccessMessage(msg);
+  }, []);
+
+  // Scroll to top when changing tabs
+  const handleTabChange = useCallback((tabId: string) => {
+    setActiveTab(tabId);
+    setInspectedOrder(null);
+    // Scroll main content to top
+    if (mainContentRef.current) {
+      mainContentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    // Also scroll window for mobile
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [setActiveTab]);
   
   const adminFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const headers = {
@@ -406,6 +539,7 @@ export default function AdminPage() {
         }) 
       });
       if (res.ok) {
+        showSuccess(`✅ Order status updated to ${status.toUpperCase()}!`);
         // Fetch only updated orders to synchronize state quickly without full reload
         const updatedOrders = await adminFetch('/api/orders').then(r => r.json()).catch(() => null);
         if (updatedOrders) {
@@ -465,6 +599,7 @@ export default function AdminPage() {
       const data = await res.json();
       if (res.ok) { 
         setSeedStatus(`✅ Successfully seeded ${data.totalInserted} products!`); 
+        showSuccess(`🎉 Seeded ${data.totalInserted} products into database!`);
         fetchData(); 
       } else { 
         setSeedStatus(`❌ Failed: ${data.error}`); 
@@ -527,6 +662,7 @@ export default function AdminPage() {
       const data = await res.json();
       if (res.ok) { 
         setSeedComboStatus(`✅ Successfully seeded ${data.totalInserted} combo packs!`); 
+        showSuccess(`🎉 Seeded ${data.totalInserted} combo packs!`);
         fetchData(); 
       } else { 
         setSeedComboStatus(`❌ Failed: ${data.error}`); 
@@ -780,6 +916,7 @@ export default function AdminPage() {
       });
       if (res.ok) {
         setSettingsStatus('✅ Settings saved successfully!');
+        showSuccess('✅ Settings saved successfully!');
         fetchData();
       } else {
         const d = await res.json();
@@ -805,6 +942,7 @@ export default function AdminPage() {
       if (res.ok) {
         setProductFormOpen(false);
         setCurrentProduct(null);
+        showSuccess(currentProduct.id ? '✅ Product updated successfully!' : '🎉 New product added to inventory!');
         fetchData();
       } else {
         const d = await res.json().catch(() => ({}));
@@ -881,6 +1019,7 @@ export default function AdminPage() {
       if (res.ok) {
         setComboFormOpen(false);
         setCurrentCombo(null);
+        showSuccess(currentCombo.id ? '✅ Combo pack updated!' : '🎉 New combo pack created!');
         fetchData();
       } else {
         const d = await res.json().catch(() => ({}));
@@ -904,6 +1043,7 @@ export default function AdminPage() {
       if (res.ok) {
         setBankFormOpen(false);
         setCurrentBank(null);
+        showSuccess(currentBank.id ? '✅ Bank account updated!' : '🎉 Bank account added!');
         fetchData();
       } else {
         const d = await res.json().catch(() => ({}));
@@ -944,6 +1084,7 @@ export default function AdminPage() {
       if (res.ok) {
         setCategoryFormOpen(false);
         setCurrentCategory(null);
+        showSuccess(currentCategory.isNew ? '🎉 New category created!' : '✅ Category updated!');
         fetchData();
       } else {
         const d = await res.json().catch(() => ({}));
@@ -983,6 +1124,7 @@ export default function AdminPage() {
       });
       if (res.ok) {
         setSliderFormOpen(false);
+        showSuccess(currentSlider.id ? '✅ Banner updated!' : '🎉 Homepage banner added!');
         fetchData();
       } else {
         alert('Failed to save slider image');
@@ -1154,10 +1296,10 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-[#0A0A08] text-[#F5F5F0] flex flex-col md:flex-row font-sans selection:bg-[var(--color-gold)] selection:text-black">
       
-      {/* SIDEBAR */}
+      {/* SIDEBAR — Horizontal on mobile, vertical on desktop */}
       <aside className="w-full md:w-64 bg-[#141412] border-b md:border-b-0 md:border-r border-[#2A2A24] flex flex-col shrink-0">
-        <div className="p-6 border-b border-[#2A2A24] flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full overflow-hidden border border-[var(--color-gold)]/30 relative bg-white shadow-[0_0_15px_rgba(212,175,55,0.15)]">
+        <div className="p-4 md:p-6 border-b border-[#2A2A24] flex items-center gap-3">
+          <div className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden border border-[var(--color-gold)]/30 relative bg-white shadow-[0_0_15px_rgba(212,175,55,0.15)]">
             <Image src="/logo/logo.png" alt="JJ Crackers" width={40} height={40} priority className="object-cover w-full h-full dark:brightness-[0.9] dark:contrast-[1.1] transition-all duration-300" />
           </div>
           <div>
@@ -1166,38 +1308,47 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto max-h-[75vh] md:max-h-none scrollbar-thin">
-          {tabs.map(t => (
-            <button 
-              key={t.id} 
-              onClick={() => { setActiveTab(t.id); setInspectedOrder(null); }}
-              className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                activeTab === t.id 
-                  ? 'bg-gradient-to-r from-[var(--color-gold)]/10 to-[var(--color-gold-dark)]/5 text-[var(--color-gold)] border border-[var(--color-gold)]/20 shadow-[0_2px_10px_rgba(212,175,55,0.02)]' 
-                  : 'text-[#A0A090] hover:text-[#F5F5F0] hover:bg-[#1C1C18] border border-transparent'
-              }`}
-            >
-              <span className="flex items-center gap-2.5">
-                <t.icon size={15} className={activeTab === t.id ? 'text-[var(--color-gold)]' : ''} />
-                {t.label}
-              </span>
-              {t.id === 'orders' && pendingOrders > 0 && (
-                <span className="bg-rose-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full">
-                  {pendingOrders}
+        {/* Tab Navigation — horizontal scrollable on mobile */}
+        <nav className="flex-1 p-2 md:p-4 md:space-y-1 overflow-x-auto md:overflow-x-visible overflow-y-hidden md:overflow-y-auto md:max-h-none scrollbar-thin">
+          <div className="flex md:flex-col gap-1.5 md:gap-1 admin-mobile-tabs md:!overflow-visible">
+            {tabs.map(t => (
+              <button 
+                key={t.id} 
+                onClick={() => handleTabChange(t.id)}
+                className={`flex items-center justify-between px-3 py-2 md:px-4 md:py-2.5 rounded-xl text-[10px] md:text-xs font-bold transition-all whitespace-nowrap shrink-0 md:w-full ${
+                  activeTab === t.id 
+                    ? 'bg-gradient-to-r from-[var(--color-gold)]/10 to-[var(--color-gold-dark)]/5 text-[var(--color-gold)] border border-[var(--color-gold)]/20 shadow-[0_2px_10px_rgba(212,175,55,0.02)]' 
+                    : 'text-[#A0A090] hover:text-[#F5F5F0] hover:bg-[#1C1C18] border border-transparent'
+                }`}
+              >
+                <span className="flex items-center gap-1.5 md:gap-2.5">
+                  <t.icon size={13} className={`md:w-[15px] md:h-[15px] ${activeTab === t.id ? 'text-[var(--color-gold)]' : ''}`} />
+                  <span className="hidden md:inline">{t.label}</span>
+                  <span className="md:hidden">{t.label.split(' ')[0]}</span>
                 </span>
-              )}
-            </button>
-          ))}
+                {t.id === 'orders' && pendingOrders > 0 && (
+                  <span className="bg-rose-500 text-white text-[8px] md:text-[9px] font-black px-1.5 md:px-2 py-0.5 rounded-full ml-1">
+                    {pendingOrders}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
         </nav>
 
-        {/* Footer info in sidebar */}
-        <div className="p-4 border-t border-[#2A2A24] flex items-center justify-between shrink-0">
+        {/* Footer info in sidebar — hidden on mobile */}
+        <div className="hidden md:flex p-4 border-t border-[#2A2A24] items-center justify-between shrink-0">
           <button 
             onClick={logout} 
             className="flex items-center gap-2 text-[10px] font-bold text-rose-400 hover:text-rose-350 bg-rose-500/5 hover:bg-rose-500/10 px-3 py-2.5 rounded-xl border border-rose-500/15 transition-all w-full justify-center"
           >
             <LogOut size={12} /> End Admin Session
+          </button>
+        </div>
+        {/* Logout button visible on mobile */}
+        <div className="md:hidden p-2 border-t border-[#2A2A24] flex justify-center">
+          <button onClick={logout} className="text-[9px] font-bold text-rose-400 bg-rose-500/5 px-3 py-1.5 rounded-lg border border-rose-500/15">
+            <LogOut size={10} className="inline mr-1" /> Logout
           </button>
         </div>
       </aside>
@@ -1223,7 +1374,7 @@ export default function AdminPage() {
         </header>
 
         {/* TAB CONTENTS */}
-        <div className="flex-1 p-8 overflow-y-auto">
+        <div ref={mainContentRef} className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
           
           {/* OVERVIEW TAB */}
           {activeTab === 'overview' && (
@@ -1240,7 +1391,7 @@ export default function AdminPage() {
                 <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl p-6 flex flex-col">
                   <div className="flex items-center justify-between mb-5">
                     <h3 className="font-display font-bold text-sm text-[#F5F5F0]">Recent Sales Orders</h3>
-                    <button onClick={() => setActiveTab('orders')} className="text-xs text-[var(--color-gold)] font-bold hover:underline flex items-center gap-1">
+                    <button onClick={() => handleTabChange('orders')} className="text-xs text-[var(--color-gold)] font-bold hover:underline flex items-center gap-1">
                       View Log <ChevronRight size={12} />
                     </button>
                   </div>
@@ -1249,7 +1400,7 @@ export default function AdminPage() {
                     {orders.slice(0, 5).map((o: any) => (
                       <div 
                         key={o.id} 
-                        onClick={() => { setInspectedOrder(o); setActiveTab('orders'); }}
+                        onClick={() => { setInspectedOrder(o); handleTabChange('orders'); }}
                         className="flex items-center justify-between py-3.5 hover:bg-[#1C1C18]/40 px-2 rounded-xl transition-all cursor-pointer group"
                       >
                         <div>
@@ -1272,7 +1423,7 @@ export default function AdminPage() {
                 <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl p-6 flex flex-col">
                   <div className="flex items-center justify-between mb-5">
                     <h3 className="font-display font-bold text-sm text-[#F5F5F0]">Recent Inquiry Messages</h3>
-                    <button onClick={() => setActiveTab('messages')} className="text-xs text-[var(--color-gold)] font-bold hover:underline flex items-center gap-1">
+                    <button onClick={() => handleTabChange('messages')} className="text-xs text-[var(--color-gold)] font-bold hover:underline flex items-center gap-1">
                       Open Inbox <ChevronRight size={12} />
                     </button>
                   </div>
@@ -1460,16 +1611,57 @@ export default function AdminPage() {
                   <p className="text-xs text-[#A0A090] mt-1">Review orders list, inspect invoices, print receipts and update logs</p>
                 </div>
                 
-                {/* Search */}
-                <div className="relative w-full sm:w-72">
-                  <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#A0A090]" />
-                  <input 
-                    type="text" 
-                    placeholder="Search by order ID, name..." 
-                    value={orderQuery}
-                    onChange={(e) => setOrderQuery(e.target.value)}
-                    className="w-full bg-[#141412] border border-[#2A2A24] rounded-xl py-2.5 pl-10 pr-4 text-xs text-[#F5F5F0] placeholder-[#A0A090]/40 focus:border-[var(--color-gold)] focus:outline-none transition-colors"
-                  />
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                  {/* Search */}
+                  <div className="relative w-full sm:w-60">
+                    <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#A0A090]" />
+                    <input 
+                      type="text" 
+                      placeholder="Search by order ID, name..." 
+                      value={orderQuery}
+                      onChange={(e) => setOrderQuery(e.target.value)}
+                      className="w-full bg-[#141412] border border-[#2A2A24] rounded-xl py-2.5 pl-10 pr-4 text-xs text-[#F5F5F0] placeholder-[#A0A090]/40 focus:border-[var(--color-gold)] focus:outline-none transition-colors"
+                    />
+                  </div>
+
+                  {/* Actions */}
+                  <button 
+                    onClick={() => {
+                      const cols = [
+                        { key: 'order_number', label: 'Order Number' },
+                        { key: 'customer_name', label: 'Customer Name' },
+                        { key: 'customer_phone', label: 'Phone' },
+                        { key: 'customer_email', label: 'Email' },
+                        { key: 'total_amount', label: 'Amount' },
+                        { key: 'status', label: 'Status' },
+                        { key: 'created_at', label: 'Date' }
+                      ];
+                      downloadCSV(filteredOrders, cols, 'orders_log');
+                    }}
+                    className="p-2.5 bg-[#141412] hover:bg-[#1C1C18] border border-[#2A2A24] hover:border-[var(--color-gold)] rounded-xl text-[#A0A090] hover:text-[var(--color-gold)] transition-colors flex items-center justify-center gap-1.5 text-xs font-bold"
+                    title="Download CSV"
+                  >
+                    <Download size={14} /> <span className="hidden sm:inline">CSV</span>
+                  </button>
+
+                  <button 
+                    onClick={() => {
+                      const headers = ['Order Number', 'Customer', 'Phone', 'Amount', 'Status', 'Date'];
+                      const rows = filteredOrders.map(o => [
+                        o.order_number,
+                        o.customer_name,
+                        o.customer_phone,
+                        `₹${o.total_amount?.toLocaleString('en-IN')}`,
+                        o.status.toUpperCase(),
+                        new Date(o.created_at).toLocaleDateString('en-IN')
+                      ]);
+                      printLog('Sales Orders Log', headers, rows);
+                    }}
+                    className="p-2.5 bg-[#141412] hover:bg-[#1C1C18] border border-[#2A2A24] hover:border-[var(--color-gold)] rounded-xl text-[#A0A090] hover:text-[var(--color-gold)] transition-colors flex items-center justify-center gap-1.5 text-xs font-bold"
+                    title="Print Log"
+                  >
+                    <Printer size={14} /> <span className="hidden sm:inline">Print</span>
+                  </button>
                 </div>
               </div>
 
@@ -1539,9 +1731,9 @@ export default function AdminPage() {
                   <p className="text-xs text-[#A0A090] mt-1">Review inventory items, import database tables from spreadsheets or seed defaults</p>
                 </div>
                 
-                <div className="flex items-center gap-3 w-full sm:w-auto">
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                   {/* Search */}
-                  <div className="relative w-full sm:w-60">
+                  <div className="relative w-full sm:w-48">
                     <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#A0A090]" />
                     <input 
                       type="text" 
@@ -1554,6 +1746,44 @@ export default function AdminPage() {
 
                   <button 
                     onClick={() => {
+                      const cols = [
+                        { key: 'name_en', label: 'Product Name (EN)' },
+                        { key: 'name_ta', label: 'Product Name (TA)' },
+                        { key: 'category', label: 'Category' },
+                        { key: 'mrp', label: 'MRP (₹)' },
+                        { key: 'price', label: 'Price (₹)' },
+                        { key: 'discount_percent', label: 'Discount (%)' },
+                        { key: 'in_stock', label: 'In Stock' }
+                      ];
+                      downloadCSV(filteredProducts, cols, 'product_inventory');
+                    }}
+                    className="p-2.5 bg-[#141412] hover:bg-[#1C1C18] border border-[#2A2A24] hover:border-[var(--color-gold)] rounded-xl text-[#A0A090] hover:text-[var(--color-gold)] transition-colors flex items-center justify-center gap-1.5 text-xs font-bold"
+                    title="Download CSV"
+                  >
+                    <Download size={14} />
+                  </button>
+
+                  <button 
+                    onClick={() => {
+                      const headers = ['Product Name', 'Category', 'MRP', 'Selling Price', 'Discount Saved', 'Status'];
+                      const rows = filteredProducts.map(p => [
+                        `${p.name_en} ${p.name_ta ? `(${p.name_ta})` : ''}`,
+                        p.category.toUpperCase(),
+                        `₹${p.mrp}`,
+                        `₹${p.price}`,
+                        `${p.discount_percent || 0}% OFF`,
+                        p.in_stock ? 'IN STOCK' : 'OUT OF STOCK'
+                      ]);
+                      printLog('Product Inventory Log', headers, rows);
+                    }}
+                    className="p-2.5 bg-[#141412] hover:bg-[#1C1C18] border border-[#2A2A24] hover:border-[var(--color-gold)] rounded-xl text-[#A0A090] hover:text-[var(--color-gold)] transition-colors flex items-center justify-center gap-1.5 text-xs font-bold"
+                    title="Print Log"
+                  >
+                    <Printer size={14} />
+                  </button>
+
+                  <button 
+                    onClick={() => {
                       setCurrentProduct({
                         name_en: '', name_ta: '', category: categories[0]?.id || 'single-sound',
                         discount_percent: parseInt(settings.global_discount) || 60,
@@ -1563,7 +1793,7 @@ export default function AdminPage() {
                     }}
                     className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold text-xs flex items-center gap-1.5 hover:shadow-[0_0_15px_rgba(212,175,55,0.15)] transition-all shrink-0"
                   >
-                    <Plus size={14} /> Add Crackers
+                    <Plus size={14} /> <span className="hidden sm:inline">Add Crackers</span><span className="sm:hidden">Add</span>
                   </button>
                 </div>
               </div>
@@ -1593,8 +1823,17 @@ export default function AdminPage() {
 
               {/* Excel upload */}
               <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl p-6">
-                <h3 className="font-display font-bold text-sm mb-2 text-[#F5F5F0]">Import Inventory Spreadsheet</h3>
-                <p className="text-xs text-[#A0A090] mb-5">Upload an Excel `.xlsx` spreadsheet matching the price list format to update pricing tables in bulk</p>
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-display font-bold text-sm text-[#F5F5F0]">Import Inventory Spreadsheet</h3>
+                  <a 
+                    href="/templates/product_import_template.xlsx" 
+                    download="product_import_template.xlsx"
+                    className="text-[10px] text-[var(--color-gold)] hover:underline font-bold flex items-center gap-1"
+                  >
+                    <Download size={11} /> Download Template
+                  </a>
+                </div>
+                <p className="text-xs text-[#A0A090] mb-5">Upload an Excel `.xlsx` spreadsheet matching the price list format to update pricing tables in bulk.</p>
                 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                   <label className="flex-grow flex items-center justify-center gap-3 px-6 py-5 border-2 border-dashed border-[#2A2A24] hover:border-[var(--color-gold)]/40 rounded-xl cursor-pointer bg-[#1C1C18]/25 transition-all">
@@ -1859,9 +2098,46 @@ export default function AdminPage() {
           {/* ENQUIRIES TAB */}
           {activeTab === 'enquiries' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-              <div>
-                <h2 className="text-xl font-bold font-display text-[#F5F5F0]">Order Enquiries</h2>
-                <p className="text-xs text-[#A0A090] mt-1">Review enquiries submitted by potential customers listing items cart summary</p>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-bold font-display text-[#F5F5F0]">Order Enquiries</h2>
+                  <p className="text-xs text-[#A0A090] mt-1">Review enquiries submitted by potential customers listing items cart summary</p>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => {
+                      const cols = [
+                        { key: 'customer_name', label: 'Customer Name' },
+                        { key: 'customer_phone', label: 'Phone' },
+                        { key: 'total_amount', label: 'Est. Amount' },
+                        { key: 'created_at', label: 'Date' }
+                      ];
+                      downloadCSV(enquiries, cols, 'enquiries_log');
+                    }}
+                    className="p-2.5 bg-[#141412] hover:bg-[#1C1C18] border border-[#2A2A24] hover:border-[var(--color-gold)] rounded-xl text-[#A0A090] hover:text-[var(--color-gold)] transition-colors flex items-center justify-center gap-1.5 text-xs font-bold"
+                    title="Download CSV"
+                  >
+                    <Download size={14} /> <span className="hidden sm:inline">CSV</span>
+                  </button>
+                  <button 
+                    onClick={() => {
+                      const headers = ['Customer Name', 'Phone Number', 'Items Count', 'Estimated Order', 'Date'];
+                      const rows = enquiries.map(e => [
+                        e.customer_name || 'Enquirer Customer',
+                        e.customer_phone,
+                        `${Array.isArray(e.items) ? e.items.length : 0} items`,
+                        `₹${e.total_amount?.toLocaleString('en-IN')}`,
+                        new Date(e.created_at).toLocaleString()
+                      ]);
+                      printLog('Order Enquiries Log', headers, rows);
+                    }}
+                    className="p-2.5 bg-[#141412] hover:bg-[#1C1C18] border border-[#2A2A24] hover:border-[var(--color-gold)] rounded-xl text-[#A0A090] hover:text-[var(--color-gold)] transition-colors flex items-center justify-center gap-1.5 text-xs font-bold"
+                    title="Print Log"
+                  >
+                    <Printer size={14} /> <span className="hidden sm:inline">Print</span>
+                  </button>
+                </div>
               </div>
 
               <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl overflow-hidden">
@@ -1892,19 +2168,54 @@ export default function AdminPage() {
           {/* MESSAGES TAB */}
           {activeTab === 'messages' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                   <h2 className="text-xl font-bold font-display text-[#F5F5F0]">Inbox Messages</h2>
                   <p className="text-xs text-[#A0A090] mt-1">Review details from customers submitted through the web contact support forms</p>
                 </div>
-                {messages.length > 0 && (
+                <div className="flex items-center gap-2">
                   <button 
-                    onClick={handleDeleteAllMessages}
-                    className="px-4 py-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 font-bold text-xs flex items-center gap-1.5 hover:bg-rose-500/20 transition-all"
+                    onClick={() => {
+                      const cols = [
+                        { key: 'name', label: 'Name' },
+                        { key: 'email', label: 'Email' },
+                        { key: 'subject', label: 'Subject' },
+                        { key: 'message', label: 'Message' },
+                        { key: 'created_at', label: 'Date' }
+                      ];
+                      downloadCSV(messages, cols, 'inbox_messages');
+                    }}
+                    className="p-2.5 bg-[#141412] hover:bg-[#1C1C18] border border-[#2A2A24] hover:border-[var(--color-gold)] rounded-xl text-[#A0A090] hover:text-[var(--color-gold)] transition-colors flex items-center justify-center gap-1.5 text-xs font-bold"
+                    title="Download CSV"
                   >
-                    <Trash2 size={14} /> Clear Inbox
+                    <Download size={14} /> <span className="hidden sm:inline">CSV</span>
                   </button>
-                )}
+                  <button 
+                    onClick={() => {
+                      const headers = ['Sender', 'Email', 'Subject', 'Message Details', 'Date'];
+                      const rows = messages.map(m => [
+                        m.name,
+                        m.email,
+                        m.subject,
+                        m.message,
+                        new Date(m.created_at).toLocaleString()
+                      ]);
+                      printLog('Inbox Messages Log', headers, rows);
+                    }}
+                    className="p-2.5 bg-[#141412] hover:bg-[#1C1C18] border border-[#2A2A24] hover:border-[var(--color-gold)] rounded-xl text-[#A0A090] hover:text-[var(--color-gold)] transition-colors flex items-center justify-center gap-1.5 text-xs font-bold"
+                    title="Print Log"
+                  >
+                    <Printer size={14} /> <span className="hidden sm:inline">Print</span>
+                  </button>
+                  {messages.length > 0 && (
+                    <button 
+                      onClick={handleDeleteAllMessages}
+                      className="px-4 py-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 font-bold text-xs flex items-center gap-1.5 hover:bg-rose-500/20 transition-all"
+                    >
+                      <Trash2 size={14} /> Clear Inbox
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl overflow-hidden">
@@ -1942,9 +2253,47 @@ export default function AdminPage() {
           {/* CUSTOMERS BASE TAB */}
           {activeTab === 'customers' && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-              <div>
-                <h2 className="text-xl font-bold font-display text-[#F5F5F0]">Customer Profiles</h2>
-                <p className="text-xs text-[#A0A090] mt-1">Profiles compiled from orders logs</p>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-bold font-display text-[#F5F5F0]">Customer Profiles</h2>
+                  <p className="text-xs text-[#A0A090] mt-1">Profiles compiled from orders logs</p>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => {
+                      const cols = [
+                        { key: 'name', label: 'Customer Name' },
+                        { key: 'phone', label: 'Phone Number' },
+                        { key: 'email', label: 'Email' },
+                        { key: 'ordersCount', label: 'Orders Count' },
+                        { key: 'totalSpent', label: 'Total Spent' }
+                      ];
+                      downloadCSV(customersList, cols, 'customer_profiles');
+                    }}
+                    className="p-2.5 bg-[#141412] hover:bg-[#1C1C18] border border-[#2A2A24] hover:border-[var(--color-gold)] rounded-xl text-[#A0A090] hover:text-[var(--color-gold)] transition-colors flex items-center justify-center gap-1.5 text-xs font-bold"
+                    title="Download CSV"
+                  >
+                    <Download size={14} /> <span className="hidden sm:inline">CSV</span>
+                  </button>
+                  <button 
+                    onClick={() => {
+                      const headers = ['Customer Name', 'Phone Number', 'Email Address', 'Orders Placed', 'Total Spent'];
+                      const rows = customersList.map(c => [
+                        c.name,
+                        c.phone,
+                        c.email,
+                        `${c.ordersCount} orders`,
+                        `₹${c.totalSpent?.toLocaleString('en-IN')}`
+                      ]);
+                      printLog('Customer Profiles Base', headers, rows);
+                    }}
+                    className="p-2.5 bg-[#141412] hover:bg-[#1C1C18] border border-[#2A2A24] hover:border-[var(--color-gold)] rounded-xl text-[#A0A090] hover:text-[var(--color-gold)] transition-colors flex items-center justify-center gap-1.5 text-xs font-bold"
+                    title="Print Log"
+                  >
+                    <Printer size={14} /> <span className="hidden sm:inline">Print</span>
+                  </button>
+                </div>
               </div>
 
               <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl overflow-hidden">
@@ -3077,6 +3426,16 @@ export default function AdminPage() {
               </form>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Success Toast Notification */}
+      <AnimatePresence>
+        {successMessage && (
+          <AdminSuccessToast
+            message={successMessage}
+            onClose={() => setSuccessMessage(null)}
+          />
         )}
       </AnimatePresence>
 
