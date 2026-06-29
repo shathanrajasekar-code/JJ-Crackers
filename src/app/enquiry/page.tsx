@@ -44,7 +44,7 @@ export default function EnquiryPage() {
   // Scroll to top of the page on step transitions (essential for mobile usability)
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo(0, 0);
     }
   }, [step]);
 
@@ -91,6 +91,9 @@ export default function EnquiryPage() {
   const goToStep = (nextStep: number) => {
     setSubmitError(null);
     setStep(nextStep);
+    if (typeof window !== 'undefined') {
+      window.scrollTo(0, 0);
+    }
   };
 
   const handlePlaceOrder = async () => {
