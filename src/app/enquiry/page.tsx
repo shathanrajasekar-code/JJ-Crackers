@@ -41,6 +41,13 @@ export default function EnquiryPage() {
       .catch(err => console.error('Failed to load bank accounts:', err));
   }, []);
 
+  // Scroll to top of the page on step transitions (essential for mobile usability)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [step]);
+
   // Continuous background fireworks on successful order
   useEffect(() => {
     if (step === 4 && orderResult) {
@@ -693,8 +700,8 @@ export default function EnquiryPage() {
                 <motion.button 
                   onClick={() => getTotal() >= minOrderValue && goToStep(2)} 
                   disabled={getTotal() < minOrderValue}
-                  whileHover={getTotal() >= 2000 ? { scale: 1.02 } : {}} 
-                  whileTap={getTotal() >= 2000 ? { scale: 0.98 } : {}}
+                  whileHover={getTotal() >= minOrderValue ? { scale: 1.02 } : {}} 
+                  whileTap={getTotal() >= minOrderValue ? { scale: 0.98 } : {}}
                   className="w-full bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold rounded-xl py-3.5 text-sm shadow-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mb-3">
                   Proceed to Details <ArrowRight size={16} />
                 </motion.button>
