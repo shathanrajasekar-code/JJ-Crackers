@@ -160,6 +160,14 @@ export default function ProductsPage() {
       filtered = filtered.filter(p => p.category === activeCategory);
     }
 
+    // Exclude combos (packs) from giftbox category
+    filtered = filtered.filter(p => {
+      if (p.category === 'giftbox' && (p.name_en || '').toLowerCase().includes('pack')) {
+        return false;
+      }
+      return true;
+    });
+
     // Search filter
     if (searchDebounce) {
       const q = searchDebounce.toLowerCase();

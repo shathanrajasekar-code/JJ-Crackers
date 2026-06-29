@@ -17,6 +17,7 @@ export default function CombosPage() {
   const [phone, setPhone] = useState('');
   const [mounted, setMounted] = useState(false);
   const [selectedCombo, setSelectedCombo] = useState<ComboPack | null>(null);
+  const [globalDiscount, setGlobalDiscount] = useState<number>(60);
 
   const fetchCombos = async () => {
     try {
@@ -33,19 +34,32 @@ export default function CombosPage() {
   useEffect(() => {
     setMounted(true);
     fetchCombos();
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.global_discount) {
+          setGlobalDiscount(parseInt(data.global_discount) || 60);
+        }
+      })
+      .catch(err => console.error('Failed to load settings on combos:', err));
   }, []);
 
   if (!mounted) return <div className="min-h-screen bg-[var(--bg)]" />;
 
+  const getOfferPrice = (combo: ComboPack) => {
+    return Math.round(combo.original_price * (1 - globalDiscount / 100));
+  };
+
   const getDiscountPercent = (combo: ComboPack) => {
-    return Math.round(((combo.original_price - combo.offer_price) / combo.original_price) * 100);
+    return globalDiscount;
   };
 
   const handleAddToEnquiry = (combo: ComboPack) => {
+    const offerPrice = getOfferPrice(combo);
     const product: Product = {
       id: combo.id, name_en: combo.combo_name, name_ta: '', slug: combo.combo_name.toLowerCase().replace(/\s+/g, '-'),
-      category: 'combo', price: combo.offer_price, mrp: combo.original_price,
-      discount_percent: getDiscountPercent(combo),
+      category: 'combo', price: offerPrice, mrp: combo.original_price,
+      discount_percent: globalDiscount,
       badge_text: 'Combo Pack', image_url: combo.image_url, images: [], description_en: combo.description,
       description_ta: null, in_stock: true, is_featured: combo.featured, is_eco_friendly: true,
       sort_order: 0, created_at: new Date().toISOString(),
@@ -55,7 +69,8 @@ export default function CombosPage() {
   };
 
   const handleWhatsAppOrder = (combo: ComboPack) => {
-    const msg = `Hi Jegajothi Crackers, I want to order the ${combo.combo_name} for ₹${combo.offer_price}.`;
+    const offerPrice = getOfferPrice(combo);
+    const msg = `Hi Jegajothi Crackers, I want to order the ${combo.combo_name} for ₹${offerPrice}.`;
     openWhatsApp(msg);
   };
 
@@ -137,9 +152,9 @@ export default function CombosPage() {
                 <div className="flex flex-col items-center gap-1 mb-8 flex-grow">
                   <div className="text-base text-[var(--text-muted)] line-through">₹{combo.original_price.toLocaleString('en-IN')}</div>
                   <div className="flex items-center gap-3">
-                    <span className="text-4xl font-bold text-[var(--color-gold)]">₹{combo.offer_price.toLocaleString('en-IN')}</span>
+                    <span className="text-4xl font-bold text-[var(--color-gold)]">₹{getOfferPrice(combo).toLocaleString('en-IN')}</span>
                     <span className="text-emerald-500 font-bold text-xs bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
-                      {getDiscountPercent(combo)}% OFF
+                      {globalDiscount}% OFF
                     </span>
                   </div>
                 </div>
@@ -196,7 +211,7 @@ export default function CombosPage() {
               <div className="p-6 border-b border-[var(--border)] flex justify-between items-start bg-gradient-to-b from-[var(--color-gold)]/10 to-transparent">
                 <div>
                   <h2 className="text-3xl font-bold font-display uppercase text-[var(--color-gold)]">{selectedCombo.combo_name}</h2>
-                  <p className="text-sm text-[var(--text-muted)] mt-1">{selectedCombo.total_items} Premium Items • ₹{selectedCombo.offer_price.toLocaleString('en-IN')}</p>
+                  <p className="text-sm text-[var(--text-muted)] mt-1">{selectedCombo.total_items} Premium Items • ₹{getOfferPrice(selectedCombo).toLocaleString('en-IN')}</p>
                 </div>
                 <button onClick={() => setSelectedCombo(null)} className="p-2 bg-[var(--surface-high)] hover:bg-rose-500/20 hover:text-rose-400 rounded-full transition-colors text-[var(--text-muted)]">
                   <X size={20} />
