@@ -5,6 +5,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { ToastContainer } from '@/components/ui/Toast';
 import { MarketingHead } from '@/components/layout/MarketingHead';
+import { Analytics } from '@vercel/analytics/next';
 import "./globals.css";
 
 import { ClientEffects } from '@/components/effects/ClientEffects';
@@ -238,6 +239,7 @@ export default function RootLayout({
            <Footer />
           <ToastContainer />
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
