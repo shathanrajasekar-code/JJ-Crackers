@@ -1,10 +1,8 @@
-'use client';
-
-import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { AnimatedKolam } from '@/components/ui/AnimatedKolam';
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter';
+import { FadeIn, FadeInUp, FadeInUpLarge, ScrollFadeInUp, ScrollSlideInLeft, ScrollSlideInRight } from '@/components/ui/ClientAnimation';
 import { Shield, Leaf, Factory, Award, Users, Clock, Target, Heart, ArrowRight, Sparkles, Star, MapPin } from 'lucide-react';
 
 const timeline = [
@@ -38,36 +36,40 @@ export default function AboutPage() {
         </div>
         
         <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
-          <motion.span initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="inline-flex items-center gap-2 px-6 py-2 rounded-full border border-[var(--color-gold)]/40 bg-[var(--color-gold)]/10 text-[var(--color-gold)] text-xs font-black tracking-[0.4em] uppercase mb-8">
+          <FadeIn className="inline-flex items-center gap-2 px-6 py-2 rounded-full border border-[var(--color-gold)]/40 bg-[var(--color-gold)]/10 text-[var(--color-gold)] text-xs font-black tracking-[0.4em] uppercase mb-8">
             <Sparkles size={14} /> Our Heritage
-          </motion.span>
+          </FadeIn>
           
-          <motion.h1 initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-5xl md:text-7xl lg:text-8xl font-display font-bold leading-[0.9] mb-8 tracking-tighter">
-            Over a Decade of
-            <span className="block text-gradient-gold text-glow">Brilliance</span>
-          </motion.h1>
+          <FadeInUpLarge delay={0.2} className="mb-8">
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-display font-bold leading-[0.9] tracking-tighter">
+              Over a Decade of
+              <span className="block text-gradient-gold text-glow">Brilliance</span>
+            </h1>
+          </FadeInUpLarge>
           
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="text-xl text-[var(--text-muted)] max-w-3xl mx-auto leading-relaxed font-light">
-            Born in the heart of Sivakasi, refined by time, and celebrated across the nation. Jegajothi Crackers has been 
-            crafting moments of joy since 2015.
-          </motion.p>
+          <FadeIn delay={0.4}>
+            <p className="text-xl text-[var(--text-muted)] max-w-3xl mx-auto leading-relaxed font-light">
+              Born in the heart of Sivakasi, refined by time, and celebrated across the nation. Jegajothi Crackers has been 
+              crafting moments of joy since 2015.
+            </p>
+          </FadeIn>
         </div>
       </section>
 
       {/* Logo & Story Section */}
       <section className="py-24 bg-[var(--surface-high)] border-y border-[var(--border)]/10">
         <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-20 items-center">
-          <motion.div initial={{ opacity: 0, x: -60 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="relative flex justify-center">
+          <ScrollFadeInUp className="relative flex justify-center">
             <div className="relative w-72 h-72 md:w-96 md:h-96">
               <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[var(--color-gold)]/20 to-transparent animate-spin-slow" />
               <div className="absolute inset-4 rounded-full overflow-hidden border-4 border-[var(--color-gold)]/30 shadow-[0_0_60px_rgba(212,175,55,0.2)] bg-white">
                 <Image src="/logo/logo.png" alt="JJ Crackers Logo" fill className="object-cover dark:brightness-[0.9] dark:contrast-[1.1] transition-all duration-300" sizes="(max-width: 768px) 300px, 400px" />
               </div>
-              <motion.div initial={{ rotate: 0 }} whileInView={{ rotate: 360 }} transition={{ duration: 20, repeat: Infinity, ease: 'linear' }} className="absolute inset-0 rounded-full border-2 border-dashed border-[var(--color-gold)]/20" />
+              <div className="absolute inset-0 rounded-full border-2 border-dashed border-[var(--color-gold)]/20 animate-spin-slow" style={{ animationDuration: '20s' }} />
             </div>
-          </motion.div>
+          </ScrollFadeInUp>
           
-          <motion.div initial={{ opacity: 0, x: 60 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
+          <ScrollSlideInRight>
             <span className="inline-flex items-center gap-3 text-sm font-black text-[var(--color-gold)] uppercase tracking-[0.4em] mb-6">
               <div className="w-8 h-[1px] bg-[var(--color-gold)]" /> Our Story
             </span>
@@ -91,7 +93,7 @@ export default function AboutPage() {
                 <Award size={14} /> Est. 2015
               </div>
             </div>
-          </motion.div>
+          </ScrollSlideInRight>
         </div>
       </section>
 
@@ -104,7 +106,7 @@ export default function AboutPage() {
             { value: 500, suffix: '+', label: 'Premium Products', icon: Factory },
             { value: 100, suffix: '%', label: 'Safety Certified', icon: Shield },
           ].map((s, i) => (
-            <motion.div key={s.label} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="text-center group">
+            <ScrollFadeInUp key={s.label} delay={i * 0.1} className="text-center group">
               <div className="w-20 h-20 rounded-full bg-white/5 text-[var(--color-gold)] flex items-center justify-center mx-auto mb-6 border border-white/10 group-hover:shadow-[0_0_30px_rgba(212,175,55,0.2)] transition-all">
                 <s.icon size={32} />
               </div>
@@ -112,7 +114,7 @@ export default function AboutPage() {
                 <AnimatedCounter target={s.value} suffix={s.suffix} />
               </div>
               <div className="text-xs text-[var(--text-muted)] font-black uppercase tracking-[0.2em]">{s.label}</div>
-            </motion.div>
+            </ScrollFadeInUp>
           ))}
         </div>
       </section>
@@ -120,10 +122,10 @@ export default function AboutPage() {
       {/* Timeline */}
       <section className="py-24 bg-[var(--surface-high)] border-y border-[var(--border)]/10">
         <div className="max-w-7xl mx-auto px-6">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-20">
+          <ScrollFadeInUp className="text-center mb-20">
             <span className="inline-flex items-center gap-3 text-sm font-black text-[var(--color-gold)] uppercase tracking-[0.4em] mb-6">Our Journey</span>
             <h2 className="text-5xl md:text-6xl font-display font-bold text-[var(--text)] tracking-tighter">The JJ Crackers Timeline</h2>
-          </motion.div>
+          </ScrollFadeInUp>
           
           <div className="relative">
             {/* Center line */}
@@ -131,7 +133,7 @@ export default function AboutPage() {
             
             <div className="space-y-12 md:space-y-0">
               {timeline.map((item, i) => (
-                <motion.div key={item.year} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+                <ScrollFadeInUp key={item.year} delay={i * 0.1}
                   className={`relative md:flex md:items-center md:gap-12 ${i % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} md:mb-16`}>
                   <div className={`flex-1 ${i % 2 === 0 ? 'md:text-right' : 'md:text-left'}`}>
                     <div className="glass-card rounded-2xl p-8 hover:border-[var(--color-gold)]/40 transition-all">
@@ -144,7 +146,7 @@ export default function AboutPage() {
                     <Star size={16} fill="currentColor" />
                   </div>
                   <div className="flex-1" />
-                </motion.div>
+                </ScrollFadeInUp>
               ))}
             </div>
           </div>
@@ -154,21 +156,21 @@ export default function AboutPage() {
       {/* Our Values */}
       <section className="py-24">
         <div className="max-w-7xl mx-auto px-6">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-20">
+          <ScrollFadeInUp className="text-center mb-20">
             <span className="inline-flex items-center gap-3 text-sm font-black text-[var(--color-gold)] uppercase tracking-[0.4em] mb-6">What We Believe In</span>
             <h2 className="text-5xl md:text-6xl font-display font-bold text-[var(--text)] tracking-tighter">Our Core Values</h2>
-          </motion.div>
+          </ScrollFadeInUp>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {values.map((v, i) => (
-              <motion.div key={v.title} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+              <ScrollFadeInUp key={v.title} delay={i * 0.1}
                 className="glass-card rounded-3xl p-8 text-center group hover:border-[var(--color-gold)]/40">
                 <div className="w-20 h-20 rounded-2xl bg-[var(--color-gold)]/10 text-[var(--color-gold)] flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
                   <v.icon size={36} />
                 </div>
                 <h3 className="text-xl font-bold font-display text-[var(--text)] mb-3">{v.title}</h3>
                 <p className="text-sm text-[var(--text-muted)] leading-relaxed">{v.desc}</p>
-              </motion.div>
+              </ScrollFadeInUp>
             ))}
           </div>
         </div>
@@ -177,14 +179,14 @@ export default function AboutPage() {
       {/* Team */}
       <section className="py-24 bg-[var(--surface-high)] border-y border-[var(--border)]/10">
         <div className="max-w-7xl mx-auto px-6">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-20">
+          <ScrollFadeInUp className="text-center mb-20">
             <span className="inline-flex items-center gap-3 text-sm font-black text-[var(--color-gold)] uppercase tracking-[0.4em] mb-6">The People Behind JJ</span>
             <h2 className="text-5xl md:text-6xl font-display font-bold text-[var(--text)] tracking-tighter">Our Leadership</h2>
-          </motion.div>
+          </ScrollFadeInUp>
           
           <div className="grid md:grid-cols-3 gap-8">
             {teamMembers.map((m, i) => (
-              <motion.div key={m.name} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+              <ScrollFadeInUp key={m.name} delay={i * 0.1}
                 className="glass-card rounded-3xl p-8 text-center group">
                 <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[var(--color-gold)] to-[var(--color-gold-dark)] flex items-center justify-center mx-auto mb-6 text-[#1a1400] text-2xl font-black shadow-xl">
                   {m.name.charAt(0)}
@@ -192,7 +194,7 @@ export default function AboutPage() {
                 <h3 className="text-xl font-bold font-display text-[var(--text)] mb-1">{m.name}</h3>
                 <div className="text-xs text-[var(--color-gold)] font-bold uppercase tracking-[0.15em] mb-4">{m.role}</div>
                 <p className="text-sm text-[var(--text-muted)] leading-relaxed">{m.desc}</p>
-              </motion.div>
+              </ScrollFadeInUp>
             ))}
           </div>
         </div>
@@ -201,14 +203,13 @@ export default function AboutPage() {
       {/* Certifications */}
       <section className="py-24">
         <div className="max-w-7xl mx-auto px-6">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
+          <ScrollFadeInUp className="text-center mb-16">
             <span className="inline-flex items-center gap-3 text-sm font-black text-[var(--color-gold)] uppercase tracking-[0.4em] mb-6">Trust & Quality</span>
             <h2 className="text-5xl md:text-6xl font-display font-bold text-[var(--text)] tracking-tighter">Certifications</h2>
-          </motion.div>
+          </ScrollFadeInUp>
           
           <div className="max-w-3xl mx-auto text-center">
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
-              className="glass-card rounded-3xl p-10 md:p-12 hover:border-[var(--color-gold)]/40 transition-all relative overflow-hidden">
+            <ScrollFadeInUp className="glass-card rounded-3xl p-10 md:p-12 hover:border-[var(--color-gold)]/40 transition-all relative overflow-hidden">
               <div className="absolute top-0 right-0 p-6 text-5xl opacity-20">🛡️</div>
               <div className="text-5xl mb-6">🏆</div>
               <h3 className="text-2xl font-bold font-display text-[var(--text)] mb-4">Fully Certified Manufacturer</h3>
@@ -217,7 +218,7 @@ export default function AboutPage() {
                 Our production processes follow the highest standards of safety and quality control to ensure 
                 a secure and joyful celebration for you and your family.
               </p>
-            </motion.div>
+            </ScrollFadeInUp>
           </div>
         </div>
       </section>
@@ -225,7 +226,7 @@ export default function AboutPage() {
       {/* CTA */}
       <section className="py-24 bg-[var(--surface-high)] border-t border-[var(--border)]/10">
         <div className="max-w-4xl mx-auto px-6 text-center">
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}>
+          <ScrollFadeInUp>
             <Sparkles size={48} className="mx-auto mb-8 text-[var(--color-gold)] animate-bounce" />
             <h2 className="text-4xl md:text-6xl font-display font-bold text-[var(--text)] mb-6 tracking-tighter">
               Ready to Experience <br /><span className="text-gradient-gold">Our Excellence?</span>
@@ -235,19 +236,17 @@ export default function AboutPage() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href="/products">
-                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
-                  className="px-10 py-4 rounded-full bg-gradient-to-r from-[var(--color-gold-light)] via-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold text-lg flex items-center gap-3 shadow-lg">
+                <button className="px-10 py-4 rounded-full bg-gradient-to-r from-[var(--color-gold-light)] via-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold text-lg flex items-center gap-3 shadow-lg hover:scale-105 active:scale-97 cursor-pointer transition-all duration-200">
                   Shop Now <ArrowRight size={20} />
-                </motion.button>
+                </button>
               </Link>
               <Link href="/contact">
-                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}
-                  className="px-10 py-4 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 text-[var(--text)] font-bold text-lg hover:border-[var(--color-gold)] hover:text-[var(--color-gold)] transition-all">
+                <button className="px-10 py-4 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 text-[var(--text)] font-bold text-lg hover:border-[var(--color-gold)] hover:text-[var(--color-gold)] hover:scale-105 active:scale-97 cursor-pointer transition-all duration-200">
                   Contact Us
-                </motion.button>
+                </button>
               </Link>
             </div>
-          </motion.div>
+          </ScrollFadeInUp>
         </div>
       </section>
     </div>

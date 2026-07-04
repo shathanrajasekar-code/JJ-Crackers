@@ -148,45 +148,65 @@ function SceneContent() {
 
 export function Traditional3DHero() {
   const [hasMounted, setHasMounted] = React.useState(false);
+  const [inView, setInView] = React.useState(false);
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setHasMounted(true);
+    
+    // Set up vanilla intersection observer to unmount WebGL offscreen
+    const observer = new IntersectionObserver(([entry]) => {
+      setInView(entry.isIntersecting);
+    }, { 
+      rootMargin: '100px', // start loading slightly before coming into view
+      threshold: 0.01 
+    });
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => observer.disconnect();
   }, []);
 
   if (!hasMounted) return <div className="absolute inset-0 z-0 bg-[#0A0A08]" />;
 
   return (
-    <div className="absolute inset-0 z-0 overflow-hidden">
-      <Canvas shadows dpr={[1, 1.5]}>
-        <Suspense fallback={null}>
-          <PerspectiveCamera makeDefault position={[0, 2, 25]} fov={45} />
-          
-          <ambientLight intensity={0.5} />
-          {/* Main Key Light */}
-          <spotLight 
-            position={[10, 20, 10]} 
-            angle={0.3} 
-            penumbra={1} 
-            intensity={2} 
-            castShadow 
-            shadow-mapSize={[1024, 1024]}
-            color="#FFD966"
-          />
-          {/* Accent Warm Lights */}
-          <pointLight position={[-15, 10, 5]} intensity={1.5} color="#FF6600" />
-          <pointLight position={[15, 5, 10]} intensity={1} color="#D4AF37" />
-          
-          <SceneContent />
-          
-          <Stars radius={100} depth={50} count={2000} factor={4} saturation={0} fade speed={1.5} />
-          <Cloud position={[-15, 15, -20]} speed={0.3} opacity={0.2} color="#1a1a1a" />
-          <Cloud position={[15, 18, -25]} speed={0.3} opacity={0.2} color="#1a1a1a" />
-          
-          <Environment preset="night" />
-          
-          <fog attach="fog" args={['#0A0A08', 15, 55]} />
-        </Suspense>
-      </Canvas>
+    <div ref={containerRef} className="absolute inset-0 z-0 overflow-hidden">
+      {inView ? (
+        <Canvas shadows dpr={[1, 1.5]}>
+          <Suspense fallback={null}>
+            <PerspectiveCamera makeDefault position={[0, 2, 25]} fov={45} />
+            
+            <ambientLight intensity={0.5} />
+            {/* Main Key Light */}
+            <spotLight 
+              position={[10, 20, 10]} 
+              angle={0.3} 
+              penumbra={1} 
+              intensity={2} 
+              castShadow 
+              shadow-mapSize={[1024, 1024]}
+              color="#FFD966"
+            />
+            {/* Accent Warm Lights */}
+            <pointLight position={[-15, 10, 5]} intensity={1.5} color="#FF6600" />
+            <pointLight position={[15, 5, 10]} intensity={1} color="#D4AF37" />
+            
+            <SceneContent />
+            
+            <Stars radius={100} depth={50} count={2000} factor={4} saturation={0} fade speed={1.5} />
+            <Cloud position={[-15, 15, -20]} speed={0.3} opacity={0.2} color="#1a1a1a" />
+            <Cloud position={[15, 18, -25]} speed={0.3} opacity={0.2} color="#1a1a1a" />
+            
+            <Environment preset="night" />
+            
+            <fog attach="fog" args={['#0A0A08', 15, 55]} />
+          </Suspense>
+        </Canvas>
+      ) : (
+        <div className="absolute inset-0 bg-[#0A0A08]" />
+      )}
       
       {/* Cinematic Vignette & Gradient Overlay */}
       <div className="absolute inset-0 bg-radial-[circle_at_center] from-transparent via-black/20 to-black/60 pointer-events-none" />

@@ -1,7 +1,5 @@
-'use client';
-
-import { motion } from 'framer-motion';
 import { Phone, AlertTriangle } from 'lucide-react';
+import { FadeInUp, ScrollFadeInUp } from '@/components/ui/ClientAnimation';
 
 const safetyTips = [
   { key: 'children', emoji: '👦', title: 'Children Safety', color: 'hover:border-blue-500/40',
@@ -22,23 +20,24 @@ export default function SafetyPage() {
   return (
     <div className="max-w-[1400px] mx-auto px-6 py-12">
       <div className="text-center mb-20 max-w-3xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-rose-500/30 bg-rose-500/5 text-rose-500 text-xs font-bold mb-6 tracking-[0.2em] uppercase">
+        <FadeInUp className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-rose-500/30 bg-rose-500/5 text-rose-500 text-xs font-bold mb-6 tracking-[0.2em] uppercase">
           <AlertTriangle size={12} /> Safety Guidelines
-        </motion.div>
-        <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-          className="text-5xl md:text-7xl font-display font-bold leading-tight mb-6">
-          A Celebration <br /><span className="text-gradient-gold text-glow">Without Risks</span>
-        </motion.h1>
-        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
-          className="text-lg text-[var(--text-muted)]">
-          Your joy is our priority, but safety is our responsibility.
-        </motion.p>
+        </FadeInUp>
+        <FadeInUp delay={0.1}>
+          <h1 className="text-5xl md:text-7xl font-display font-bold leading-tight mb-6">
+            A Celebration <br /><span className="text-gradient-gold text-glow">Without Risks</span>
+          </h1>
+        </FadeInUp>
+        <FadeInUp delay={0.2}>
+          <p className="text-lg text-[var(--text-muted)]">
+            Your joy is our priority, but safety is our responsibility.
+          </p>
+        </FadeInUp>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-24">
         {safetyTips.map((tip, i) => (
-          <motion.div key={tip.key} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }}
+          <ScrollFadeInUp key={tip.key} delay={i * 0.05}
             className={`glass-card rounded-3xl p-7 transition-all ${tip.color}`}>
             <div className="flex items-center gap-3 mb-5">
               <div className="w-12 h-12 rounded-2xl bg-[var(--surface-high)] flex items-center justify-center text-2xl border border-[var(--border)]">{tip.emoji}</div>
@@ -51,27 +50,28 @@ export default function SafetyPage() {
                 </li>
               ))}
             </ul>
-          </motion.div>
+          </ScrollFadeInUp>
         ))}
       </div>
 
-      <motion.div initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-        className="glass-card rounded-3xl p-12 md:p-16 bg-rose-500/5 border-rose-500/20">
-        <div className="text-center max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold font-display mb-10 flex items-center justify-center gap-3">
-            <Phone className="text-rose-500" /> Emergency Hotlines
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {[{ num: '108', label: 'Ambulance' }, { num: '101', label: 'Fire Service' }, { num: '100', label: 'Police' }, { num: '70923 00252', label: 'JJ Support' }].map((c, i) => (
-              <a key={i} href={`tel:${c.num.replace(/\s/g, '')}`} className="flex flex-col items-center group">
-                <div className="text-3xl font-black mb-1 group-hover:text-[var(--color-gold)] transition-colors">{c.num}</div>
-                <div className="text-xs uppercase tracking-[0.15em] text-[var(--text-muted)] font-bold">{c.label}</div>
-              </a>
-            ))}
+      {/* Emergency Contact */}
+      <div className="max-w-2xl mx-auto">
+        <ScrollFadeInUp className="glass-card rounded-3xl p-8 border-rose-500/20 bg-rose-500/5 text-center relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-6 text-4xl opacity-10">🚨</div>
+          <h3 className="text-xl font-bold font-display mb-3 text-rose-400">Emergency Protocol</h3>
+          <p className="text-sm text-[var(--text-muted)] mb-6">
+            In the highly unlikely event of an accident, keep calm and contact local emergency services immediately.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="tel:101" className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-sm transition-colors">
+              <Phone size={16} /> Fire Station (101)
+            </a>
+            <a href="tel:108" className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-sm transition-colors">
+              <Phone size={16} /> Ambulance (108)
+            </a>
           </div>
-          <p className="mt-12 text-[var(--text-muted)] text-sm max-w-xl mx-auto italic">Stay calm and call the appropriate service immediately in case of emergency.</p>
-        </div>
-      </motion.div>
+        </ScrollFadeInUp>
+      </div>
     </div>
   );
 }

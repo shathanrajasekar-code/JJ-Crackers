@@ -74,7 +74,7 @@ export async function GET(req: Request) {
       // Admin or specific category: return all with pagination
       let query = supabase
         .from('products')
-        .select('*', { count: 'exact' });
+        .select('id,name_en,name_ta,slug,category,price,mrp,discount_percent,badge_text,image_url,in_stock,is_featured,is_eco_friendly,sort_order', { count: 'exact' });
 
       if (category && category !== 'all') {
         query = query.eq('category', category);
@@ -122,7 +122,7 @@ export async function GET(req: Request) {
     // Supabase connected & specific category filtered
     let query = supabase
       .from('products')
-      .select('*', { count: 'exact' });
+      .select('id,name_en,name_ta,slug,category,price,mrp,discount_percent,badge_text,image_url,in_stock,is_featured,is_eco_friendly,sort_order', { count: 'exact' });
 
     if (category && category !== 'all') {
       query = query.eq('category', category);

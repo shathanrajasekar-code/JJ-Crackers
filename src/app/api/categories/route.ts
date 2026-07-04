@@ -35,7 +35,7 @@ export async function GET(req: Request) {
     const supabase = createClient(supabaseUrl, supabaseKey);
     const { data, error } = await supabase
       .from('categories')
-      .select('*')
+      .select('id,label,emoji,sort_order')
       .order('sort_order', { ascending: true });
 
     if (error) throw error;
