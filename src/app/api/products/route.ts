@@ -225,3 +225,42 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+// DELETE — Admin: Bulk delete products
+export async function DELETE(req: Request) {
+  const denied = requireAdmin(req);
+  if (denied) return denied;
+  try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+    if (!supabaseUrl || !supabaseKey || supabaseUrl.includes('your_supabase')) {
+      return NextResponse.json({ error: 'Supabase not configured.' }, { status: 400 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const idsString = searchParams.get('ids');
+    if (!idsString) {
+      return NextResponse.json({ error: 'Missing ids parameter' }, { status: 400 });
+    }
+
+    const ids = idsString.split(',').filter(Boolean);
+    if (ids.length === 0) {
+      return NextResponse.json({ error: 'No IDs provided' }, { status: 400 });
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const { data, error } = await supabase
+      .from('products')
+      .delete()
+      .in('id', ids)
+      .select();
+
+    if (error) throw error;
+    return NextResponse.json({ success: true, count: data?.length || 0 });
+  } catch (error: any) {
+    console.error('Error deleting products:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+

@@ -428,6 +428,7 @@ export default function AdminPage() {
   // Search and Filter states
   const [orderQuery, setOrderQuery] = useState('');
   const [productQuery, setProductQuery] = useState('');
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   
   // Custom dialog state
   const [confirmConfig, setConfirmConfig] = useState<{
@@ -623,6 +624,33 @@ export default function AdminPage() {
           await adminFetch(`/api/products/${id}`, { method: 'DELETE' });
           fetchData();
         } catch (err) { console.error(err); }
+      }
+    });
+  };
+
+  const handleBulkDeleteProducts = () => {
+    if (selectedProductIds.length === 0) return;
+    setConfirmConfig({
+      isOpen: true,
+      title: 'Delete Selected Products?',
+      message: `Are you sure you want to delete the ${selectedProductIds.length} selected products? This action is permanent and cannot be undone.`,
+      confirmLabel: 'Delete Selected',
+      isDanger: true,
+      action: async () => {
+        setConfirmConfig(prev => ({ ...prev, isOpen: false }));
+        try {
+          const res = await adminFetch(`/api/products?ids=${selectedProductIds.join(',')}`, { method: 'DELETE' });
+          if (res.ok) {
+            setSelectedProductIds([]);
+            fetchData();
+          } else {
+            const data = await res.json().catch(() => ({}));
+            alert(`Failed to delete products: ${data.error || 'Unknown error'}`);
+          }
+        } catch (err: any) {
+          console.error(err);
+          alert('Failed to delete products.');
+        }
       }
     });
   };
@@ -1782,6 +1810,28 @@ export default function AdminPage() {
                     <Printer size={14} />
                   </button>
 
+                  <button
+                    onClick={() => {
+                      if (filteredProducts.length === 0) return;
+                      const allVisibleSelected = filteredProducts.every(p => selectedProductIds.includes(p.id));
+                      if (allVisibleSelected) {
+                        // Deselect all visible
+                        const visibleIds = new Set(filteredProducts.map(p => p.id));
+                        setSelectedProductIds(prev => prev.filter(id => !visibleIds.has(id)));
+                      } else {
+                        // Select all visible
+                        setSelectedProductIds(prev => {
+                          const union = new Set([...prev, ...filteredProducts.map(p => p.id)]);
+                          return Array.from(union);
+                        });
+                      }
+                    }}
+                    className="px-3 py-2.5 rounded-xl bg-[#141412] hover:bg-[#1C1C18] border border-[#2A2A24] hover:border-[var(--color-gold)] text-[#A0A090] hover:text-[var(--color-gold)] font-bold text-xs flex items-center gap-1 transition-colors cursor-pointer"
+                    title="Select / Deselect All Visible"
+                  >
+                    {filteredProducts.length > 0 && filteredProducts.every(p => selectedProductIds.includes(p.id)) ? 'Deselect All' : 'Select All'}
+                  </button>
+
                   <button 
                     onClick={() => {
                       setCurrentProduct({
@@ -1797,6 +1847,39 @@ export default function AdminPage() {
                   </button>
                 </div>
               </div>
+
+              {/* Bulk actions banner */}
+              {selectedProductIds.length > 0 && (
+                <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl animate-fadeIn">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-rose-300 font-bold">
+                      {selectedProductIds.length} product(s) selected
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setSelectedProductIds(filteredProducts.map(p => p.id));
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-[#1C1C18] hover:bg-[#2A2A24] border border-[#2A2A24] text-xs font-bold text-[#F5F5F0] transition-colors cursor-pointer"
+                    >
+                      Select All Visible
+                    </button>
+                    <button
+                      onClick={() => setSelectedProductIds([])}
+                      className="px-3 py-1.5 rounded-lg bg-[#1C1C18] hover:bg-[#2A2A24] border border-[#2A2A24] text-xs font-bold text-[#A0A090] transition-colors cursor-pointer"
+                    >
+                      Clear Selection
+                    </button>
+                    <button
+                      onClick={handleBulkDeleteProducts}
+                      className="px-3 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer"
+                    >
+                      <Trash2 size={13} /> Delete Selected
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Seed Products card */}
               <div className="bg-gradient-to-r from-[var(--color-gold)]/5 via-transparent to-transparent border border-[var(--color-gold)]/20 rounded-2xl p-6">
@@ -1821,30 +1904,39 @@ export default function AdminPage() {
                 )}
               </div>
 
-              {/* Excel upload */}
+              {/* Spreadsheet / CSV upload */}
               <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl p-6">
                 <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-display font-bold text-sm text-[#F5F5F0]">Import Inventory Spreadsheet</h3>
-                  <a 
-                    href="/templates/product_import_template.xlsx" 
-                    download="product_import_template.xlsx"
-                    className="text-[10px] text-[var(--color-gold)] hover:underline font-bold flex items-center gap-1"
-                  >
-                    <Download size={11} /> Download Template
-                  </a>
+                  <h3 className="font-display font-bold text-sm text-[#F5F5F0]">Import Inventory Spreadsheet / CSV</h3>
+                  <div className="flex flex-col items-end gap-1">
+                    <a 
+                      href="/templates/product_import_template.csv" 
+                      download="product_import_template.csv"
+                      className="text-[10px] text-[var(--color-gold)] hover:underline font-bold flex items-center gap-1"
+                    >
+                      <Download size={11} /> Download CSV Template
+                    </a>
+                    <a 
+                      href="/templates/product_import_template.xlsx" 
+                      download="product_import_template.xlsx"
+                      className="text-[10px] text-[var(--color-gold)]/75 hover:underline font-bold flex items-center gap-1"
+                    >
+                      <Download size={11} /> Download Excel Template (.xlsx)
+                    </a>
+                  </div>
                 </div>
-                <p className="text-xs text-[#A0A090] mb-5">Upload an Excel `.xlsx` spreadsheet matching the price list format to update pricing tables in bulk.</p>
+                <p className="text-xs text-[#A0A090] mb-5">Upload an Excel `.xlsx` or CSV `.csv` spreadsheet matching the price list format to add/update pricing tables in bulk.</p>
                 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                   <label className="flex-grow flex items-center justify-center gap-3 px-6 py-5 border-2 border-dashed border-[#2A2A24] hover:border-[var(--color-gold)]/40 rounded-xl cursor-pointer bg-[#1C1C18]/25 transition-all">
                     <Upload size={18} className="text-[#A0A090]" />
-                    <span className="text-xs font-bold text-[#A0A090]">{file ? file.name : 'Select spreadsheet file (.xlsx)'}</span>
-                    <input type="file" accept=".xlsx,.xls" className="hidden" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+                    <span className="text-xs font-bold text-[#A0A090]">{file ? file.name : 'Select spreadsheet file (.xlsx, .csv)'}</span>
+                    <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={(e) => setFile(e.target.files?.[0] || null)} />
                   </label>
                   <button 
                     onClick={handleUpload} 
                     disabled={!file} 
-                    className="px-6 py-4 rounded-xl bg-[var(--color-gold)] text-[#1a1400] font-bold text-xs hover:shadow-[0_0_15px_rgba(212,175,55,0.15)] transition-all disabled:opacity-40 disabled:hover:shadow-none shrink-0"
+                    className="px-6 py-4 rounded-xl bg-[var(--color-gold)] text-[#1a1400] font-bold text-xs hover:shadow-[0_0_15px_rgba(212,175,55,0.15)] transition-all disabled:opacity-40 disabled:hover:shadow-none shrink-0 cursor-pointer"
                   >
                     Import Products
                   </button>
@@ -1860,6 +1952,24 @@ export default function AdminPage() {
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
                       <tr className="border-b border-[#2A2A24] bg-[#1C1C18]/40 text-[#A0A090] font-bold uppercase tracking-wider text-[10px]">
+                        <th className="p-4 w-10 text-center">
+                          <input 
+                            type="checkbox"
+                            className="accent-[var(--color-gold)] cursor-pointer rounded border-[#2A2A24]"
+                            checked={filteredProducts.length > 0 && filteredProducts.every(p => selectedProductIds.includes(p.id))}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedProductIds(prev => {
+                                  const union = new Set([...prev, ...filteredProducts.map(p => p.id)]);
+                                  return Array.from(union);
+                                });
+                              } else {
+                                const visibleIds = new Set(filteredProducts.map(p => p.id));
+                                setSelectedProductIds(prev => prev.filter(id => !visibleIds.has(id)));
+                              }
+                            }}
+                          />
+                        </th>
                         <th className="p-4">Label Name</th>
                         <th className="p-4">Category</th>
                         <th className="p-4 text-right">Standard MRP</th>
@@ -1871,7 +1981,21 @@ export default function AdminPage() {
                     </thead>
                     <tbody className="divide-y divide-[#2A2A24]/40">
                       {filteredProducts.map((p: any) => (
-                        <tr key={p.id} className="hover:bg-[#1C1C18]/20 transition-colors">
+                        <tr key={p.id} className={`hover:bg-[#1C1C18]/20 transition-colors ${selectedProductIds.includes(p.id) ? 'bg-[var(--color-gold)]/5' : ''}`}>
+                          <td className="p-4 text-center">
+                            <input 
+                              type="checkbox"
+                              className="accent-[var(--color-gold)] cursor-pointer rounded border-[#2A2A24]"
+                              checked={selectedProductIds.includes(p.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedProductIds(prev => [...prev, p.id]);
+                                } else {
+                                  setSelectedProductIds(prev => prev.filter(id => id !== p.id));
+                                }
+                              }}
+                            />
+                          </td>
                           <td className="p-4">
                             <div className="font-bold text-[#F5F5F0]">{p.name_en}</div>
                             {p.name_ta && <div className="text-[10px] text-[#A0A090] mt-0.5">{p.name_ta}</div>}
@@ -2048,6 +2172,48 @@ export default function AdminPage() {
                 >
                   <Plus size={14} /> Add Category
                 </button>
+              </div>
+
+              {/* Spreadsheet / CSV upload */}
+              <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl p-6">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-display font-bold text-sm text-[#F5F5F0]">Import Products to Categories via Spreadsheet / CSV</h3>
+                  <div className="flex flex-col items-end gap-1">
+                    <a 
+                      href="/templates/product_import_template.csv" 
+                      download="product_import_template.csv"
+                      className="text-[10px] text-[var(--color-gold)] hover:underline font-bold flex items-center gap-1"
+                    >
+                      <Download size={11} /> Download CSV Template
+                    </a>
+                    <a 
+                      href="/templates/product_import_template.xlsx" 
+                      download="product_import_template.xlsx"
+                      className="text-[10px] text-[var(--color-gold)]/75 hover:underline font-bold flex items-center gap-1"
+                    >
+                      <Download size={11} /> Download Excel Template (.xlsx)
+                    </a>
+                  </div>
+                </div>
+                <p className="text-xs text-[#A0A090] mb-5">Seeding new items? Upload a spreadsheet to populate products. Missing categories listed in the spreadsheet will be automatically created.</p>
+                
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                  <label className="flex-grow flex items-center justify-center gap-3 px-6 py-5 border-2 border-dashed border-[#2A2A24] hover:border-[var(--color-gold)]/40 rounded-xl cursor-pointer bg-[#1C1C18]/25 transition-all">
+                    <Upload size={18} className="text-[#A0A090]" />
+                    <span className="text-xs font-bold text-[#A0A090]">{file ? file.name : 'Select spreadsheet file (.xlsx, .csv)'}</span>
+                    <input type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+                  </label>
+                  <button 
+                    onClick={handleUpload} 
+                    disabled={!file} 
+                    className="px-6 py-4 rounded-xl bg-[var(--color-gold)] text-[#1a1400] font-bold text-xs hover:shadow-[0_0_15px_rgba(212,175,55,0.15)] transition-all disabled:opacity-40 disabled:hover:shadow-none shrink-0 cursor-pointer"
+                  >
+                    Import Products
+                  </button>
+                </div>
+                {uploadStatus && (
+                  <p className="mt-3 text-xs font-semibold text-[var(--color-gold)]">{uploadStatus}</p>
+                )}
               </div>
 
               <div className="bg-[#141412] border border-[#2A2A24] rounded-2xl overflow-hidden">

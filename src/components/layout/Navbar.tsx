@@ -95,7 +95,7 @@ export function Navbar() {
               </motion.button>
             </Link>
             <motion.button whileTap={{ scale: 0.9 }} className="md:hidden p-2 text-[var(--text)] rounded-lg hover:bg-[var(--surface-high)]"
-              onClick={() => setMobileMenuOpen(true)} id="nav-mobile-toggle">
+              onClick={() => setMobileMenuOpen(true)} id="nav-mobile-toggle" aria-label="Open navigation menu">
               <Menu size={22} />
             </motion.button>
           </div>
@@ -112,7 +112,7 @@ export function Navbar() {
               className="fixed top-0 right-0 bottom-0 w-[85vw] max-w-[400px] z-[100] bg-[var(--bg)] border-l border-[var(--border)] flex flex-col shadow-2xl">
               <div className="flex items-center justify-between p-6 border-b border-[var(--border)]">
                 <div className="flex items-center gap-2"><Sparkles size={18} className="text-[var(--color-gold)]" /><span className="font-display font-bold text-lg">Menu</span></div>
-                <div className="flex items-center gap-3"><ThemeToggle /><button onClick={() => setMobileMenuOpen(false)} className="p-2 rounded-lg hover:bg-[var(--surface-high)]"><X size={20} /></button></div>
+                <div className="flex items-center gap-3"><ThemeToggle /><button onClick={() => setMobileMenuOpen(false)} className="p-2 rounded-lg hover:bg-[var(--surface-high)]" aria-label="Close navigation menu"><X size={20} /></button></div>
               </div>
               <div className="flex flex-col p-6 gap-2">
                 {navLinks.map((link, i) => (
