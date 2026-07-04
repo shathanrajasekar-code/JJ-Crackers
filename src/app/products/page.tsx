@@ -122,26 +122,84 @@ export default function ProductsPage() {
 
   // Fetch all products once on page load
   const fetchAllProducts = useCallback(async () => {
-    setLoading(true);
     setError(null);
+    
+    // Check sessionStorage cache first for instant loading
+    let cachedList: Product[] = [];
+    if (typeof window !== 'undefined') {
+      try {
+        const cachedStr = sessionStorage.getItem('jj_products_catalog_cache');
+        if (cachedStr) {
+          const { data, timestamp } = JSON.parse(cachedStr);
+          if (Array.isArray(data)) {
+            const filtered = data.filter((p: any) => {
+              if (p.category === 'giftbox' && (p.name_en || '').toLowerCase().includes('pack')) {
+                return false;
+              }
+              return true;
+            });
+            setAllProducts(filtered);
+            setTotalProducts(filtered.length);
+            cachedList = filtered;
+            
+            // If cache is less than 5 minutes old, return and don't fetch
+            if (Date.now() - timestamp < 5 * 60 * 1000) {
+              setLoading(false);
+              return;
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Error reading sessionStorage cache:', e);
+      }
+    }
+
+    if (cachedList.length === 0) {
+      setLoading(true);
+    }
+
     try {
       const res = await fetch('/api/products?limit=500');
       if (!res.ok) throw new Error('Failed to fetch products');
       const data = await res.json();
 
-      let list: Product[] = [];
+      let fetchedList: Product[] = [];
       if (Array.isArray(data)) {
-        list = data;
+        fetchedList = data;
       } else {
-        list = data.products || [];
+        fetchedList = data.products || [];
       }
-      setAllProducts(list);
-      setTotalProducts(list.length);
+
+      // Save raw data to cache
+      if (typeof window !== 'undefined') {
+        try {
+          sessionStorage.setItem('jj_products_catalog_cache', JSON.stringify({
+            data: fetchedList,
+            timestamp: Date.now()
+          }));
+        } catch (e) {
+          console.error('Error writing to sessionStorage cache:', e);
+        }
+      }
+
+      // Filter out combo packs immediately for consistency
+      const filteredList = fetchedList.filter((p: any) => {
+        if (p.category === 'giftbox' && (p.name_en || '').toLowerCase().includes('pack')) {
+          return false;
+        }
+        return true;
+      });
+
+      // Update state if data changed
+      if (JSON.stringify(filteredList) !== JSON.stringify(cachedList)) {
+        setAllProducts(filteredList);
+        setTotalProducts(filteredList.length);
+      }
     } catch (err: any) {
       console.error('Failed to fetch products:', err);
-      setError('Failed to load products. Please try again.');
-      setAllProducts([]);
-      setTotalProducts(0);
+      if (cachedList.length === 0) {
+        setError('Failed to load products. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -159,14 +217,6 @@ export default function ProductsPage() {
     if (activeCategory !== 'all') {
       filtered = filtered.filter(p => p.category === activeCategory);
     }
-
-    // Exclude combos (packs) from giftbox category
-    filtered = filtered.filter(p => {
-      if (p.category === 'giftbox' && (p.name_en || '').toLowerCase().includes('pack')) {
-        return false;
-      }
-      return true;
-    });
 
     // Search filter
     if (searchDebounce) {
@@ -353,7 +403,12 @@ export default function ProductsPage() {
                   const catProducts = products.filter(p => p.category === cat.id);
                   if (catProducts.length === 0) return null;
                   return (
-                    <section key={cat.id} id={`category-sec-${cat.id}`} className="scroll-mt-28">
+                    <section 
+                      key={cat.id} 
+                      id={`category-sec-${cat.id}`} 
+                      className="scroll-mt-28"
+                      style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 500px' }}
+                    >
                       {/* Category Header */}
                       <div className="flex items-center justify-between mb-2">
                         <h2 className="text-2xl font-bold font-display flex items-center gap-2.5 text-[var(--text)]">
