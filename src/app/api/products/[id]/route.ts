@@ -46,19 +46,22 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     if (body.name_en !== undefined) updateData.name_en = body.name_en;
     if (body.name_ta !== undefined) updateData.name_ta = body.name_ta;
     if (body.category !== undefined) updateData.category = body.category;
-    if (body.price !== undefined) updateData.price = body.price;
-    if (body.mrp !== undefined) updateData.mrp = body.mrp;
+    if (body.price !== undefined) updateData.price = Number(body.price);
+    if (body.mrp !== undefined) updateData.mrp = Number(body.mrp);
     if (body.image_url !== undefined) updateData.image_url = body.image_url;
-    if (body.in_stock !== undefined) updateData.in_stock = body.in_stock;
-    if (body.is_featured !== undefined) updateData.is_featured = body.is_featured;
+    if (body.in_stock !== undefined) updateData.in_stock = Boolean(body.in_stock);
+    if (body.is_featured !== undefined) updateData.is_featured = Boolean(body.is_featured);
 
     // Recalculate discount
     if (body.mrp !== undefined || body.price !== undefined) {
-      const mrp = body.mrp || updateData.mrp || 0;
-      const price = body.price || updateData.price || 0;
+      const mrp = Number(body.mrp !== undefined ? body.mrp : updateData.mrp || 0);
+      const price = Number(body.price !== undefined ? body.price : updateData.price || 0);
       if (mrp > 0 && price < mrp) {
         updateData.discount_percent = Math.round(((mrp - price) / mrp) * 100);
         updateData.badge_text = `🔥 ${updateData.discount_percent}% OFF`;
+      } else {
+        updateData.discount_percent = 0;
+        updateData.badge_text = null;
       }
     }
 
@@ -66,7 +69,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     if (error) throw error;
     return NextResponse.json(data);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('Error updating product:', error);
+    const errMessage = error.message || error.details || (typeof error === 'object' ? JSON.stringify(error) : String(error));
+    return NextResponse.json({ error: errMessage }, { status: 500 });
   }
 }
 

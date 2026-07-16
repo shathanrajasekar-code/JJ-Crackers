@@ -1,40 +1,40 @@
 @import "tailwindcss";
 
 @theme inline {
-  /* ─── Premium Gold Palette ─── */
-  --color-gold: #D4AF37;
-  --color-gold-light: #F4E296;
-  --color-gold-dark: #A67C00;
-  --color-gold-50: #FFF9E6;
-  --color-gold-100: #FFF3CC;
-  --color-gold-200: #FFE699;
-  --color-gold-300: #FFD966;
-  --color-gold-400: #F4CA3A;
-  --color-gold-500: #D4AF37;
-  --color-gold-600: #A67C00;
-  --color-gold-700: #7A5C00;
+  /* ─── Premium Gold Palette (Tuned to New Image) ─── */
+  --color-gold: #D0A030;
+  --color-gold-light: #F0C050;
+  --color-gold-dark: #B08010;
+  --color-gold-50: #FFFDF5;
+  --color-gold-100: #FFF8E3;
+  --color-gold-200: #FEEFB5;
+  --color-gold-300: #FDE07D;
+  --color-gold-400: #F0C050;
+  --color-gold-500: #D0A030;
+  --color-gold-600: #B08010;
+  --color-gold-700: #805C08;
 
   /* ─── Brand ─── */
-  --color-brand-light: #FAF7F0; /* Sandalwood White */
-  --color-brand-dark: #0A0A08;
+  --color-brand-light: #FAF5EB; /* Warm Sandalwood / Ivory */
+  --color-brand-dark: #140505;  /* Deep Burgundy/Crimson-Black Sky */
 
   --color-surface-light: #FFFFFF;
-  --color-surface-dark: #141412;
+  --color-surface-dark: #1C0B0B; /* Deep Chocolate Maroon Surface */
 
-  --color-surface-high-light: #FDFBF7;
-  --color-surface-high-dark: #1C1C18;
+  --color-surface-high-light: #F7EFE0; /* Warm Courtyard Stone */
+  --color-surface-high-dark: #271212;  /* Burgundy Surface High */
 
-  --color-surface-highest-light: #F7F3E9;
-  --color-surface-highest-dark: #252520;
+  --color-surface-highest-light: #EFE4D0; /* Sandalwood Stone Deep */
+  --color-surface-highest-dark: #3A1C1C;  /* Light Burgundy Highlights */
 
-  --color-text-light: #2D241E; /* Deep Wood Brown */
-  --color-text-dark: #F5F5F0;
+  --color-text-light: #3D2116; /* Deep Stone/Wood Brown */
+  --color-text-dark: #F5EBE9;  /* Soft Warm White */
 
-  --color-text-muted-light: #8B735B; /* Muted Sandalwood */
-  --color-text-muted-dark: #A0A090;
+  --color-text-muted-light: #8C7265; /* Muted Stone/Wood Brown */
+  --color-text-muted-dark: #BDA6A1;  /* Coppery Rose Gray */
 
-  --color-border-light: #E8E2D1;
-  --color-border-dark: #2A2A24;
+  --color-border-light: #E6DBC6; /* Warm Sandalwood Border */
+  --color-border-dark: #3A1515;  /* Warm Deep Red/Burgundy Border */
 
   /* ─── Accent ─── */
   --color-emerald: #10B981;
@@ -58,8 +58,8 @@
     --text: var(--color-text-light);
     --text-muted: var(--color-text-muted-light);
     --border: var(--color-border-light);
-    --shadow-gold: 0 0 40px rgba(212, 175, 55, 0.15);
-    --shadow-gold-lg: 0 0 80px rgba(212, 175, 55, 0.25);
+    --shadow-gold: 0 8px 30px rgba(212, 175, 55, 0.12);
+    --shadow-gold-lg: 0 16px 40px rgba(212, 175, 55, 0.2);
   }
 
   .dark {
@@ -70,8 +70,8 @@
     --text: var(--color-text-dark);
     --text-muted: var(--color-text-muted-dark);
     --border: var(--color-border-dark);
-    --shadow-gold: 0 0 40px rgba(212, 175, 55, 0.2);
-    --shadow-gold-lg: 0 0 80px rgba(212, 175, 55, 0.3);
+    --shadow-gold: 0 8px 32px rgba(212, 175, 55, 0.22);
+    --shadow-gold-lg: 0 20px 50px rgba(212, 175, 55, 0.32);
   }
 
   * {
@@ -129,31 +129,70 @@
 
   /* ─── Glass Card ─── */
   .glass-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    box-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
-    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-                box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-                border-color 0.4s ease;
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(20px) saturate(190%);
+    -webkit-backdrop-filter: blur(20px) saturate(190%);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 
+      0 8px 32px -4px rgba(0, 0, 0, 0.04), 
+      inset 0 1px 1px rgba(255, 255, 255, 0.3),
+      0 1px 2px rgba(0, 0, 0, 0.02);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.4s ease,
+                background-color 0.4s ease;
+  }
+
+  .dark .glass-card {
+    background: rgba(28, 11, 11, 0.45);
+    backdrop-filter: blur(20px) saturate(190%);
+    -webkit-backdrop-filter: blur(20px) saturate(190%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 
+      0 8px 32px -4px rgba(0, 0, 0, 0.3), 
+      inset 0 1px 1px rgba(255, 255, 255, 0.04),
+      0 0 0 1px rgba(208, 160, 48, 0.03);
   }
 
   .glass-card:hover {
     transform: translateY(-6px);
-    box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.15), var(--shadow-gold);
-    border-color: var(--color-gold);
+    background: rgba(255, 255, 255, 0.55);
+    border-color: rgba(208, 160, 48, 0.45);
+    box-shadow: 
+      0 24px 48px -12px rgba(208, 160, 48, 0.1),
+      0 8px 24px -4px rgba(0, 0, 0, 0.06), 
+      var(--shadow-gold),
+      inset 0 1px 1px rgba(255, 255, 255, 0.45);
   }
 
-  /* ─── Premium Glass ─── */
+  .dark .glass-card:hover {
+    background: rgba(39, 18, 18, 0.55);
+    border-color: rgba(208, 160, 48, 0.5);
+    box-shadow: 
+      0 24px 48px -12px rgba(0, 0, 0, 0.4),
+      0 8px 24px -4px rgba(0, 0, 0, 0.2), 
+      var(--shadow-gold),
+      inset 0 1px 1px rgba(255, 255, 255, 0.08);
+  }
+
+  /* ─── Premium Glass (Full screen overlays or special modals) ─── */
   .glass-premium {
-    background: rgba(255, 255, 255, 0.4);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(28px) saturate(200%);
+    -webkit-backdrop-filter: blur(28px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 
+      0 20px 50px rgba(0, 0, 0, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
   }
 
   .dark .glass-premium {
-    background: rgba(10, 10, 8, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(20, 5, 5, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 
+      0 20px 50px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 0 0 1px rgba(208, 160, 48, 0.02);
   }
 
   /* ─── Text Effects ─── */
@@ -541,4 +580,60 @@ input[type="number"] {
   stroke-dashoffset: 48;
   animation: check-draw 0.5s ease-out 0.2s forwards;
 }
+
+/* ═══════════════════════════════════════════
+   ADMIN CONSOLE GLASSMORPHISM OVERRIDES
+   ═══════════════════════════════════════════ */
+.bg-\[\#0A0A08\] {
+  background: 
+    radial-gradient(circle at 10% 20%, rgba(61, 33, 22, 0.25) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(208, 160, 48, 0.08) 0%, transparent 50%),
+    #140505 !important;
+}
+
+.bg-\[\#141412\] {
+  background: rgba(28, 11, 11, 0.45) !important;
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border-color: rgba(208, 160, 48, 0.15) !important;
+}
+
+.bg-\[\#161614\] {
+  background: rgba(28, 11, 11, 0.75) !important;
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border-color: rgba(208, 160, 48, 0.2) !important;
+}
+
+.bg-\[\#1C1C18\] {
+  background: rgba(58, 28, 28, 0.4) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-color: rgba(208, 160, 48, 0.15) !important;
+}
+
+.border-\[\#2A2A24\] {
+  border-color: rgba(208, 160, 48, 0.15) !important;
+}
+
+.text-\[\#A0A090\] {
+  color: #BDA6A1 !important;
+}
+
+.text-\[\#F5F5F0\] {
+  color: #F5EBE9 !important;
+}
+
+.hover\:bg-\[\#1C1C18\]:hover {
+  background-color: rgba(58, 28, 28, 0.6) !important;
+}
+
+.bg-\[\#1C1C18\]\/25 {
+  background-color: rgba(58, 28, 28, 0.15) !important;
+}
+
+.hover\:bg-\[\#1C1C18\]\/20:hover {
+  background-color: rgba(58, 28, 28, 0.2) !important;
+}
+
 

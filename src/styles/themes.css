@@ -1,24 +1,24 @@
 :root {
   /* Brand Colors */
-  --gold: #e9c349;
-  --gold-dim: #af8d11;
-  --gold-light: #ffe088;
-  --gold-pale: #fff3c4;
-  --maroon: #4A0404;
-  --maroon-deep: #2a0202;
-  --maroon-mid: #6b0808;
+  --gold: #D4AF37;
+  --gold-dim: #A67C00;
+  --gold-light: #F4E296;
+  --gold-pale: #FFF3CC;
+  --maroon: #2b0302;
+  --maroon-deep: #190101;
+  --maroon-mid: #4a0404;
 
   /* Background Colors */
-  --bg: #141400;
-  --surface: #1d1d03;
-  --surface-mid: #252505;
-  --surface-high: #2b2b0e;
-  --surface-higher: #363618;
+  --bg: #060913;
+  --surface: #0a0e1c;
+  --surface-mid: #0d152c;
+  --surface-high: #10172d;
+  --surface-higher: #17203b;
 
   /* Text Colors */
-  --text: #e6e5b9;
-  --text-muted: rgba(230, 229, 185, 0.6);
-  --text-hint: rgba(230, 229, 185, 0.35);
+  --text: #F0F3FA;
+  --text-muted: #8DA2CC;
+  --text-hint: rgba(141, 162, 204, 0.4);
 
   /* Accent Colors */
   --tertiary: #ffb77d;

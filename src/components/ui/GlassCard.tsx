@@ -14,16 +14,16 @@ export function GlassCard({
   children,
   ...props
 }: GlassCardProps) {
-  const baseStyles = 'rounded-2xl backdrop-blur-xl transition-all duration-300';
+  const baseStyles = 'glass-card rounded-2xl transition-all duration-500 ease-out';
 
   const variantStyles = {
-    default: 'bg-surface-high/50 border border-gold/15',
-    maroon: 'bg-maroon/30 border border-maroon-mid/30',
-    highlight: 'bg-gold/10 border border-gold/30',
+    default: '',
+    maroon: 'bg-[rgba(43,3,2,0.35)] border-[rgba(74,4,4,0.4)] dark:bg-[rgba(25,1,1,0.45)] dark:border-[rgba(43,3,2,0.4)]',
+    highlight: 'bg-[rgba(212,175,55,0.08)] border-[rgba(212,175,55,0.35)] shadow-[var(--shadow-gold)]',
   };
 
   const hoverStyles = hover
-    ? 'hover:border-gold/40 hover:shadow-gold'
+    ? 'cursor-pointer hover:-translate-y-1.5 hover:scale-[1.01] hover:bg-white/55 dark:hover:bg-[rgba(13,21,44,0.55)] hover:border-[var(--color-gold)]/50 hover:shadow-[var(--shadow-gold-lg)]'
     : '';
 
   return (

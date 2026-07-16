@@ -5,6 +5,9 @@ import { SlideInLeft, SlideInRight, ScrollFadeInUp } from '@/components/ui/Clien
 import { AnimatedKolam } from '@/components/ui/AnimatedKolam';
 import { getSiteSettings } from '@/lib/settings';
 import { Shield, Leaf, Factory, Package, Sparkles } from 'lucide-react';
+import { CinematicHero25D } from '@/components/effects/CinematicHero25D';
+import { HeroButtonsClient } from '@/components/ui/HeroButtonsClient';
+
 
 export default async function HomePage() {
   const settings = await getSiteSettings();
@@ -21,12 +24,12 @@ export default async function HomePage() {
       {/* 3D HERO (RSC-friendly Client Wrapper handles interactive layers) */}
       <InteractiveHeroWrapper>
         {/* Dynamic Announcement Marquee Bar — at the top of hero, below fixed navbar */}
-        <div className="relative w-full bg-[rgba(212,175,55,0.15)] border-t border-b border-[rgba(212,175,55,0.25)] py-2 sm:py-2.5 overflow-hidden flex select-none z-30 mt-20 lg:mt-24">
-          <div className="animate-marquee-horizontal flex gap-6 sm:gap-8 whitespace-nowrap uppercase tracking-[0.12em] sm:tracking-[0.15em] font-black text-[9px] sm:text-xs text-[var(--color-gold)]">
+        <div className="relative w-full bg-[rgba(212,175,55,0.15)] border-t border-b border-[rgba(212,175,55,0.25)] py-2 sm:py-2.5 overflow-hidden flex select-none z-30 mt-16 sm:mt-20 lg:mt-24">
+          <div className="animate-marquee-horizontal flex gap-6 sm:gap-8 whitespace-nowrap uppercase tracking-[0.12em] sm:tracking-[0.15em] font-black text-[10px] sm:text-xs text-[var(--color-gold)]">
             <span>{displayMarquee}</span>
             <span>🎆</span>
             <span>{displayMarquee}</span>
-            <span>`🎆`</span>
+            <span>🎆</span>
             {/* Duplicate for seamless looping */}
             <span>{displayMarquee}</span>
             <span>🎆</span>
@@ -35,47 +38,59 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* Hero Content — side-by-side split screen layout */}
-        <div className="relative z-10 flex-1 grid grid-cols-[45%_55%] sm:grid-cols-[55%_45%] w-full h-full">
-          
-          {/* LEFT COLUMN — Text Content */}
-          <div className="relative flex flex-col justify-center items-start py-6 sm:py-10 lg:py-12 px-4 sm:px-10 md:px-14 lg:px-0" style={{ paddingLeft: 'clamp(1rem, 6vw, 10rem)' }}>
-            {/* Radial Gradient Glow behind headline */}
-            <div 
-              className="absolute inset-0 pointer-events-none -z-10 w-full h-full" 
-              style={{ 
-                background: 'radial-gradient(ellipse 600px 400px at 30% 50%, rgba(212,175,55,0.12) 0%, transparent 70%)'
-              }} 
-              role="presentation"
-            />
+        {/* Cinematic 2.5D Background Artwork covering 100% */}
+        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden pointer-events-none">
+          <CinematicHero25D />
+        </div>
 
-            <SlideInLeft className="max-w-xl pt-4 sm:pt-10 lg:pt-0">
+        {/* Luxury Cinematic Gradient Overlay (Deep Navy blended) */}
+        <div 
+          className="absolute inset-0 z-10 pointer-events-none" 
+          style={{ 
+            background: 'linear-gradient(90deg, rgba(6,9,19,0.88) 0%, rgba(6,9,19,0.72) 28%, rgba(6,9,19,0.42) 52%, rgba(6,9,19,0.15) 75%, rgba(6,9,19,0) 100%)' 
+          }}
+        />
+
+        {/* Ambient Top & Bottom fade overlays for seamless blending */}
+        <div 
+          className="absolute inset-0 z-10 pointer-events-none" 
+          style={{ 
+            background: 'linear-gradient(to top, var(--bg) 0%, transparent 20%, transparent 80%, rgba(6,9,19,0.45) 100%)' 
+          }} 
+        />
+
+        {/* Hero Content — Floating over background */}
+        <div className="relative z-20 flex-1 w-full h-full max-w-[1360px] mx-auto px-4 sm:px-6 md:px-8 flex items-end sm:items-center justify-center lg:justify-start py-6 pb-10 sm:py-20 lg:py-24">
+          
+          {/* Upgraded High-Fidelity Glassmorphic Text Content Panel */}
+          <div className="max-w-[600px] w-full glass-card hover:-translate-y-1.5 hover:scale-[1.01] hover:bg-white/55 dark:hover:bg-[rgba(39,18,18,0.55)] hover:border-[var(--color-gold)]/50 hover:shadow-[var(--shadow-gold-lg)] rounded-2xl sm:rounded-3xl p-4 sm:p-8 lg:p-12 mx-auto lg:mx-0 transition-all duration-500 ease-out">
+            <SlideInLeft className="w-full">
               {/* JJ Crackers Logo + Branding */}
-              <div className="flex items-center gap-2 sm:gap-4 mb-4 sm:mb-6">
-                <div className="relative w-9 h-9 sm:w-18 sm:h-18 lg:w-22 lg:h-22 overflow-hidden flex-shrink-0">
+              <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-6">
+                <div className="relative w-11 h-11 sm:w-16 sm:h-16 lg:w-20 lg:h-20 overflow-hidden flex-shrink-0">
                   <Image 
                     src="/logo/logo.png" 
                     alt="JJ Crackers Logo" 
                     fill 
                     className="object-contain" 
-                    sizes="(max-width: 640px) 45px, 88px"
+                    sizes="(max-width: 640px) 44px, 80px"
                     priority
                   />
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-display text-xs sm:text-xl lg:text-2xl font-extrabold text-[var(--color-gold)] tracking-tight leading-none">JJ Crackers</span>
-                  <span className="font-display text-[9px] sm:text-base lg:text-lg font-semibold text-[var(--text)]/90 transition-colors duration-400 leading-tight">Jegajothi Crackers</span>
-                  <span className="text-[6px] sm:text-[10px] uppercase tracking-[0.2em] text-[var(--color-gold)]/70 font-bold mt-0.5">Since 2015 · Sivakasi</span>
+                  <span className="font-display text-base sm:text-xl lg:text-2xl font-extrabold text-[var(--color-gold)] tracking-tight leading-none">JJ Crackers</span>
+                  <span className="font-display text-xs sm:text-base lg:text-lg font-semibold text-[var(--text)]/90 transition-colors duration-400 leading-tight">Jegajothi Crackers</span>
+                  <span className="text-[8px] sm:text-[10px] uppercase tracking-[0.2em] text-[var(--color-gold)]/70 font-bold mt-0.5">Since 2015 · Sivakasi</span>
                 </div>
               </div>
 
               {/* Pill Badge */}
               <div 
-                className="inline-block text-[7px] sm:text-[0.7rem] uppercase tracking-[0.1em] sm:tracking-[0.15em] px-2 py-0.5 sm:px-4 sm:py-1.5 rounded-full mb-3 sm:mb-5 font-semibold"
+                className="inline-block text-[10px] sm:text-[0.7rem] uppercase tracking-[0.1em] sm:tracking-[0.15em] px-3 py-1 sm:px-4 sm:py-1.5 rounded-full mb-3 sm:mb-5 font-semibold"
                 style={{
                   color: '#D4AF37',
-                  border: '1px solid rgba(212, 175, 55, 0.6)',
-                  backgroundColor: 'rgba(212, 175, 55, 0.1)'
+                  border: '1px solid rgba(212, 175, 55, 0.5)',
+                  backgroundColor: 'rgba(212, 175, 55, 0.08)'
                 }}
               >
                 Sivakasi&apos;s Royal Legacy Since 2015
@@ -83,58 +98,18 @@ export default async function HomePage() {
 
               {/* Headline */}
               <h1 className="font-display leading-[1.1] mb-3 sm:mb-5 flex flex-col tracking-tight text-left">
-                <span className="text-[var(--text)] font-light text-[1.2rem] xs:text-[1.5rem] sm:text-[3rem] lg:text-[4rem] transition-colors duration-400">Elegance in</span>
-                <span className="text-[var(--color-gold)] font-extrabold text-[1.4rem] xs:text-[1.8rem] sm:text-[4rem] lg:text-[5rem] drop-shadow-[0_0_30px_rgba(212,175,55,0.4)]">Every Spark</span>
+                <span className="text-[var(--text)] font-light text-[1.5rem] sm:text-[3rem] lg:text-[4rem] transition-colors duration-400">Elegance in</span>
+                <span className="text-[var(--color-gold)] font-extrabold text-[1.75rem] sm:text-[4rem] lg:text-[5rem] drop-shadow-[0_0_30px_rgba(212,175,55,0.4)]">Every Spark</span>
               </h1>
 
               {/* Body text */}
-              <p className="text-[var(--text-muted)] text-[9px] sm:text-[1.05rem] leading-[1.4] sm:leading-[1.7] max-w-[180px] xs:max-w-[220px] sm:max-w-[420px] mb-4 sm:mb-5 font-sans transition-colors duration-400">
+              <p className="text-[var(--text-muted)] text-xs sm:text-[1.05rem] leading-[1.5] sm:leading-[1.7] w-full mb-4 sm:mb-6 font-sans transition-colors duration-400">
                 Experience the pinnacle of pyrotechnic artistry. Hand-crafted excellence from India&apos;s heartland, delivered to light up your legacy.
               </p>
 
-              {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
-                <Link href="/products" className="w-full sm:w-auto">
-                  <button 
-                    className="w-full px-4 py-2 sm:px-9 sm:py-3.5 rounded text-[#0A0A0A] font-bold text-[9px] sm:text-sm uppercase tracking-wider transition-all text-center cursor-pointer hover:bg-[#FFD700] hover:shadow-[0_8px_24px_rgba(212,175,55,0.35)] active:scale-[0.98]"
-                    style={{ backgroundColor: '#D4AF37', borderRadius: '4px' }}
-                  >
-                    Shop Now
-                  </button>
-                </Link>
-                <Link href="/products" className="w-full sm:w-auto">
-                  <button 
-                    className="w-full px-4 py-2 sm:px-9 sm:py-3.5 rounded border bg-transparent font-bold text-[9px] sm:text-sm uppercase tracking-wider transition-all text-center cursor-pointer hover:bg-rgba(212,175,55,0.08) active:scale-[0.98]"
-                    style={{ borderColor: '#D4AF37', color: '#D4AF37', borderRadius: '4px' }}
-                  >
-                    View Catalogue
-                  </button>
-                </Link>
-              </div>
+              <HeroButtonsClient />
             </SlideInLeft>
           </div>
-
-          {/* RIGHT COLUMN — Hero Image (visible side-by-side on all screens) */}
-          <SlideInRight className="relative overflow-hidden h-full min-h-[250px] sm:min-h-[350px] lg:min-h-[500px]" delay={0.3}>
-            <Image 
-              src="/family-festive.png" 
-              alt="Family Diwali Celebration with JJ Crackers" 
-              fill 
-              className="object-cover" 
-              style={{ objectPosition: 'center center' }}
-              priority
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            />
-            {/* Gradient overlays */}
-            <div 
-              className="absolute inset-0 z-10 pointer-events-none" 
-              style={{ background: 'linear-gradient(to right, var(--bg) 0%, transparent 40%)' }}
-            />
-            <div 
-              className="absolute inset-0 z-10 pointer-events-none" 
-              style={{ background: 'linear-gradient(to top, var(--bg) 0%, transparent 60%)' }} 
-            />
-          </SlideInRight>
         </div>
       </InteractiveHeroWrapper>
 
@@ -160,23 +135,23 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* CTA BANNER - The Final Flourish */}
+      {/* CTA BANNER - Glassmorphism Edition */}
       <section className="py-10 sm:py-20 relative overflow-hidden bg-[var(--bg)] transition-colors duration-400" id="cta">
-        <div className="w-full relative z-10 px-0">
-          <ScrollFadeInUp className="relative overflow-hidden w-full" style={{ borderRadius: '16px' }}>
-            <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-gold-dark)] via-[var(--color-gold)] to-[var(--color-gold-light)]" />
-            <div className="absolute inset-0 bg-[url('/hero-bg.png')] bg-cover bg-center opacity-10 mix-blend-overlay scale-125" />
-            <div className="absolute -top-20 -left-20 opacity-20"><AnimatedKolam size={400} color="#000" /></div>
+        <div className="w-full relative z-10 px-4 sm:px-6 md:px-8">
+          <ScrollFadeInUp className="relative overflow-hidden w-full glass-premium border border-[var(--color-gold)]/30 shadow-[var(--shadow-gold-lg)]" style={{ borderRadius: '24px' }}>
+            {/* Ambient gold glow underlay */}
+            <div className="absolute inset-0 bg-radial from-[var(--color-gold)]/10 via-transparent to-transparent opacity-60" />
+            <div className="absolute inset-0 bg-[url('/hero-bg.png')] bg-cover bg-center opacity-5 mix-blend-overlay scale-125" />
+            <div className="absolute -top-20 -left-20 opacity-10"><AnimatedKolam size={400} color="var(--color-gold)" /></div>
             
             <div className="relative z-10 py-12 sm:py-20 text-center flex flex-col items-center justify-center px-6 sm:px-12 lg:px-20">
-              <div className="text-[24px] sm:text-[28px] mx-auto mb-4 sm:mb-6 text-center select-none" style={{ color: '#0A0A0A' }}>🎆</div>
-              <h2 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-display font-extrabold text-[#0A0A0A] mb-4 sm:mb-6 leading-[1.1] tracking-tighter">
+              <div className="text-[24px] sm:text-[28px] mx-auto mb-4 sm:mb-6 text-center select-none">🎆</div>
+              <h2 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-display font-extrabold text-[var(--text)] mb-4 sm:mb-6 leading-[1.1] tracking-tighter drop-shadow-[0_0_20px_rgba(208,160,48,0.2)]">
                 Ready to Light Up <br /> Your Next Legacy?
               </h2>
               <p 
-                className="mx-auto mb-8 sm:mb-10 text-center font-medium"
+                className="mx-auto mb-8 sm:mb-10 text-center font-medium text-[var(--text-muted)]"
                 style={{ 
-                  color: 'rgba(0,0,0,0.65)', 
                   fontSize: 'clamp(0.85rem, 2.5vw, 1.05rem)', 
                   maxWidth: '520px', 
                   lineHeight: '1.7' 
@@ -188,20 +163,17 @@ export default async function HomePage() {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
                 <Link href="/products">
                   <button 
-                    className="px-6 sm:px-8 py-3 sm:py-4 text-[#D4AF37] font-bold text-base sm:text-lg flex items-center gap-2 transition-all hover:bg-[#1a1a1a] hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] active:scale-[0.98] cursor-pointer"
-                    style={{ backgroundColor: '#0A0A0A', borderRadius: '6px' }}
+                    className="px-8 py-4 bg-gradient-to-r from-[var(--color-gold-light)] via-[var(--color-gold)] to-[var(--color-gold-dark)] hover:shadow-[0_0_25px_rgba(208,160,48,0.3)] text-black font-extrabold text-base sm:text-lg flex items-center gap-2 transition-all hover:scale-105 active:scale-[0.98] cursor-pointer"
+                    style={{ borderRadius: '8px' }}
                   >
                     Shop Now <span className="text-xl">→</span>
                   </button>
                 </Link>
                 <Link href="/contact">
                   <button 
-                    className="px-6 sm:px-8 py-3 sm:py-4 font-semibold text-base sm:text-lg transition-all hover:bg-rgba(0,0,0,0.08) active:scale-[0.98] cursor-pointer"
+                    className="px-8 py-4 font-bold text-base sm:text-lg transition-all border-2 border-[var(--color-gold)]/60 text-[var(--color-gold)] hover:text-[var(--color-gold-light)] hover:border-[var(--color-gold)] hover:bg-[var(--color-gold)]/5 hover:scale-105 active:scale-[0.98] cursor-pointer"
                     style={{ 
-                      border: '2px solid #0A0A0A', 
-                      backgroundColor: 'transparent', 
-                      color: '#0A0A0A', 
-                      borderRadius: '6px' 
+                      borderRadius: '8px' 
                     }}
                   >
                     Contact Us

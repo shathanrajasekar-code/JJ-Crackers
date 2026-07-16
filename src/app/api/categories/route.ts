@@ -71,15 +71,18 @@ export async function POST(req: Request) {
     const supabase = createClient(supabaseUrl, supabaseKey);
     const body = await req.json();
 
-    const id = body.id || body.label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    const label = body.label || 'New Category';
+    const cleanLabel = typeof label === 'string' ? label : 'New Category';
+    const baseId = body.id || cleanLabel.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    const id = baseId || 'cat-' + Math.random().toString(36).substring(2, 6);
 
     const { data, error } = await supabase
       .from('categories')
       .insert({
         id,
-        label: body.label,
+        label,
         emoji: body.emoji || '🎆',
-        sort_order: body.sort_order || 0,
+        sort_order: Number(body.sort_order || 0),
       })
       .select()
       .single();
@@ -88,7 +91,8 @@ export async function POST(req: Request) {
     return NextResponse.json(data, { status: 201 });
   } catch (error: any) {
     console.error('Error creating category:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const errMessage = error.message || error.details || (typeof error === 'object' ? JSON.stringify(error) : String(error));
+    return NextResponse.json({ error: errMessage }, { status: 500 });
   }
 }
 
@@ -117,7 +121,7 @@ export async function PUT(req: Request) {
       .update({
         label: updateData.label,
         emoji: updateData.emoji,
-        sort_order: updateData.sort_order,
+        sort_order: Number(updateData.sort_order || 0),
       })
       .eq('id', id)
       .select()
@@ -127,7 +131,8 @@ export async function PUT(req: Request) {
     return NextResponse.json(data);
   } catch (error: any) {
     console.error('Error updating category:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const errMessage = error.message || error.details || (typeof error === 'object' ? JSON.stringify(error) : String(error));
+    return NextResponse.json({ error: errMessage }, { status: 500 });
   }
 }
 

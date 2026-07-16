@@ -44,4 +44,12 @@ next-env.d.ts
 .agents/
 scratch/
 
+# Non-project files
+*.py
+*.zip
+*.xlsx
+*.mp4
+ChatGPT*
+Logo/
+
 .vercel

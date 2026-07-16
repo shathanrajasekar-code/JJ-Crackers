@@ -1,25 +1,16 @@
 'use client';
 
-import React, { useState, useCallback, useEffect, Suspense } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { RealisticFirework } from './RealisticFirework';
-import dynamic from 'next/dynamic';
-
-// Dynamic import of Three.js canvas to keep it out of the initial payload
-const Traditional3DHero = dynamic(
-  () => import('./Traditional3DHero').then(m => m.Traditional3DHero),
-  {
-    ssr: false,
-    loading: () => <div className="absolute inset-0 bg-[#0A0A08] animate-pulse" />
-  }
-);
 
 export function InteractiveHeroWrapper({ children }: { children: React.ReactNode }) {
   const [bursts, setBursts] = useState<Array<{ id: number; x: number; y: number; type: 'burst' | 'fountain' | 'spin' | 'sparkle' }>>([]);
 
   useEffect(() => {
     // Launch festive firework bursts on page entry — lazy load canvas-confetti
-    const duration = 3 * 1000;
+    const isMobile = window.innerWidth < 768;
+    const duration = isMobile ? 2 * 1000 : 3 * 1000;
     const animationEnd = Date.now() + duration;
     const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
     
@@ -31,7 +22,7 @@ export function InteractiveHeroWrapper({ children }: { children: React.ReactNode
         const timeLeft = animationEnd - Date.now();
         if (timeLeft <= 0) return clearInterval(interval);
         
-        const particleCount = 30 * (timeLeft / duration);
+        const particleCount = (isMobile ? 12 : 30) * (timeLeft / duration);
         
         import('canvas-confetti').then((confetti) => {
           confetti.default({
@@ -78,11 +69,10 @@ export function InteractiveHeroWrapper({ children }: { children: React.ReactNode
 
   return (
     <section 
-      className="relative min-h-screen flex flex-col overflow-hidden cursor-crosshair bg-[var(--bg)] transition-colors duration-400" 
+      className="relative min-h-[75vh] sm:min-h-screen flex flex-col overflow-hidden cursor-crosshair bg-[var(--bg)] transition-colors duration-400" 
       onClick={handleHeroClick} 
       id="hero"
     >
-      <Traditional3DHero />
       {children}
       <AnimatePresence>
         {bursts.map(b => (

@@ -192,9 +192,14 @@ export async function POST(req: Request) {
 
     // Product image is no longer required.
 
-    const slug = body.name_en.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') + '-' + Math.random().toString(36).substring(2, 6);
-    const mrp = body.mrp || body.original_price || 0;
-    const price = body.price || body.discounted_price || mrp;
+    const nameEn = body.name_en || body.product_name || 'untitled';
+    const cleanName = typeof nameEn === 'string' ? nameEn : 'untitled';
+    const baseSlug = cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') || 'product';
+    const slug = `${baseSlug}-${Math.random().toString(36).substring(2, 6)}`;
+    const category = body.category || 'single-sound';
+
+    const mrp = Number(body.mrp || body.original_price || 0);
+    const price = Number(body.price || body.discounted_price || mrp);
     let discount_percent = 0;
     if (mrp > 0 && price < mrp) {
       discount_percent = Math.round(((mrp - price) / mrp) * 100);
@@ -203,17 +208,17 @@ export async function POST(req: Request) {
     const { data, error } = await supabase
       .from('products')
       .insert({
-        name_en: body.name_en || body.product_name,
-        name_ta: body.name_ta || body.name_en || body.product_name || '',
+        name_en: nameEn,
+        name_ta: body.name_ta || nameEn,
         slug,
-        category: body.category,
+        category,
         price,
         mrp,
         discount_percent,
         badge_text: discount_percent > 0 ? `🔥 ${discount_percent}% OFF` : null,
         image_url: body.image_url || null,
-        in_stock: body.in_stock !== undefined ? body.in_stock : true,
-        is_featured: body.is_featured || body.featured || false,
+        in_stock: body.in_stock !== undefined ? Boolean(body.in_stock) : true,
+        is_featured: body.is_featured !== undefined ? Boolean(body.is_featured || body.featured) : false,
       })
       .select()
       .single();
@@ -222,7 +227,8 @@ export async function POST(req: Request) {
     return NextResponse.json(data, { status: 201 });
   } catch (error: any) {
     console.error('Error creating product:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const errMessage = error.message || error.details || (typeof error === 'object' ? JSON.stringify(error) : String(error));
+    return NextResponse.json({ error: errMessage }, { status: 500 });
   }
 }
 

@@ -220,7 +220,7 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
           {/* View Toggle & Sort */}
           <div className="flex items-center gap-3">
             {/* View Mode Toggle */}
-            <div className="flex items-center bg-[var(--surface)] border border-[var(--border)] rounded-xl p-1 gap-1">
+            <div className="flex items-center bg-[var(--surface)]/40 backdrop-blur-md border border-[var(--border)]/60 rounded-xl p-1 gap-1">
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-2 rounded-lg transition-all duration-300 cursor-pointer ${viewMode === 'grid' ? 'bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold shadow-md' : 'text-[var(--text-muted)] hover:text-[var(--text)]'}`}
@@ -241,7 +241,7 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
             <div className="relative">
               <button
                 onClick={() => setShowSort(!showSort)}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-sm text-[var(--text-muted)] hover:border-[var(--color-gold)] transition-colors cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--surface)]/40 backdrop-blur-md border border-[var(--border)]/60 text-sm text-[var(--text-muted)] hover:border-[var(--color-gold)] transition-colors cursor-pointer"
               >
                 Sort <ChevronDown size={14} />
               </button>
@@ -249,7 +249,7 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
                 {showSort && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-                    className="absolute right-0 top-full mt-2 w-48 bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-2xl z-20 overflow-hidden"
+                    className="absolute right-0 top-full mt-2 w-48 bg-[var(--surface)]/80 backdrop-blur-lg border border-[var(--border)]/60 rounded-xl shadow-2xl z-20 overflow-hidden"
                   >
                     {sortOptions.map((opt) => (
                       <button key={opt.id} onClick={() => { setSortBy(opt.id); setShowSort(false); }}
