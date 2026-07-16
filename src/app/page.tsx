@@ -39,13 +39,20 @@ export default async function HomePage() {
         </div>
 
         {/* Cinematic 2.5D Background Artwork covering 100% */}
-        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden pointer-events-none">
+        <div className="relative md:absolute md:inset-0 w-full aspect-[2752/1536] md:aspect-auto h-auto md:h-full z-0 overflow-hidden pointer-events-none">
           <CinematicHero25D />
+          {/* Mobile bottom fade to blend image into the page background */}
+          <div 
+            className="block md:hidden absolute inset-x-0 bottom-0 h-16 z-10 pointer-events-none" 
+            style={{ 
+              background: 'linear-gradient(to top, var(--bg) 0%, transparent 100%)' 
+            }} 
+          />
         </div>
 
         {/* Luxury Cinematic Gradient Overlay (Deep Navy blended) */}
         <div 
-          className="absolute inset-0 z-10 pointer-events-none" 
+          className="hidden md:block absolute inset-0 z-10 pointer-events-none" 
           style={{ 
             background: 'linear-gradient(90deg, rgba(6,9,19,0.88) 0%, rgba(6,9,19,0.72) 28%, rgba(6,9,19,0.42) 52%, rgba(6,9,19,0.15) 75%, rgba(6,9,19,0) 100%)' 
           }}
@@ -53,14 +60,14 @@ export default async function HomePage() {
 
         {/* Ambient Top & Bottom fade overlays for seamless blending */}
         <div 
-          className="absolute inset-0 z-10 pointer-events-none" 
+          className="hidden md:block absolute inset-0 z-10 pointer-events-none" 
           style={{ 
             background: 'linear-gradient(to top, var(--bg) 0%, transparent 20%, transparent 80%, rgba(6,9,19,0.45) 100%)' 
           }} 
         />
 
         {/* Hero Content — Floating over background */}
-        <div className="relative z-20 flex-1 w-full h-full max-w-[1360px] mx-auto px-4 sm:px-6 md:px-8 flex items-end sm:items-center justify-center lg:justify-start py-6 pb-10 sm:py-20 lg:py-24">
+        <div className="relative z-20 w-full max-w-[1360px] mx-auto px-4 sm:px-6 md:px-8 flex items-center justify-center lg:justify-start py-6 pb-10 sm:py-20 lg:py-24 mt-[-24px] md:mt-0">
           
           {/* Upgraded High-Fidelity Glassmorphic Text Content Panel */}
           <div className="max-w-[600px] w-full glass-card hover:-translate-y-1.5 hover:scale-[1.01] hover:bg-white/55 dark:hover:bg-[rgba(39,18,18,0.55)] hover:border-[var(--color-gold)]/50 hover:shadow-[var(--shadow-gold-lg)] rounded-2xl sm:rounded-3xl p-4 sm:p-8 lg:p-12 mx-auto lg:mx-0 transition-all duration-500 ease-out">
