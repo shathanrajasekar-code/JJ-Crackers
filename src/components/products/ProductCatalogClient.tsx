@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { SlidersHorizontal, Sparkles, ChevronDown, ChevronUp, LayoutGrid, List } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { SlidersHorizontal, Sparkles, ChevronDown, LayoutGrid, List } from 'lucide-react';
 import { ProductCard } from '@/components/products/ProductCard';
 import type { Product } from '@/lib/supabase/types';
 
@@ -31,42 +31,11 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
   const [searchDebounce, setSearchDebounce] = useState('');
   const [highlightedCategory, setHighlightedCategory] = useState('all');
 
-  // Category sidebar scroll state
-  const catSidebarRef = useRef<HTMLDivElement>(null);
-  const [canScrollUp, setCanScrollUp] = useState(false);
-  const [canScrollDown, setCanScrollDown] = useState(false);
-
-  // Update scroll indicators
-  const updateScrollIndicators = useCallback(() => {
-    const el = catSidebarRef.current;
-    if (!el) return;
-    setCanScrollUp(el.scrollTop > 8);
-    setCanScrollDown(el.scrollTop + el.clientHeight < el.scrollHeight - 8);
-  }, []);
-
-  // Mount + setup scroll observers for the sidebar
   useEffect(() => {
     setMounted(true);
-    // Initial check after render
-    const timer = setTimeout(updateScrollIndicators, 100);
-    return () => clearTimeout(timer);
-  }, [updateScrollIndicators]);
+  }, []);
 
-  // Listen for scroll events on the sidebar
-  useEffect(() => {
-    const el = catSidebarRef.current;
-    if (!el) return;
-    el.addEventListener('scroll', updateScrollIndicators, { passive: true });
-    // Also watch for resize
-    const observer = new ResizeObserver(updateScrollIndicators);
-    observer.observe(el);
-    return () => {
-      el.removeEventListener('scroll', updateScrollIndicators);
-      observer.disconnect();
-    };
-  }, [updateScrollIndicators, mounted]);
-
-  // Background stale-while-revalidate fetch
+  // Background stale-while-revalidate fetch to keep client fresh
   useEffect(() => {
     if (!mounted) return;
 
@@ -90,10 +59,9 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
       }
     };
 
-    // Delay slightly to let initial paint happen first
     const timer = setTimeout(() => {
       fetchLatest();
-    }, 2000);
+    }, 1500);
 
     return () => clearTimeout(timer);
   }, [mounted]);
@@ -129,18 +97,6 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
 
     return () => observer.disconnect();
   }, [activeCategory, initialCategories, mounted]);
-
-  // Auto-scroll the active category button into view inside the sticky container
-  useEffect(() => {
-    const btn = document.getElementById(`cat-btn-${highlightedCategory}`);
-    if (btn) {
-      btn.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'nearest'
-      });
-    }
-  }, [highlightedCategory]);
 
   // Debounce search input
   useEffect(() => {
@@ -188,12 +144,6 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
     if (catId === 'all') return totalProducts;
     if (activeCategory !== 'all') return null;
     return allProducts.filter(p => p.category === catId).length || null;
-  };
-
-  const scrollSidebar = (direction: 'up' | 'down') => {
-    const el = catSidebarRef.current;
-    if (!el) return;
-    el.scrollBy({ top: direction === 'up' ? -120 : 120, behavior: 'smooth' });
   };
 
   return (
@@ -255,30 +205,16 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
       </motion.div>
 
       <div className="flex flex-row gap-3 md:gap-8">
-        {/* Categories Sidebar with scroll indicators */}
+        {/* Extended Categories Sidebar without scroll limitations */}
         <aside className="w-[75px] md:w-48 lg:w-60 flex-shrink-0">
-          <div className="glass-card rounded-xl md:rounded-2xl sticky top-20 md:top-28 flex flex-col" style={{ maxHeight: '80vh' }}>
-            {/* Scroll Up Indicator */}
-            <button
-              onClick={() => scrollSidebar('up')}
-              className={`flex items-center justify-center py-1.5 text-[var(--color-gold)] cursor-pointer transition-all duration-300 hover:bg-[var(--color-gold)]/10 rounded-t-xl md:rounded-t-2xl shrink-0 ${
-                canScrollUp ? 'opacity-100' : 'opacity-0 pointer-events-none h-0 py-0'
-              }`}
-              aria-label="Scroll categories up"
-            >
-              <ChevronUp size={16} />
-            </button>
-
+          <div className="glass-card rounded-xl md:rounded-2xl sticky top-20 md:top-28 p-1 md:p-3 flex flex-col gap-1">
             {/* Category header */}
-            <div className="hidden md:flex items-center gap-1.5 font-bold text-sm px-5 pt-4 pb-2.5 border-b border-[var(--border)] text-[var(--text)] shrink-0">
+            <div className="hidden md:flex items-center gap-1.5 font-bold text-sm px-4 pt-3 pb-2.5 border-b border-[var(--border)] text-[var(--text)]">
               <SlidersHorizontal size={14} className="shrink-0" /> Categories
             </div>
 
-            {/* Scrollable category list */}
-            <div
-              ref={catSidebarRef}
-              className="flex flex-col gap-1 p-1 md:p-3 overflow-y-auto scrollbar-none flex-1"
-            >
+            {/* List naturally extends (no internal scrolling) */}
+            <div className="flex flex-col gap-1 mt-1">
               {initialCategories.map((cat) => {
                 const count = getCategoryCount(cat.id);
                 const isActive = highlightedCategory === cat.id;
@@ -308,17 +244,6 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
                 );
               })}
             </div>
-
-            {/* Scroll Down Indicator */}
-            <button
-              onClick={() => scrollSidebar('down')}
-              className={`flex items-center justify-center py-1.5 text-[var(--color-gold)] cursor-pointer transition-all duration-300 hover:bg-[var(--color-gold)]/10 rounded-b-xl md:rounded-b-2xl shrink-0 ${
-                canScrollDown ? 'opacity-100' : 'opacity-0 pointer-events-none h-0 py-0'
-              }`}
-              aria-label="Scroll categories down"
-            >
-              <ChevronDown size={16} />
-            </button>
           </div>
         </aside>
 
