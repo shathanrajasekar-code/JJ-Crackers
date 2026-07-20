@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SlidersHorizontal, Sparkles, ChevronDown, LayoutGrid, List } from 'lucide-react';
+import { SlidersHorizontal, Sparkles, ChevronDown, ChevronUp, LayoutGrid, List } from 'lucide-react';
 import { ProductCard } from '@/components/products/ProductCard';
 import type { Product } from '@/lib/supabase/types';
 
@@ -31,39 +31,48 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
   const [searchDebounce, setSearchDebounce] = useState('');
   const [highlightedCategory, setHighlightedCategory] = useState('all');
 
-  // Check sessionStorage cache for newer background-fetched data
-  useEffect(() => {
-    setMounted(true);
+  // Category sidebar scroll state
+  const catSidebarRef = useRef<HTMLDivElement>(null);
+  const [canScrollUp, setCanScrollUp] = useState(false);
+  const [canScrollDown, setCanScrollDown] = useState(false);
 
-    if (typeof window !== 'undefined') {
-      try {
-        const cachedStr = sessionStorage.getItem('jj_products_catalog_cache');
-        if (cachedStr) {
-          const { data } = JSON.parse(cachedStr);
-          if (Array.isArray(data)) {
-            const filtered = data.filter((p: any) => {
-              if (p.category === 'giftbox' && (p.name_en || '').toLowerCase().includes('pack')) {
-                return false;
-              }
-              return true;
-            });
-            setAllProducts(filtered);
-            setTotalProducts(filtered.length);
-          }
-        }
-      } catch (e) {
-        console.error('Error reading sessionStorage cache:', e);
-      }
-    }
+  // Update scroll indicators
+  const updateScrollIndicators = useCallback(() => {
+    const el = catSidebarRef.current;
+    if (!el) return;
+    setCanScrollUp(el.scrollTop > 8);
+    setCanScrollDown(el.scrollTop + el.clientHeight < el.scrollHeight - 8);
   }, []);
 
-  // background stale-while-revalidate fetch to keep client fresh
+  // Mount + setup scroll observers for the sidebar
+  useEffect(() => {
+    setMounted(true);
+    // Initial check after render
+    const timer = setTimeout(updateScrollIndicators, 100);
+    return () => clearTimeout(timer);
+  }, [updateScrollIndicators]);
+
+  // Listen for scroll events on the sidebar
+  useEffect(() => {
+    const el = catSidebarRef.current;
+    if (!el) return;
+    el.addEventListener('scroll', updateScrollIndicators, { passive: true });
+    // Also watch for resize
+    const observer = new ResizeObserver(updateScrollIndicators);
+    observer.observe(el);
+    return () => {
+      el.removeEventListener('scroll', updateScrollIndicators);
+      observer.disconnect();
+    };
+  }, [updateScrollIndicators, mounted]);
+
+  // Background stale-while-revalidate fetch
   useEffect(() => {
     if (!mounted) return;
 
     const fetchLatest = async () => {
       try {
-        const res = await fetch('/api/products?limit=500');
+        const res = await fetch('/api/products?limit=1000');
         if (!res.ok) throw new Error('Failed to fetch latest products');
         const data = await res.json();
 
@@ -74,26 +83,8 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
           fetchedList = data.products || [];
         }
 
-        // Save raw data to cache
-        try {
-          sessionStorage.setItem('jj_products_catalog_cache', JSON.stringify({
-            data: fetchedList,
-            timestamp: Date.now()
-          }));
-        } catch (e) {
-          console.error('Error writing to cache:', e);
-        }
-
-        // Filter out combo packs immediately for consistency
-        const filteredList = fetchedList.filter((p: any) => {
-          if (p.category === 'giftbox' && (p.name_en || '').toLowerCase().includes('pack')) {
-            return false;
-          }
-          return true;
-        });
-
-        setAllProducts(filteredList);
-        setTotalProducts(filteredList.length);
+        setAllProducts(fetchedList);
+        setTotalProducts(fetchedList.length);
       } catch (err) {
         console.error('Failed to update products in background:', err);
       }
@@ -157,16 +148,14 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Compute filtered and sorted products instantaneously on the client side
+  // Compute filtered and sorted products
   const products = useMemo(() => {
     let filtered = [...allProducts];
 
-    // Category filter
     if (activeCategory !== 'all') {
       filtered = filtered.filter(p => p.category === activeCategory);
     }
 
-    // Search filter
     if (searchDebounce) {
       const q = searchDebounce.toLowerCase();
       filtered = filtered.filter(p => 
@@ -176,7 +165,6 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
       );
     }
 
-    // Sort
     switch (sortBy) {
       case 'price-low':
         filtered.sort((a, b) => (a.price || 0) - (b.price || 0));
@@ -195,11 +183,17 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
     return filtered;
   }, [allProducts, activeCategory, searchDebounce, sortBy]);
 
-  // Category counts from current products (only when showing all)
+  // Category counts
   const getCategoryCount = (catId: string) => {
     if (catId === 'all') return totalProducts;
-    if (activeCategory !== 'all') return null; // Don't show counts when filtered
-    return products.filter(p => p.category === catId).length || null;
+    if (activeCategory !== 'all') return null;
+    return allProducts.filter(p => p.category === catId).length || null;
+  };
+
+  const scrollSidebar = (direction: 'up' | 'down') => {
+    const el = catSidebarRef.current;
+    if (!el) return;
+    el.scrollBy({ top: direction === 'up' ? -120 : 120, behavior: 'smooth' });
   };
 
   return (
@@ -245,34 +239,46 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
               >
                 Sort <ChevronDown size={14} />
               </button>
-              <AnimatePresence>
-                {showSort && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-                    className="absolute right-0 top-full mt-2 w-48 bg-[var(--surface)]/80 backdrop-blur-lg border border-[var(--border)]/60 rounded-xl shadow-2xl z-20 overflow-hidden"
-                  >
-                    {sortOptions.map((opt) => (
-                      <button key={opt.id} onClick={() => { setSortBy(opt.id); setShowSort(false); }}
-                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer ${sortBy === opt.id ? 'bg-[var(--color-gold)]/10 text-[var(--color-gold)] font-bold' : 'text-[var(--text-muted)] hover:bg-[var(--surface-high)]'}`}>
-                        {opt.label}
-                      </button>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {showSort && (
+                <div className="absolute right-0 top-full mt-2 w-48 bg-[var(--surface)]/80 backdrop-blur-lg border border-[var(--border)]/60 rounded-xl shadow-2xl z-20 overflow-hidden animate-fade-in">
+                  {sortOptions.map((opt) => (
+                    <button key={opt.id} onClick={() => { setSortBy(opt.id); setShowSort(false); }}
+                      className={`w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer ${sortBy === opt.id ? 'bg-[var(--color-gold)]/10 text-[var(--color-gold)] font-bold' : 'text-[var(--text-muted)] hover:bg-[var(--surface-high)]'}`}>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
       </motion.div>
 
       <div className="flex flex-row gap-3 md:gap-8">
-        {/* Categories Sidebar */}
+        {/* Categories Sidebar with scroll indicators */}
         <aside className="w-[75px] md:w-48 lg:w-60 flex-shrink-0">
-          <div className="glass-card rounded-xl md:rounded-2xl p-1 md:p-5 sticky top-20 md:top-28 max-h-[80vh] overflow-y-auto scrollbar-none">
-            <div className="hidden md:flex items-center gap-1.5 font-bold text-sm mb-4 border-b border-[var(--border)] pb-2.5 text-[var(--text)]">
+          <div className="glass-card rounded-xl md:rounded-2xl sticky top-20 md:top-28 flex flex-col" style={{ maxHeight: '80vh' }}>
+            {/* Scroll Up Indicator */}
+            <button
+              onClick={() => scrollSidebar('up')}
+              className={`flex items-center justify-center py-1.5 text-[var(--color-gold)] cursor-pointer transition-all duration-300 hover:bg-[var(--color-gold)]/10 rounded-t-xl md:rounded-t-2xl shrink-0 ${
+                canScrollUp ? 'opacity-100' : 'opacity-0 pointer-events-none h-0 py-0'
+              }`}
+              aria-label="Scroll categories up"
+            >
+              <ChevronUp size={16} />
+            </button>
+
+            {/* Category header */}
+            <div className="hidden md:flex items-center gap-1.5 font-bold text-sm px-5 pt-4 pb-2.5 border-b border-[var(--border)] text-[var(--text)] shrink-0">
               <SlidersHorizontal size={14} className="shrink-0" /> Categories
             </div>
-            <div className="flex flex-col gap-1">
+
+            {/* Scrollable category list */}
+            <div
+              ref={catSidebarRef}
+              className="flex flex-col gap-1 p-1 md:p-3 overflow-y-auto scrollbar-none flex-1"
+            >
               {initialCategories.map((cat) => {
                 const count = getCategoryCount(cat.id);
                 const isActive = highlightedCategory === cat.id;
@@ -302,17 +308,28 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
                 );
               })}
             </div>
+
+            {/* Scroll Down Indicator */}
+            <button
+              onClick={() => scrollSidebar('down')}
+              className={`flex items-center justify-center py-1.5 text-[var(--color-gold)] cursor-pointer transition-all duration-300 hover:bg-[var(--color-gold)]/10 rounded-b-xl md:rounded-b-2xl shrink-0 ${
+                canScrollDown ? 'opacity-100' : 'opacity-0 pointer-events-none h-0 py-0'
+              }`}
+              aria-label="Scroll categories down"
+            >
+              <ChevronDown size={16} />
+            </button>
           </div>
         </aside>
 
         {/* Product Grid Container */}
         <div className="flex-1">
           {/* Results count */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-6">
             <span className="text-sm text-[var(--text-muted)]">
               Showing <span className="font-bold text-[var(--text)]">{products.length}</span> of <span className="font-bold text-[var(--text)]">{totalProducts}</span> products
             </span>
-          </motion.div>
+          </div>
 
           {products.length > 0 ? (
             activeCategory === 'all' ? (
@@ -382,7 +399,7 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
               </section>
             )
           ) : (
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="glass-card rounded-2xl p-16 text-center">
+            <div className="glass-card rounded-2xl p-16 text-center animate-fade-in">
               <div className="text-5xl mb-4">🔍</div>
               <h3 className="text-xl font-bold font-display mb-2">No products found</h3>
               <p className="text-[var(--text-muted)] text-sm mb-4">Try adjusting your search or filter criteria</p>
@@ -390,7 +407,7 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
                 className="px-4 py-2 rounded-lg bg-[var(--color-gold)] text-[#1a1400] font-bold text-sm cursor-pointer">
                 Clear Filters
               </button>
-            </motion.div>
+            </div>
           )}
         </div>
       </div>

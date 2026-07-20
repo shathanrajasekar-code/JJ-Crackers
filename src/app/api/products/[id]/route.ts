@@ -85,14 +85,31 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
     if (!supabaseUrl || supabaseUrl.includes('your_supabase')) {
-      return NextResponse.json({ error: 'Not configured' }, { status: 400 });
+      return NextResponse.json({ error: 'Supabase not configured' }, { status: 400 });
+    }
+    if (!supabaseKey) {
+      return NextResponse.json({ error: 'SUPABASE_SERVICE_ROLE_KEY not set. Admin operations require the service role key.' }, { status: 400 });
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
-    const { error } = await supabase.from('products').delete().eq('id', id);
-    if (error) throw error;
-    return NextResponse.json({ success: true });
+    const { data, error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', id)
+      .select();
+
+    if (error) {
+      console.error('Supabase delete error:', error);
+      throw error;
+    }
+
+    if (!data || data.length === 0) {
+      return NextResponse.json({ error: 'Product not found or already deleted' }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, deleted: data[0] });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('Error deleting product:', error);
+    return NextResponse.json({ error: error.message || 'Failed to delete product' }, { status: 500 });
   }
 }

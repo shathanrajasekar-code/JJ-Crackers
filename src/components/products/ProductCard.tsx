@@ -1,8 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
 import { Plus, Minus, ShoppingCart, Leaf, Check } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, memo } from 'react';
 import Image from 'next/image';
 import { useEnquiryStore } from '@/lib/store/enquiryStore';
 import type { Product } from '@/lib/supabase/types';
@@ -12,7 +11,7 @@ interface ProductCardProps {
   viewMode?: 'grid' | 'list';
 }
 
-export function ProductCard({ product, viewMode = 'grid' }: ProductCardProps) {
+function ProductCardInner({ product, viewMode = 'grid' }: ProductCardProps) {
   const items = useEnquiryStore((state) => state.items);
   const [isAdded, setIsAdded] = useState(false);
 
@@ -31,10 +30,8 @@ export function ProductCard({ product, viewMode = 'grid' }: ProductCardProps) {
 
   if (viewMode === 'list') {
     return (
-      <motion.div
-        whileHover={product.in_stock ? { x: 4 } : {}}
-        transition={{ duration: 0.2 }}
-        className={`glass-card rounded-2xl p-3 sm:p-4 flex gap-3 sm:gap-6 items-center relative transition-opacity duration-300 ${!product.in_stock ? 'opacity-75' : ''}`}
+      <div
+        className={`glass-card rounded-2xl p-3 sm:p-4 flex gap-3 sm:gap-6 items-center relative transition-all duration-200 hover:translate-x-1 ${!product.in_stock ? 'opacity-75' : ''}`}
       >
         {/* Badges */}
         <div className="absolute top-2 left-2 z-10 flex flex-col gap-0.5 pointer-events-none">
@@ -113,10 +110,9 @@ export function ProductCard({ product, viewMode = 'grid' }: ProductCardProps) {
               </button>
             </div>
           ) : (
-            <motion.button
+            <button
               onClick={handleAdd}
-              whileTap={{ scale: 0.95 }}
-              className={`w-full h-8 sm:h-9 rounded-lg flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold transition-all duration-300 ${
+              className={`w-full h-8 sm:h-9 rounded-lg flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold transition-all duration-300 active:scale-95 cursor-pointer ${
                 isAdded
                   ? 'bg-emerald-500 text-white shadow-md'
                   : 'bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] hover:shadow-md'
@@ -127,18 +123,16 @@ export function ProductCard({ product, viewMode = 'grid' }: ProductCardProps) {
               ) : (
                 <><ShoppingCart size={10} /> Add</>
               )}
-            </motion.button>
+            </button>
           )}
         </div>
-      </motion.div>
+      </div>
     );
   }
 
   return (
-    <motion.div
-      whileHover={product.in_stock ? { y: -8 } : {}}
-      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-      className={`glass-card rounded-2xl overflow-hidden flex flex-col group relative transition-opacity duration-300 ${!product.in_stock ? 'opacity-75' : ''}`}
+    <div
+      className={`glass-card rounded-2xl overflow-hidden flex flex-col group relative transition-all duration-300 hover:-translate-y-2 ${!product.in_stock ? 'opacity-75' : ''}`}
     >
       {/* Badges */}
       <div className="absolute top-2 left-2 sm:top-3 sm:left-3 z-10 flex flex-col gap-1">
@@ -236,10 +230,9 @@ export function ProductCard({ product, viewMode = 'grid' }: ProductCardProps) {
               </div>
             ) : (
               /* Clean "Add" Button */
-              <motion.button
+              <button
                 onClick={handleAdd}
-                whileTap={{ scale: 0.95 }}
-                className={`w-full h-8 sm:h-9 rounded-lg flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-bold transition-all duration-300 ${
+                className={`w-full h-8 sm:h-9 rounded-lg flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-bold transition-all duration-300 active:scale-95 cursor-pointer ${
                   isAdded
                     ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]'
                     : 'bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]'
@@ -250,11 +243,14 @@ export function ProductCard({ product, viewMode = 'grid' }: ProductCardProps) {
                 ) : (
                   <><ShoppingCart size={12} className="sm:w-3.5 sm:h-3.5" /> Add</>
                 )}
-              </motion.button>
+              </button>
             )}
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
+
+// React.memo prevents re-renders when parent re-renders but this product hasn't changed
+export const ProductCard = memo(ProductCardInner);

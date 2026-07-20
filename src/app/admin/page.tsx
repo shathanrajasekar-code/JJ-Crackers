@@ -453,6 +453,8 @@ export default function AdminPage() {
   const [seeding, setSeeding] = useState(false);
   const [seedComboStatus, setSeedComboStatus] = useState('');
   const [seedingCombos, setSeedingCombos] = useState(false);
+  const [cleanupStatus, setCleanupStatus] = useState('');
+  const [cleaning, setCleaning] = useState(false);
 
   // CRUD Forms States
   const [productFormOpen, setProductFormOpen] = useState(false);
@@ -699,6 +701,25 @@ export default function AdminPage() {
       setSeedComboStatus('❌ Combo seed operation failed'); 
     }
     setSeedingCombos(false);
+  };
+
+  const handleCleanupDatabase = async () => {
+    setCleaning(true);
+    setCleanupStatus('Cleaning up duplicate combos, remapping products & syncing categories...');
+    try {
+      const res = await adminFetch('/api/admin/cleanup', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        setCleanupStatus(`✅ Cleanup complete! See details in console or reload page.`);
+        showSuccess('🎉 Supabase database cleanup completed successfully!');
+        fetchData();
+      } else {
+        setCleanupStatus(`❌ Failed: ${data.error}`);
+      }
+    } catch (err: any) {
+      setCleanupStatus(`❌ Error: ${err.message || 'Connection failed'}`);
+    }
+    setCleaning(false);
   };
 
   const handleDeleteCombo = (id: string, name: string) => {
@@ -1901,6 +1922,30 @@ export default function AdminPage() {
                 </div>
                 {seedStatus && (
                   <p className="mt-3 text-xs font-semibold text-[var(--color-gold)]">{seedStatus}</p>
+                )}
+              </div>
+
+              {/* Database Maintenance and Cleanup Card */}
+              <div className="bg-gradient-to-r from-emerald-500/5 via-transparent to-transparent border border-emerald-500/25 rounded-2xl p-6 mt-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div>
+                    <h3 className="font-bold text-sm flex items-center gap-2 text-[#F5F5F0]">
+                      <Cpu size={16} className="text-emerald-400" /> Database Maintenance & Sync Categories
+                    </h3>
+                    <p className="text-xs text-[#A0A090] mt-1">Cleans up duplicate combo packs, updates the categories to the 20 new standard sections, and remaps all products automatically.</p>
+                  </div>
+                  <button 
+                    type="button"
+                    onClick={handleCleanupDatabase} 
+                    disabled={cleaning} 
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-bold text-xs disabled:opacity-50 flex items-center gap-2 hover:shadow-[0_0_15px_rgba(16,185,129,0.25)] transition-all shrink-0 cursor-pointer"
+                  >
+                    {cleaning ? <RefreshCw size={13} className="animate-spin" /> : <Database size={13} />}
+                    {cleaning ? 'Cleaning Up...' : 'Cleanup & Sync Database'}
+                  </button>
+                </div>
+                {cleanupStatus && (
+                  <p className="mt-3 text-xs font-semibold text-emerald-400">{cleanupStatus}</p>
                 )}
               </div>
 

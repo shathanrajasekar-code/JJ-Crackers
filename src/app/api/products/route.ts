@@ -11,7 +11,7 @@ export async function GET(req: Request) {
     const category = searchParams.get('category');
     const search = searchParams.get('search');
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '200');
+    const limit = parseInt(searchParams.get('limit') || '500');
     const sortBy = searchParams.get('sort') || 'default';
     const isAdmin = searchParams.get('admin') === 'true';
 
@@ -22,12 +22,9 @@ export async function GET(req: Request) {
     if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.includes('your_supabase')) {
       let filtered = [...staticProducts];
 
-      // Category filter
       if (category && category !== 'all') {
         filtered = filtered.filter(p => p.category === category);
       }
-
-      // Search filter
       if (search) {
         const q = search.toLowerCase();
         filtered = filtered.filter(p =>
@@ -35,8 +32,6 @@ export async function GET(req: Request) {
           p.category.toLowerCase().includes(q)
         );
       }
-
-      // Sort
       switch (sortBy) {
         case 'price-low': filtered.sort((a, b) => a.price - b.price); break;
         case 'price-high': filtered.sort((a, b) => b.price - a.price); break;
@@ -44,19 +39,9 @@ export async function GET(req: Request) {
         case 'discount': filtered.sort((a, b) => (b.discount_percent || 0) - (a.discount_percent || 0)); break;
       }
 
-      // Pagination or Per-category Limit
-      let paginated = [];
-      let total = 0;
-      if (isAdmin) {
-        // Admin gets ALL products
-        total = filtered.length;
-        const start = (page - 1) * limit;
-        paginated = filtered.slice(start, start + limit);
-      } else {
-        total = filtered.length;
-        const start = (page - 1) * limit;
-        paginated = filtered.slice(start, start + limit);
-      }
+      const total = filtered.length;
+      const start = (page - 1) * limit;
+      const paginated = filtered.slice(start, start + limit);
 
       return NextResponse.json({
         products: paginated,
@@ -67,59 +52,9 @@ export async function GET(req: Request) {
       });
     }
 
-    // Supabase connected
+    // Supabase connected — single clean query path
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-    if (isAdmin || (category && category !== 'all')) {
-      // Admin or specific category: return all with pagination
-      let query = supabase
-        .from('products')
-        .select('id,name_en,name_ta,slug,category,price,mrp,discount_percent,badge_text,image_url,in_stock,is_featured,is_eco_friendly,sort_order', { count: 'exact' });
-
-      if (category && category !== 'all') {
-        query = query.eq('category', category);
-      }
-
-      // Search filter
-      if (search) {
-        query = query.or(`name_en.ilike.%${search}%,category.ilike.%${search}%`);
-      }
-
-      // Sort
-      switch (sortBy) {
-        case 'price-low': query = query.order('price', { ascending: true }); break;
-        case 'price-high': query = query.order('price', { ascending: false }); break;
-        case 'name': query = query.order('name_en', { ascending: true }); break;
-        case 'discount': query = query.order('discount_percent', { ascending: false }); break;
-        default: query = query.order('category', { ascending: true }).order('price', { ascending: true });
-      }
-
-      // Pagination
-      const start = (page - 1) * limit;
-      query = query.range(start, start + limit - 1);
-
-      const { data, error, count } = await query;
-      if (error) throw error;
-
-      const total = count || 0;
-      const responseHeaders: Record<string, string> = {};
-      if (!isAdmin) {
-        responseHeaders['Cache-Control'] = 'public, s-maxage=30, stale-while-revalidate=300';
-      } else {
-        responseHeaders['Cache-Control'] = 'no-store, max-age=0, must-revalidate';
-      }
-      return NextResponse.json({
-        products: data || [],
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      }, {
-        headers: responseHeaders
-      });
-    }
-
-    // Supabase connected & specific category filtered
     let query = supabase
       .from('products')
       .select('id,name_en,name_ta,slug,category,price,mrp,discount_percent,badge_text,image_url,in_stock,is_featured,is_eco_friendly,sort_order', { count: 'exact' });
@@ -128,29 +63,32 @@ export async function GET(req: Request) {
       query = query.eq('category', category);
     }
 
-    // Search filter
     if (search) {
       query = query.or(`name_en.ilike.%${search}%,category.ilike.%${search}%`);
     }
 
-    // Sort
     switch (sortBy) {
       case 'price-low': query = query.order('price', { ascending: true }); break;
       case 'price-high': query = query.order('price', { ascending: false }); break;
       case 'name': query = query.order('name_en', { ascending: true }); break;
       case 'discount': query = query.order('discount_percent', { ascending: false }); break;
-      default: query = query.order('category', { ascending: true }).order('price', { ascending: true });
+      default: query = query.order('sort_order', { ascending: true }).order('category', { ascending: true }).order('price', { ascending: true });
     }
 
-    // Pagination
     const start = (page - 1) * limit;
     query = query.range(start, start + limit - 1);
 
     const { data, error, count } = await query;
-
     if (error) throw error;
 
     const total = count || 0;
+    const responseHeaders: Record<string, string> = {};
+    if (isAdmin) {
+      responseHeaders['Cache-Control'] = 'no-store, max-age=0, must-revalidate';
+    } else {
+      responseHeaders['Cache-Control'] = 'public, s-maxage=30, stale-while-revalidate=300';
+    }
+
     return NextResponse.json({
       products: data || [],
       total,
@@ -158,18 +96,15 @@ export async function GET(req: Request) {
       limit,
       totalPages: Math.ceil(total / limit),
     }, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=300'
-      }
+      headers: responseHeaders
     });
   } catch (error) {
     console.error('Error fetching products:', error);
-    // Fallback to static data on any error
     return NextResponse.json({
       products: staticProducts,
       total: staticProducts.length,
       page: 1,
-      limit: 200,
+      limit: 500,
       totalPages: 1,
     });
   }
@@ -189,8 +124,6 @@ export async function POST(req: Request) {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
     const body = await req.json();
-
-    // Product image is no longer required.
 
     const nameEn = body.name_en || body.product_name || 'untitled';
     const cleanName = typeof nameEn === 'string' ? nameEn : 'untitled';
@@ -269,4 +202,3 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-
