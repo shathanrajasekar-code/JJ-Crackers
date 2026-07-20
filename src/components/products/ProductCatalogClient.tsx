@@ -223,6 +223,7 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
                     key={cat.id}
                     id={`cat-btn-${cat.id}`}
                     onClick={() => setActiveCategory(cat.id)}
+                    style={{ cursor: 'pointer' }}
                     className={`text-center md:text-left px-1 py-2 md:px-3 md:py-2 rounded-lg text-sm transition-all flex flex-col md:flex-row items-center md:justify-between cursor-pointer ${
                       isActive
                         ? 'bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold shadow-sm'
@@ -233,13 +234,17 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
                       <span className="text-sm shrink-0">{cat.emoji}</span>
                       <span className="text-[9px] md:text-sm truncate leading-tight md:leading-normal">{cat.label.replace(' Products', '')}</span>
                     </span>
-                    {count !== null && count > 0 && (
+                    {isActive ? (
+                      <span className="text-xs font-black shrink-0 hidden md:inline-block animate-pulse">
+                        ➔
+                      </span>
+                    ) : count !== null && count > 0 ? (
                       <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0 hidden md:inline-block ${
                         isActive ? 'bg-[#1a1400]/20' : 'bg-[var(--surface-high)]'
                       }`}>
                         {count}
                       </span>
-                    )}
+                    ) : null}
                   </button>
                 );
               })}
