@@ -31,7 +31,7 @@ function ProductCardInner({ product, viewMode = 'grid' }: ProductCardProps) {
   if (viewMode === 'list') {
     return (
       <div
-        className={`glass-card rounded-2xl p-3 sm:p-4 flex gap-3 sm:gap-6 items-center relative transition-all duration-200 hover:translate-x-1 ${!product.in_stock ? 'opacity-75' : ''}`}
+        className={`glass-card rounded-2xl p-3 sm:p-4 relative transition-all duration-200 hover:translate-x-1 ${!product.in_stock ? 'opacity-75' : ''}`}
       >
         {/* Badges */}
         <div className="absolute top-2 left-2 z-10 flex flex-col gap-0.5 pointer-events-none">
@@ -40,71 +40,116 @@ function ProductCardInner({ product, viewMode = 'grid' }: ProductCardProps) {
               {product.badge_text}
             </span>
           )}
+          {product.discount_percent && product.discount_percent > 0 && (
+            <span className="bg-[#F43F5E] text-white text-[6px] sm:text-[8px] font-black px-1.5 py-0.5 rounded-full shadow-sm">
+              {product.discount_percent}% OFF
+            </span>
+          )}
         </div>
 
-        {/* Image */}
-        <div className="relative w-20 h-20 sm:w-28 sm:h-28 rounded-xl bg-[var(--surface-high)] overflow-hidden flex-shrink-0 border border-[var(--border)]/30">
-          {product.image_url ? (
-            <Image
-              src={product.image_url}
-              alt={product.name_en}
-              fill
-              sizes="120px"
-              className="object-cover"
-              loading="lazy"
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center shimmer">
-              <span className="text-xl opacity-30">🎇</span>
+        {/* Row 1: Image + Content + Desktop Action Button */}
+        <div className="flex gap-3 sm:gap-6 items-center">
+          {/* Image */}
+          <div className="relative w-20 h-20 sm:w-28 sm:h-28 rounded-xl bg-[var(--surface-high)] overflow-hidden flex-shrink-0 border border-[var(--border)]/30">
+            {product.image_url ? (
+              <Image
+                src={product.image_url}
+                alt={product.name_en}
+                fill
+                sizes="120px"
+                className="object-cover"
+                loading="lazy"
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center shimmer">
+                <span className="text-xl opacity-30">🎇</span>
+              </div>
+            )}
+          </div>
+
+          {/* Content Details */}
+          <div className="flex-grow min-w-0 pr-2">
+            <span className="text-[8px] sm:text-[9px] text-[var(--color-gold)] font-bold uppercase tracking-[0.12em] block mb-0.5 sm:mb-1">
+              {product.category}
+            </span>
+            <h3 className="text-xs sm:text-base font-bold text-[var(--text)] leading-snug line-clamp-1 hover:text-[var(--color-gold)] transition-colors">
+              {product.name_en}
+            </h3>
+            {product.name_ta && (
+              <p className="text-[10px] sm:text-xs text-[var(--text-muted)] truncate mt-0.5">
+                {product.name_ta}
+              </p>
+            )}
+
+            <div className="flex items-center gap-1.5 sm:gap-2 mt-2">
+              <span className="text-sm sm:text-lg font-bold text-[var(--text)]">₹{product.price}</span>
+              <span className="text-[9px] sm:text-xs text-[var(--text-muted)] line-through">₹{product.mrp}</span>
             </div>
-          )}
-        </div>
+          </div>
 
-        {/* Content Details */}
-        <div className="flex-grow min-w-0 pr-2">
-          <span className="text-[8px] sm:text-[9px] text-[var(--color-gold)] font-bold uppercase tracking-[0.12em] block mb-0.5 sm:mb-1">
-            {product.category}
-          </span>
-          <h3 className="text-xs sm:text-base font-bold text-[var(--text)] leading-snug line-clamp-1 hover:text-[var(--color-gold)] transition-colors">
-            {product.name_en}
-          </h3>
-          {product.name_ta && (
-            <p className="text-[10px] sm:text-xs text-[var(--text-muted)] truncate mt-0.5">
-              {product.name_ta}
-            </p>
-          )}
-
-          <div className="flex items-center gap-1.5 sm:gap-2 mt-2">
-            <span className="text-sm sm:text-lg font-bold text-[var(--text)]">₹{product.price}</span>
-            <span className="text-[9px] sm:text-xs text-[var(--text-muted)] line-through">₹{product.mrp}</span>
-            {product.discount_percent && product.discount_percent > 0 && (
-              <span className="text-[8px] sm:text-[10px] font-black bg-[#F43F5E]/10 text-[#F43F5E] px-1.5 py-0.5 rounded">
-                {product.discount_percent}% OFF
+          {/* Desktop Action Button (hidden on mobile) */}
+          <div className="hidden sm:flex flex-shrink-0 w-32">
+            {!product.in_stock ? (
+              <span className="w-full h-9 bg-[var(--surface-high)] text-[var(--text-muted)] border border-[var(--border)] rounded-lg flex items-center justify-center text-xs font-bold opacity-60">
+                Out of Stock
               </span>
+            ) : inCartQty > 0 ? (
+              <div className="flex items-center justify-between bg-[var(--surface-high)] rounded-lg border border-[var(--border)] overflow-hidden h-9 w-full shadow-sm">
+                <button
+                  onClick={() => updateQuantity(product.id, inCartQty - 1)}
+                  className="w-9 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)]"
+                >
+                  <Minus size={10} />
+                </button>
+                <div className="flex-grow text-center text-xs font-bold text-[var(--text)] h-full flex items-center justify-center border-x border-[var(--border)] select-none">
+                  {inCartQty}
+                </div>
+                <button
+                  onClick={() => updateQuantity(product.id, inCartQty + 1)}
+                  className="w-9 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)]"
+                >
+                  <Plus size={10} />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleAdd}
+                className={`w-full h-9 rounded-lg flex items-center justify-center gap-1 text-xs font-bold transition-all duration-300 active:scale-95 cursor-pointer ${
+                  isAdded
+                    ? 'bg-emerald-500 text-white shadow-md'
+                    : 'bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] hover:shadow-md'
+                }`}
+              >
+                {isAdded ? (
+                  <><Check size={10} /> Added</>
+                ) : (
+                  <><ShoppingCart size={10} /> Add to Cart</>
+                )}
+              </button>
             )}
           </div>
         </div>
 
-        {/* Action Button Area */}
-        <div className="flex-shrink-0 w-24 sm:w-32">
+        {/* Row 2: Mobile-only full-width action button */}
+        <div className="flex sm:hidden mt-1.5 w-full">
           {!product.in_stock ? (
-            <span className="w-full h-8 sm:h-9 bg-[var(--surface-high)] text-[var(--text-muted)] border border-[var(--border)] rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-bold opacity-60">
+            <span className="w-full min-h-[34px] h-[34px] bg-[var(--surface-high)] text-[var(--text-muted)] border border-[var(--border)] rounded-lg flex items-center justify-center text-[11px] font-bold opacity-60">
               Out of Stock
             </span>
           ) : inCartQty > 0 ? (
-            <div className="flex items-center justify-between bg-[var(--surface-high)] rounded-lg border border-[var(--border)] overflow-hidden h-8 sm:h-9 w-full shadow-sm">
+            <div className="flex items-center justify-between bg-[var(--surface-high)] rounded-lg border border-[var(--border)] overflow-hidden min-h-[34px] h-[34px] w-full shadow-sm">
               <button
                 onClick={() => updateQuantity(product.id, inCartQty - 1)}
-                className="w-7 sm:w-9 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)]"
+                className="w-9 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)]"
               >
                 <Minus size={10} />
               </button>
-              <div className="flex-grow text-center text-[10px] sm:text-xs font-bold text-[var(--text)] h-full flex items-center justify-center border-x border-[var(--border)] select-none">
+              <div className="flex-grow text-center text-[11px] font-bold text-[var(--text)] h-full flex items-center justify-center border-x border-[var(--border)] select-none">
                 {inCartQty}
               </div>
               <button
                 onClick={() => updateQuantity(product.id, inCartQty + 1)}
-                className="w-7 sm:w-9 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)]"
+                className="w-9 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)]"
               >
                 <Plus size={10} />
               </button>
@@ -112,7 +157,7 @@ function ProductCardInner({ product, viewMode = 'grid' }: ProductCardProps) {
           ) : (
             <button
               onClick={handleAdd}
-              className={`w-full h-8 sm:h-9 rounded-lg flex items-center justify-center gap-1 text-[10px] sm:text-xs font-bold transition-all duration-300 active:scale-95 cursor-pointer ${
+              className={`w-full min-h-[34px] h-[34px] rounded-lg flex items-center justify-center gap-1 text-[11px] font-black transition-all duration-300 active:scale-95 cursor-pointer ${
                 isAdded
                   ? 'bg-emerald-500 text-white shadow-md'
                   : 'bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] hover:shadow-md'
@@ -121,7 +166,7 @@ function ProductCardInner({ product, viewMode = 'grid' }: ProductCardProps) {
               {isAdded ? (
                 <><Check size={10} /> Added</>
               ) : (
-                <><ShoppingCart size={10} /> Add</>
+                <><ShoppingCart size={10} /> Add to Cart</>
               )}
             </button>
           )}
@@ -132,7 +177,7 @@ function ProductCardInner({ product, viewMode = 'grid' }: ProductCardProps) {
 
   return (
     <div
-      className={`glass-card rounded-2xl overflow-hidden flex flex-col group relative transition-all duration-300 hover:-translate-y-2 ${!product.in_stock ? 'opacity-75' : ''}`}
+      className={`glass-card rounded-2xl flex flex-col group relative transition-all duration-300 hover:-translate-y-2 ${!product.in_stock ? 'opacity-75' : ''}`}
     >
       {/* Badges */}
       <div className="absolute top-2 left-2 sm:top-3 sm:left-3 z-10 flex flex-col gap-1">
@@ -168,7 +213,7 @@ function ProductCardInner({ product, viewMode = 'grid' }: ProductCardProps) {
       </div>
 
       {/* Image */}
-      <div className="relative w-full pt-[100%] bg-[var(--surface-high)] overflow-hidden">
+      <div className="relative w-full pt-[100%] bg-[var(--surface-high)] overflow-hidden rounded-t-2xl">
         {product.image_url ? (
           <Image
             src={product.image_url}
@@ -204,21 +249,21 @@ function ProductCardInner({ product, viewMode = 'grid' }: ProductCardProps) {
             <span className="text-[10px] sm:text-xs text-[var(--text-muted)] line-through mb-0.5">₹{product.mrp}</span>
           </div>
 
-          <div className="flex items-center w-full">
+          <div className="flex items-center w-full shrink-0">
             {!product.in_stock ? (
-              <span className="w-full h-8 sm:h-9 bg-[var(--surface-high)] text-[var(--text-muted)] border border-[var(--border)] rounded-lg flex items-center justify-center text-[11px] sm:text-xs font-bold opacity-60">
+              <span className="w-full min-h-[34px] sm:h-9 bg-[var(--surface-high)] text-[var(--text-muted)] border border-[var(--border)] rounded-lg flex items-center justify-center text-[10px] sm:text-xs font-bold opacity-60">
                 Out of Stock
               </span>
             ) : inCartQty > 0 ? (
               /* Inline Quantity Controller directly on the card */
-              <div className="flex items-center justify-between bg-[var(--surface-high)] rounded-lg border border-[var(--border)] overflow-hidden h-8 sm:h-9 w-full shadow-sm">
+              <div className="flex items-center justify-between bg-[var(--surface-high)] rounded-lg border border-[var(--border)] overflow-hidden min-h-[34px] sm:h-9 w-full shrink-0 shadow-sm">
                 <button
                   onClick={() => updateQuantity(product.id, inCartQty - 1)}
                   className="w-8 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)]"
                 >
                   <Minus size={10} className="sm:w-3 sm:h-3" />
                 </button>
-                <div className="flex-grow text-center text-[11px] sm:text-xs font-bold text-[var(--text)] h-full flex items-center justify-center border-x border-[var(--border)] select-none">
+                <div className="flex-grow text-center text-[10px] sm:text-xs font-bold text-[var(--text)] h-full flex items-center justify-center border-x border-[var(--border)] select-none">
                   {inCartQty}
                 </div>
                 <button
@@ -232,7 +277,7 @@ function ProductCardInner({ product, viewMode = 'grid' }: ProductCardProps) {
               /* Clean "Add" Button */
               <button
                 onClick={handleAdd}
-                className={`w-full h-8 sm:h-9 rounded-lg flex items-center justify-center gap-1 sm:gap-1.5 text-[11px] sm:text-xs font-bold transition-all duration-300 active:scale-95 cursor-pointer ${
+                className={`w-full min-h-[34px] sm:h-9 shrink-0 rounded-lg flex items-center justify-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs font-bold transition-all duration-300 active:scale-95 cursor-pointer ${
                   isAdded
                     ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]'
                     : 'bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] hover:shadow-[0_0_20px_rgba(212,175,55,0.4)]'
@@ -241,7 +286,7 @@ function ProductCardInner({ product, viewMode = 'grid' }: ProductCardProps) {
                 {isAdded ? (
                   <><Check size={12} className="sm:w-3.5 sm:h-3.5" /> Added</>
                 ) : (
-                  <><ShoppingCart size={12} className="sm:w-3.5 sm:h-3.5" /> Add</>
+                  <><ShoppingCart size={12} className="sm:w-3.5 sm:h-3.5" /> <span className="sm:hidden">Add</span><span className="hidden sm:inline">Add to Cart</span></>
                 )}
               </button>
             )}

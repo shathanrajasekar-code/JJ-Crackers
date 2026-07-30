@@ -725,32 +725,69 @@ export default function EnquiryPage() {
           <h1 className="text-3xl font-bold font-display mb-8">Your Details</h1>
           <form onSubmit={(e) => { 
             e.preventDefault(); 
-            if (customerInfo.phone.length !== 10) {
-              setSubmitError('Mobile Number must be exactly 10 digits.');
+            const trimmedName = (customerInfo.name || '').trim();
+            if (!trimmedName) {
+              setSubmitError('Customer Name is required.');
               return;
             }
-            if (customerInfo.pincode.length !== 6) {
+            const cleanPhone = (customerInfo.phone || '').replace(/\D/g, '');
+            if (!cleanPhone) {
+              setSubmitError('Phone Number is required.');
+              return;
+            }
+            if (cleanPhone.length !== 10) {
+              setSubmitError('Phone Number must be exactly 10 digits.');
+              return;
+            }
+            const trimmedAddress = (customerInfo.address || '').trim();
+            if (!trimmedAddress) {
+              setSubmitError('Delivery Address is required.');
+              return;
+            }
+            if (trimmedAddress.length < 5) {
+              setSubmitError('Address must be at least 5 characters.');
+              return;
+            }
+            const trimmedEmail = (customerInfo.email || '').trim();
+            if (trimmedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+              setSubmitError('Please enter a valid email address.');
+              return;
+            }
+            const cleanPincode = (customerInfo.pincode || '').replace(/\D/g, '');
+            if (cleanPincode && cleanPincode.length !== 6) {
               setSubmitError('Pincode must be exactly 6 digits.');
-              return;
-            }
-            if (!customerInfo.email) {
-              setSubmitError('Email Address is required.');
               return;
             }
             setSubmitError(null);
             goToStep(3); 
           }} className="glass-card rounded-2xl p-8 space-y-5">
             <div className="grid sm:grid-cols-2 gap-5">
-              <div><label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">Full Name *</label>
-                <input required value={customerInfo.name} onChange={(e) => setCustomerInfo({...customerInfo, name: e.target.value})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all" placeholder="Your Full Name" /></div>
-              <div><label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">Mobile Number *</label>
-                <input required type="tel" pattern="[0-9]{10}" maxLength={10} value={customerInfo.phone} onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value.replace(/\D/g, '').slice(0, 10)})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all" placeholder="10-digit Mobile Number" /></div>
+              <div>
+                <label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">
+                  Full Name <span className="text-rose-400 font-bold ml-0.5">*</span>
+                </label>
+                <input required value={customerInfo.name} onChange={(e) => setCustomerInfo({...customerInfo, name: e.target.value})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all" placeholder="Your Full Name" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">
+                  Mobile Number <span className="text-rose-400 font-bold ml-0.5">*</span>
+                </label>
+                <input required type="tel" pattern="[0-9]{10}" maxLength={10} value={customerInfo.phone} onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value.replace(/\D/g, '').slice(0, 10)})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all" placeholder="10-digit Mobile Number" />
+              </div>
             </div>
+
             <div className="grid sm:grid-cols-2 gap-5">
-              <div><label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">Email Address *</label>
-                <input required type="email" value={customerInfo.email} onChange={(e) => setCustomerInfo({...customerInfo, email: e.target.value})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all" placeholder="you@email.com" /></div>
-              <div><label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">State *</label>
-                <select required value={customerInfo.state} onChange={(e) => setCustomerInfo({...customerInfo, state: e.target.value})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all appearance-none cursor-pointer">
+              <div>
+                <label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">
+                  Email Address
+                </label>
+                <input type="email" value={customerInfo.email} onChange={(e) => setCustomerInfo({...customerInfo, email: e.target.value})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all" placeholder="you@email.com" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">
+                  State
+                </label>
+                <select value={customerInfo.state} onChange={(e) => setCustomerInfo({...customerInfo, state: e.target.value})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all appearance-none cursor-pointer">
                   <option value="">Select State</option>
                   <option value="Tamil Nadu">Tamil Nadu</option>
                   <option value="Kerala">Kerala</option>
@@ -758,18 +795,38 @@ export default function EnquiryPage() {
                   <option value="Andhra Pradesh">Andhra Pradesh</option>
                   <option value="Telangana">Telangana</option>
                   <option value="Puducherry">Puducherry</option>
-                </select></div>
+                </select>
+              </div>
             </div>
+
             <div className="grid sm:grid-cols-2 gap-5">
-              <div><label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">District *</label>
-                <input required value={customerInfo.district} onChange={(e) => setCustomerInfo({...customerInfo, district: e.target.value})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all" placeholder="e.g. Theni, Madurai" /></div>
-              <div><label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">City / Town *</label>
-                <input required value={customerInfo.city} onChange={(e) => setCustomerInfo({...customerInfo, city: e.target.value})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all" placeholder="Your City" /></div>
+              <div>
+                <label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">
+                  District
+                </label>
+                <input value={customerInfo.district} onChange={(e) => setCustomerInfo({...customerInfo, district: e.target.value})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all" placeholder="e.g. Theni, Madurai" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">
+                  City / Town
+                </label>
+                <input value={customerInfo.city} onChange={(e) => setCustomerInfo({...customerInfo, city: e.target.value})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all" placeholder="Your City" />
+              </div>
             </div>
-            <div><label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">Full Delivery Address *</label>
-              <textarea required rows={3} value={customerInfo.address} onChange={(e) => setCustomerInfo({...customerInfo, address: e.target.value})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all resize-none" placeholder="House No, Street, Area, Landmark" /></div>
-            <div className="w-1/3"><label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">Pincode *</label>
-              <input required type="tel" pattern="[0-9]{6}" maxLength={6} value={customerInfo.pincode} onChange={(e) => setCustomerInfo({...customerInfo, pincode: e.target.value.replace(/\D/g, '').slice(0, 6)})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all" placeholder="6-digit Pincode" /></div>
+
+            <div>
+              <label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">
+                Full Delivery Address <span className="text-rose-400 font-bold ml-0.5">*</span>
+              </label>
+              <textarea required rows={3} value={customerInfo.address} onChange={(e) => setCustomerInfo({...customerInfo, address: e.target.value})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all resize-none" placeholder="House No, Street, Area, Landmark" />
+            </div>
+
+            <div className="w-full sm:w-1/2">
+              <label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">
+                Pincode
+              </label>
+              <input type="tel" pattern="[0-9]{6}" maxLength={6} value={customerInfo.pincode} onChange={(e) => setCustomerInfo({...customerInfo, pincode: e.target.value.replace(/\D/g, '').slice(0, 6)})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all" placeholder="6-digit Pincode" />
+            </div>
             
             {submitError && (
               <div className="flex items-start gap-3 text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4 text-left">

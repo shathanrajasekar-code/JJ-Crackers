@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display } from 'next/font/google';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { Navbar } from '@/components/layout/Navbar';
@@ -8,6 +8,13 @@ import { MarketingHead } from '@/components/layout/MarketingHead';
 import "./globals.css";
 
 import { ClientEffects } from '@/components/effects/ClientEffects';
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 const inter = Inter({ 
   subsets: ['latin'],

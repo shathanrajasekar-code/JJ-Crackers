@@ -98,6 +98,15 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
     return () => observer.disconnect();
   }, [activeCategory, initialCategories, mounted]);
 
+  // Scroll active category button into view when highlighted changes
+  useEffect(() => {
+    if (!mounted) return;
+    const btn = document.getElementById(`cat-btn-${highlightedCategory}`);
+    if (btn) {
+      btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [highlightedCategory, mounted]);
+
   // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => setSearchDebounce(searchQuery), 300);
@@ -147,16 +156,16 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
   };
 
   return (
-    <div className="max-w-[1600px] w-full mx-auto px-4 sm:px-8 md:px-12 py-12">
+    <div className="max-w-[1600px] w-full mx-auto px-1.5 sm:px-8 md:px-12 py-8 sm:py-12">
       {/* Page Header */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-12">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 sm:mb-12">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <span className="inline-flex items-center gap-2 text-xs font-bold text-[var(--color-gold)] uppercase tracking-[0.2em] mb-3">
               <Sparkles size={12} /> Premium Collection
             </span>
-            <h1 className="text-4xl md:text-5xl font-display font-bold mb-3">Our Products</h1>
-            <p className="text-[var(--text-muted)] max-w-2xl">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold mb-3">Our Products</h1>
+            <p className="text-[var(--text-muted)] text-xs sm:text-sm max-w-2xl">
               Browse our premium collection of Sivakasi crackers. Quality and safety guaranteed.
             </p>
           </div>
@@ -204,35 +213,35 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
         </div>
       </motion.div>
 
-      <div className="flex flex-row gap-3 md:gap-8">
-        {/* Extended Categories Sidebar without scroll limitations */}
-        <aside className="w-[75px] md:w-48 lg:w-60 flex-shrink-0">
-          <div className="glass-card rounded-xl md:rounded-2xl sticky top-20 md:top-28 p-1 md:p-3 flex flex-col gap-1">
+      <div className="flex flex-row gap-2 sm:gap-6 md:gap-8">
+        {/* Extended Categories Sidebar */}
+        <aside className="w-[75px] sm:w-48 lg:w-60 flex-shrink-0">
+          <div className="glass-card rounded-xl md:rounded-2xl sticky top-20 md:top-28 p-1 md:p-3 flex flex-col gap-1 max-h-[82vh] overflow-y-auto scrollbar-none">
             {/* Category header */}
             <div className="hidden md:flex items-center gap-1.5 font-bold text-sm px-4 pt-3 pb-2.5 border-b border-[var(--border)] text-[var(--text)]">
               <SlidersHorizontal size={14} className="shrink-0" /> Categories
             </div>
 
-            {/* List naturally extends (no internal scrolling) */}
             <div className="flex flex-col gap-1 mt-1">
               {initialCategories.map((cat) => {
                 const count = getCategoryCount(cat.id);
                 const isActive = highlightedCategory === cat.id;
+                const cleanLabel = cat.label.replace(/ Products$/i, '').replace(/ Crackers$/i, '');
                 return (
                   <button
                     key={cat.id}
                     id={`cat-btn-${cat.id}`}
                     onClick={() => setActiveCategory(cat.id)}
                     style={{ cursor: 'pointer' }}
-                    className={`text-center md:text-left px-1 py-2 md:px-3 md:py-2 rounded-lg text-sm transition-all flex flex-col md:flex-row items-center md:justify-between cursor-pointer ${
+                    className={`text-center md:text-left px-1 py-2 md:px-3 md:py-2 rounded-lg text-sm transition-all flex flex-col md:flex-row items-center md:justify-between cursor-pointer min-h-[42px] ${
                       isActive
                         ? 'bg-gradient-to-r from-[var(--color-gold)] to-[var(--color-gold-dark)] text-[#1a1400] font-bold shadow-sm'
                         : 'text-[var(--text-muted)] hover:bg-[var(--surface-high)] hover:text-[var(--text)]'
                     } min-w-0`}
                   >
-                    <span className="flex flex-col md:flex-row items-center gap-1 md:gap-1.5 min-w-0">
-                      <span className="text-sm shrink-0">{cat.emoji}</span>
-                      <span className="text-[9px] md:text-sm truncate leading-tight md:leading-normal">{cat.label.replace(' Products', '')}</span>
+                    <span className="flex flex-col md:flex-row items-center gap-0.5 md:gap-1.5 min-w-0 w-full md:w-auto">
+                      <span className="text-xs md:text-sm shrink-0">{cat.emoji}</span>
+                      <span className="text-[8px] md:text-sm whitespace-normal break-words leading-[1.15] md:leading-normal text-center md:text-left">{cleanLabel}</span>
                     </span>
                     {isActive ? (
                       <span className="text-xs font-black shrink-0 hidden md:inline-block animate-pulse">
@@ -253,10 +262,10 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
         </aside>
 
         {/* Product Grid Container */}
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           {/* Results count */}
-          <div className="flex items-center justify-between mb-6">
-            <span className="text-sm text-[var(--text-muted)]">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <span className="text-xs sm:text-sm text-[var(--text-muted)]">
               Showing <span className="font-bold text-[var(--text)]">{products.length}</span> of <span className="font-bold text-[var(--text)]">{totalProducts}</span> products
             </span>
           </div>
@@ -264,7 +273,7 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
           {products.length > 0 ? (
             activeCategory === 'all' ? (
               // E-commerce Grouped Category Sections
-              <div className="space-y-16">
+              <div className="space-y-8 sm:space-y-16">
                 {initialCategories.filter(cat => cat.id !== 'all').map((cat) => {
                   const catProducts = products.filter(p => p.category === cat.id);
                   if (catProducts.length === 0) return null;
@@ -273,12 +282,11 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
                       key={cat.id} 
                       id={`category-sec-${cat.id}`} 
                       className="scroll-mt-28"
-                      style={{ contentVisibility: 'auto', containIntrinsicSize: 'auto 500px' }}
                     >
                       {/* Category Header */}
                       <div className="flex items-center justify-between mb-2">
-                        <h2 className="text-2xl font-bold font-display flex items-center gap-2.5 text-[var(--text)]">
-                          <span className="text-2xl">{cat.emoji}</span>
+                        <h2 className="text-xl sm:text-2xl font-bold font-display flex items-center gap-2 text-[var(--text)]">
+                          <span className="text-xl sm:text-2xl">{cat.emoji}</span>
                           <span className="text-gradient-gold text-glow">{cat.label}</span>
                           <span className="text-[10px] font-black bg-[var(--surface-high)] text-[var(--text-muted)] px-2.5 py-0.5 rounded-full border border-[var(--border)] ml-1">
                             {catProducts.length} Products
@@ -287,11 +295,11 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
                       </div>
 
                       {/* Category Divider */}
-                      <div className="h-px bg-gradient-to-r from-[var(--color-gold)]/40 via-[var(--border)]/30 to-transparent mb-6" />
+                      <div className="h-px bg-gradient-to-r from-[var(--color-gold)]/40 via-[var(--border)]/30 to-transparent mb-4 sm:mb-6" />
 
                       {/* Responsive Grid / List */}
                       <div className={viewMode === 'grid' 
-                        ? "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5" 
+                        ? "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-5" 
                         : "flex flex-col gap-3 md:gap-4"}>
                         {catProducts.map((product) => (
                           <ProductCard key={product.id} product={product} viewMode={viewMode} />

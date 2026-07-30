@@ -40,17 +40,40 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const body = await req.json();
+
+    const customerName = (body.customer_name || '').trim();
+    const customerPhone = (body.customer_phone || '').replace(/\D/g, '');
+    const customerAddress = (body.customer_address || '').trim();
+
+    if (!customerName) {
+      return NextResponse.json({ error: 'Customer Name is required' }, { status: 400 });
+    }
+    if (!customerPhone || customerPhone.length !== 10) {
+      return NextResponse.json({ error: 'A valid 10-digit Phone Number is required' }, { status: 400 });
+    }
+    if (!customerAddress || customerAddress.length < 5) {
+      return NextResponse.json({ error: 'Full Delivery Address is required' }, { status: 400 });
+    }
+
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
     const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
     if (!supabaseUrl || supabaseUrl.includes('your_supabase')) {
       // Return mock order for demo
-      const body = await req.json();
       const orderNumber = generateOrderNumber();
       return NextResponse.json({
         id: crypto.randomUUID(),
         order_number: orderNumber,
         ...body,
+        customer_name: customerName,
+        customer_phone: customerPhone,
+        customer_address: customerAddress,
+        customer_email: (body.customer_email || '').trim() || null,
+        customer_city: body.customer_city || null,
+        customer_pincode: body.customer_pincode || null,
+        customer_state: body.customer_state || null,
+        customer_district: body.customer_district || null,
         status: 'confirmed',
         payment_status: 'pending',
         created_at: new Date().toISOString(),
@@ -58,17 +81,16 @@ export async function POST(req: Request) {
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
-    const body = await req.json();
     const orderNumber = generateOrderNumber();
 
     const { data, error } = await supabase
       .from('orders')
       .insert({
         order_number: orderNumber,
-        customer_name: body.customer_name,
-        customer_email: body.customer_email,
-        customer_phone: body.customer_phone,
-        customer_address: body.customer_address || null,
+        customer_name: customerName,
+        customer_email: (body.customer_email || '').trim() || null,
+        customer_phone: customerPhone,
+        customer_address: customerAddress,
         customer_city: body.customer_city || null,
         customer_pincode: body.customer_pincode || null,
         customer_state: body.customer_state || null,
