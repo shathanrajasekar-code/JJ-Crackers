@@ -1,9 +1,9 @@
 import { getCategories, getProducts } from '@/lib/db';
 import { ProductCatalogClient } from '@/components/products/ProductCatalogClient';
 
-// Force dynamic SSR — always fetch fresh data so admin changes appear immediately
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// ISR: serve cached page instantly, revalidate in background every 30s
+// Admin changes appear within 30 seconds; page loads are instant
+export const revalidate = 30;
 
 export default async function ProductsPage() {
   // Fetch initial data directly on the server to optimize FCP, LCP and SEO

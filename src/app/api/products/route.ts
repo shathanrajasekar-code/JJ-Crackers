@@ -86,7 +86,8 @@ export async function GET(req: Request) {
     if (isAdmin) {
       responseHeaders['Cache-Control'] = 'no-store, max-age=0, must-revalidate';
     } else {
-      responseHeaders['Cache-Control'] = 'public, s-maxage=30, stale-while-revalidate=300';
+      // Cache at CDN for 30s, serve stale for up to 10 minutes while revalidating
+      responseHeaders['Cache-Control'] = 'public, s-maxage=30, stale-while-revalidate=600';
     }
 
     return NextResponse.json({

@@ -35,13 +35,16 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
     setMounted(true);
   }, []);
 
-  // Background stale-while-revalidate fetch to keep client fresh
+  // Background stale-while-revalidate fetch to keep client fresh if initial data was missing
   useEffect(() => {
     if (!mounted) return;
+    if (allProducts.length > 0) return;
+
+    const controller = new AbortController();
 
     const fetchLatest = async () => {
       try {
-        const res = await fetch('/api/products?limit=1000');
+        const res = await fetch('/api/products?limit=1000', { signal: controller.signal });
         if (!res.ok) throw new Error('Failed to fetch latest products');
         const data = await res.json();
 
@@ -52,19 +55,26 @@ export function ProductCatalogClient({ initialProducts, initialCategories }: Pro
           fetchedList = data.products || [];
         }
 
-        setAllProducts(fetchedList);
-        setTotalProducts(fetchedList.length);
-      } catch (err) {
-        console.error('Failed to update products in background:', err);
+        if (fetchedList.length > 0) {
+          setAllProducts(fetchedList);
+          setTotalProducts(fetchedList.length);
+        }
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          console.error('Failed to update products in background:', err);
+        }
       }
     };
 
     const timer = setTimeout(() => {
       fetchLatest();
-    }, 1500);
+    }, 500);
 
-    return () => clearTimeout(timer);
-  }, [mounted]);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [mounted, allProducts.length]);
 
   // Keep highlightedCategory in sync when activeCategory changes manually
   useEffect(() => {
