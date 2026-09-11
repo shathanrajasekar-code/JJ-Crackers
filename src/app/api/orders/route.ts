@@ -69,7 +69,7 @@ export async function POST(req: Request) {
         customer_name: customerName,
         customer_phone: customerPhone,
         customer_address: customerAddress,
-        customer_email: (body.customer_email || '').trim() || null,
+        customer_email: (body.customer_email || '').trim(),
         customer_city: body.customer_city || null,
         customer_pincode: body.customer_pincode || null,
         customer_state: body.customer_state || null,
@@ -88,7 +88,7 @@ export async function POST(req: Request) {
       .insert({
         order_number: orderNumber,
         customer_name: customerName,
-        customer_email: (body.customer_email || '').trim() || null,
+        customer_email: (body.customer_email || '').trim(),
         customer_phone: customerPhone,
         customer_address: customerAddress,
         customer_city: body.customer_city || null,
