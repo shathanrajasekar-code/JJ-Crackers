@@ -504,16 +504,17 @@ export async function generateReceipt(data: ReceiptData): Promise<jsPDF> {
     doc.setTextColor(...C.dark);
     doc.text(String(item.quantity || 0), col.qty + 10, ty, { align: 'right' });
 
-    // Actual Price (MRP, right-aligned)
+    // Actual Price (MRP, right-aligned) - ensure effective MRP is displayed
+    const effectiveMrp = (item.mrp && item.mrp > item.price) ? item.mrp : Math.round(item.price / 0.4);
     doc.setTextColor(...C.light);
-    doc.text(rs(item.mrp || 0), col.actPrice + 20, ty, { align: 'right' });
+    doc.text(rs(effectiveMrp), col.actPrice + 20, ty, { align: 'right' });
 
     // Actual Total (MRP * Qty, right-aligned)
-    const lineMrpTotal = (item.mrp || 0) * (item.quantity || 0);
+    const lineMrpTotal = effectiveMrp * (item.quantity || 0);
     doc.text(rs(lineMrpTotal), col.actTotal + 23, ty, { align: 'right' });
 
     // Actual Discount (Discount * Qty, right-aligned)
-    const lineDiscount = ((item.mrp || item.price) - item.price) * item.quantity;
+    const lineDiscount = Math.max(0, (effectiveMrp - item.price) * (item.quantity || 0));
     doc.setTextColor(...C.green);
     doc.text(rs(lineDiscount), col.actDiscount + 22, ty, { align: 'right' });
 
@@ -546,23 +547,28 @@ export async function generateReceipt(data: ReceiptData): Promise<jsPDF> {
   const totValueX = PAGE_W - M - 4;
 
   // 1. Gross Amount (Actual Total MRP)
-  const grossAmount = data.subtotal || data.items.reduce((sum, item) => sum + (item.mrp || item.price) * item.quantity, 0);
+  const calculatedGross = data.items.reduce((sum, item) => {
+    const effectiveMrp = (item.mrp && item.mrp > item.price) ? item.mrp : Math.round(item.price / 0.4);
+    return sum + effectiveMrp * (item.quantity || 0);
+  }, 0);
+  const itemsNetTotal = data.items.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 0), 0);
+  const grossAmount = (data.subtotal && data.subtotal > itemsNetTotal) ? data.subtotal : calculatedGross;
+  const totalDiscount = (data.discountTotal && data.discountTotal > 0) ? data.discountTotal : Math.max(0, grossAmount - itemsNetTotal);
+
   doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...C.mid);
-  doc.text('Gross Amount (Actual Total):', totLabelX, y);
+  doc.text('Gross Amount (Actual MRP Total):', totLabelX, y);
   doc.setTextColor(...C.dark);
   doc.setFont('helvetica', 'bold');
   doc.text(rs(grossAmount), totValueX, y, { align: 'right' });
   y += 5.5;
 
-  // 2. Less: Discount
-  const totalDiscount = data.discountTotal || 0;
+  // 2. Less: Festival Discount (60% OFF)
   if (totalDiscount > 0) {
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...C.mid);
-    doc.text('Less: Discount:', totLabelX, y);
     doc.setTextColor(...C.green);
+    doc.text('Less: Festival Discount (60% Off):', totLabelX, y);
     doc.setFont('helvetica', 'bold');
     doc.text('-' + rs(totalDiscount), totValueX, y, { align: 'right' });
     y += 5.5;

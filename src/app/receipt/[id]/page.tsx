@@ -164,9 +164,17 @@ export default function ReceiptDownloadPage({ params }: PageProps) {
                 </div>
               ))}
             </div>
-            <div className="bg-[var(--surface-high)] px-4 py-3 flex justify-between items-center border-t border-[var(--border)]">
-              <span className="text-xs font-bold text-[var(--text)]">Net Payable Total:</span>
-              <span className="text-base font-bold text-[var(--color-gold)] font-display">₹{order.total_amount?.toLocaleString('en-IN')}</span>
+            <div className="bg-[var(--surface-high)] px-4 py-3 border-t border-[var(--border)] space-y-1">
+              {order.discount_total ? (
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-emerald-500 font-medium">Festival Discount Savings (60% Off):</span>
+                  <span className="text-emerald-500 font-bold">-₹{order.discount_total?.toLocaleString('en-IN')}</span>
+                </div>
+              ) : null}
+              <div className="flex justify-between items-center pt-1 border-t border-[var(--border)]/40">
+                <span className="text-xs font-bold text-[var(--text)]">Net Payable Total:</span>
+                <span className="text-base font-bold text-[var(--color-gold)] font-display">₹{order.total_amount?.toLocaleString('en-IN')}</span>
+              </div>
             </div>
           </div>
 

@@ -225,25 +225,40 @@ export async function POST(req: Request) {
     </html>
     `;
 
-    const emailPayload: any = {
-      from: `JJ Crackers <${senderEmail}>`,
-      to: [to],
-      subject: `Order Confirmed — ${orderNumber} | JJ Crackers`,
-      html: emailHtml,
-    };
+    const customerEmailTarget = typeof to === 'string' ? to.trim() : '';
+    let sendData: any = null;
 
-    if (pdfBase64) {
-      emailPayload.attachments = [
-        {
-          filename: `JJ-Crackers-Receipt-${orderNumber}.pdf`,
-          content: pdfBase64,
-          contentType: 'application/pdf',
-        },
-      ];
+    if (customerEmailTarget) {
+      const emailPayload: any = {
+        from: `JJ Crackers <${senderEmail}>`,
+        to: [customerEmailTarget],
+        subject: `Order Confirmed — ${orderNumber} | JJ Crackers`,
+        html: emailHtml,
+      };
+
+      if (pdfBase64) {
+        emailPayload.attachments = [
+          {
+            filename: `JJ-Crackers-Receipt-${orderNumber}.pdf`,
+            content: pdfBase64,
+            contentType: 'application/pdf',
+          },
+        ];
+      }
+
+      let sendResult = await resend.emails.send(emailPayload);
+      if (sendResult.error && senderEmail !== 'onboarding@resend.dev') {
+        console.warn(`Resend failed with ${senderEmail}: ${sendResult.error.message}. Retrying with onboarding@resend.dev...`);
+        emailPayload.from = 'JJ Crackers <onboarding@resend.dev>';
+        sendResult = await resend.emails.send(emailPayload);
+      }
+      sendData = sendResult.data;
+      if (sendResult.error) {
+        console.error('Final Resend customer email error:', sendResult.error);
+      }
+    } else {
+      console.log(`No customer email specified for order ${orderNumber}; skipping customer email dispatch.`);
     }
-
-    const { data, error } = await resend.emails.send(emailPayload);
-    if (error) throw error;
 
     // Send dedicated notification email to owner if requested (e.g. on new checkout)
     const adminEmail = process.env.ADMIN_EMAIL || 'jjcrackersworld@gmail.com';
@@ -392,18 +407,22 @@ export async function POST(req: Request) {
         ];
       }
 
-      await resend.emails.send(adminEmailPayload);
+      let adminSendResult = await resend.emails.send(adminEmailPayload);
+      if (adminSendResult.error && senderEmail !== 'onboarding@resend.dev') {
+        adminEmailPayload.from = 'JJ Crackers <onboarding@resend.dev>';
+        await resend.emails.send(adminEmailPayload);
+      }
     }
 
     // Track analytics event
     try {
       const { trackEvent } = await import('@/lib/tracking');
-      await trackEvent('email_sent', 'checkout', { orderNumber, emailId: data?.id, recipient: to });
+      await trackEvent('email_sent', 'checkout', { orderNumber, emailId: sendData?.id, recipient: to });
     } catch (trackErr) {
       console.error('Failed to log email analytics:', trackErr);
     }
 
-    return NextResponse.json({ success: true, emailId: data?.id });
+    return NextResponse.json({ success: true, emailId: sendData?.id, skipped: !customerEmailTarget });
   } catch (error: any) {
     console.error('Email send error:', error);
     // Log error to database

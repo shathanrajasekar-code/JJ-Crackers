@@ -101,9 +101,22 @@ function ProductCardInner({ product, viewMode = 'grid' }: ProductCardProps) {
                 >
                   <Minus size={10} />
                 </button>
-                <div className="flex-grow text-center text-xs font-bold text-[var(--text)] h-full flex items-center justify-center border-x border-[var(--border)] select-none">
-                  {inCartQty}
-                </div>
+                <input
+                  type="number"
+                  min="1"
+                  max="9999"
+                  value={inCartQty}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value, 10);
+                    if (!isNaN(val)) updateQuantity(product.id, val);
+                  }}
+                  onBlur={(e) => {
+                    const val = parseInt(e.target.value, 10);
+                    if (isNaN(val) || val < 1) updateQuantity(product.id, 1);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-full min-w-0 text-center text-xs font-bold text-[var(--text)] bg-transparent h-full border-x border-[var(--border)] focus:outline-none focus:bg-[var(--surface-highest)] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
                 <button
                   onClick={() => updateQuantity(product.id, inCartQty + 1)}
                   className="w-9 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)]"
@@ -144,9 +157,22 @@ function ProductCardInner({ product, viewMode = 'grid' }: ProductCardProps) {
               >
                 <Minus size={10} />
               </button>
-              <div className="flex-grow text-center text-[11px] font-bold text-[var(--text)] h-full flex items-center justify-center border-x border-[var(--border)] select-none">
-                {inCartQty}
-              </div>
+              <input
+                type="number"
+                min="1"
+                max="9999"
+                value={inCartQty}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value, 10);
+                  if (!isNaN(val)) updateQuantity(product.id, val);
+                }}
+                onBlur={(e) => {
+                  const val = parseInt(e.target.value, 10);
+                  if (isNaN(val) || val < 1) updateQuantity(product.id, 1);
+                }}
+                onClick={(e) => e.stopPropagation()}
+                className="w-full min-w-0 text-center text-[11px] font-bold text-[var(--text)] bg-transparent h-full border-x border-[var(--border)] focus:outline-none focus:bg-[var(--surface-highest)] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
               <button
                 onClick={() => updateQuantity(product.id, inCartQty + 1)}
                 className="w-9 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)]"
@@ -263,9 +289,22 @@ function ProductCardInner({ product, viewMode = 'grid' }: ProductCardProps) {
                 >
                   <Minus size={10} className="sm:w-3 sm:h-3" />
                 </button>
-                <div className="flex-grow text-center text-[10px] sm:text-xs font-bold text-[var(--text)] h-full flex items-center justify-center border-x border-[var(--border)] select-none">
-                  {inCartQty}
-                </div>
+                <input
+                  type="number"
+                  min="1"
+                  max="9999"
+                  value={inCartQty}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value, 10);
+                    if (!isNaN(val)) updateQuantity(product.id, val);
+                  }}
+                  onBlur={(e) => {
+                    const val = parseInt(e.target.value, 10);
+                    if (isNaN(val) || val < 1) updateQuantity(product.id, 1);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-full min-w-0 text-center text-[10px] sm:text-xs font-bold text-[var(--text)] bg-transparent h-full border-x border-[var(--border)] focus:outline-none focus:bg-[var(--surface-highest)] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
                 <button
                   onClick={() => updateQuantity(product.id, inCartQty + 1)}
                   className="w-8 flex justify-center items-center text-[var(--text-muted)] hover:text-[var(--text)] transition-colors h-full hover:bg-[var(--surface-highest)]"

@@ -56,7 +56,7 @@ export const useEnquiryStore = create<EnquiryState>()(
         }
         set((state) => ({
           items: state.items.map((i) =>
-            i.product.id === id ? { ...i, quantity: Math.min(quantity, 100) } : i
+            i.product.id === id ? { ...i, quantity: Math.min(Math.max(1, Math.floor(quantity)), 9999) } : i
           ),
           lastActive: Date.now()
         }));
@@ -74,7 +74,7 @@ export const useEnquiryStore = create<EnquiryState>()(
         const { lastActive, items } = get();
         if (lastActive && items.length > 0) {
           const diff = Date.now() - lastActive;
-          if (diff > 5 * 60 * 1000) { // 5 minutes in ms
+          if (diff > 24 * 60 * 60 * 1000) { // 24 hours in ms
             set({ items: [], lastActive: null });
           }
         }

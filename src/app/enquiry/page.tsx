@@ -142,7 +142,7 @@ export default function EnquiryPage() {
       
       setOrderResult(data);
       setStep(4);
-      setEmailStatus('sending');
+      setEmailStatus(customerInfo.email ? 'sending' : 'idle');
       setReceiptStatus('generating');
 
       // 1. Generate PDF & Prepare Base64
@@ -178,43 +178,68 @@ export default function EnquiryPage() {
       }
 
       // 2. Dispatch Email (with Base64 PDF attachment)
-      fetch('/api/send-receipt', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: customerInfo.email, orderNumber: data.order_number,
-          customerName: customerInfo.name, items: orderItems,
-          totalAmount: grandTotal, subtotal: getTotal() + getSavings(),
-          discountTotal: getSavings(),
-          packingCharges: packingCharges,
-          pdfBase64: pdfBase64Data,
-          customerPhone: customerInfo.phone,
-          customerAddress: customerInfo.address,
-          customerCity: customerInfo.city,
-          customerPincode: customerInfo.pincode,
-          customerState: customerInfo.state,
-          customerDistrict: customerInfo.district,
-          notifyAdmin: true,
-        }),
-      })
-      .then(async (emailRes) => {
-        const emailData = await emailRes.json();
-        if (emailRes.ok) {
-          if (emailData.skipped) {
-            setEmailStatus('skipped');
+      if (customerInfo.email && customerInfo.email.trim()) {
+        setEmailStatus('sending');
+        fetch('/api/send-receipt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: customerInfo.email.trim(), orderNumber: data.order_number,
+            customerName: customerInfo.name, items: orderItems,
+            totalAmount: grandTotal, subtotal: getTotal() + getSavings(),
+            discountTotal: getSavings(),
+            packingCharges: packingCharges,
+            pdfBase64: pdfBase64Data,
+            customerPhone: customerInfo.phone,
+            customerAddress: customerInfo.address,
+            customerCity: customerInfo.city,
+            customerPincode: customerInfo.pincode,
+            customerState: customerInfo.state,
+            customerDistrict: customerInfo.district,
+            notifyAdmin: true,
+          }),
+        })
+        .then(async (emailRes) => {
+          const emailData = await emailRes.json();
+          if (emailRes.ok) {
+            if (emailData.skipped) {
+              setEmailStatus('skipped');
+            } else {
+              setEmailStatus('sent');
+            }
           } else {
-            setEmailStatus('sent');
+            setEmailStatus('failed');
+            setEmailErrorMessage(emailData.error || 'Mail delivery failed.');
           }
-        } else {
+        })
+        .catch(err => {
+          console.error('Email receipt dispatch error:', err);
           setEmailStatus('failed');
-          setEmailErrorMessage(emailData.error || 'Mail delivery failed.');
-        }
-      })
-      .catch(err => {
-        console.error('Email receipt dispatch error:', err);
-        setEmailStatus('failed');
-        setEmailErrorMessage(err instanceof Error ? err.message : String(err));
-      });
+          setEmailErrorMessage(err instanceof Error ? err.message : String(err));
+        });
+      } else {
+        setEmailStatus('idle');
+        // Silently notify admin in background with receipt attachment
+        fetch('/api/send-receipt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: '', orderNumber: data.order_number,
+            customerName: customerInfo.name, items: orderItems,
+            totalAmount: grandTotal, subtotal: getTotal() + getSavings(),
+            discountTotal: getSavings(),
+            packingCharges: packingCharges,
+            pdfBase64: pdfBase64Data,
+            customerPhone: customerInfo.phone,
+            customerAddress: customerInfo.address,
+            customerCity: customerInfo.city,
+            customerPincode: customerInfo.pincode,
+            customerState: customerInfo.state,
+            customerDistrict: customerInfo.district,
+            notifyAdmin: true,
+          }),
+        }).catch(() => {});
+      }
 
       // 3. Trigger WhatsApp notification automatically
       fetch('/api/notify-whatsapp', {
@@ -483,22 +508,22 @@ export default function EnquiryPage() {
               )}
 
               {/* Email Status Banner */}
-              {emailStatus === 'sending' && (
+              {Boolean(customerInfo.email || orderResult?.customer_email) && emailStatus === 'sending' && (
                 <div className="flex items-center justify-center gap-2 p-2.5 bg-[var(--surface)] border border-[var(--border)] rounded-xl text-xs text-[var(--text-muted)] shadow-sm">
                   <div className="w-3.5 h-3.5 border-2 border-[var(--color-gold)] border-t-transparent rounded-full animate-spin" />
                   Emailing confirmation receipt...
                 </div>
               )}
-              {emailStatus === 'sent' && (
+              {Boolean(customerInfo.email || orderResult?.customer_email) && emailStatus === 'sent' && (
                 <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-xs text-emerald-400 text-left flex gap-2.5 shadow-sm">
                   <CheckCircle2 size={16} className="shrink-0 mt-0.5" />
                   <div>
                     <strong className="block text-emerald-300">Receipt Emailed!</strong>
-                    Invoice sent to <strong>{customerInfo.email || orderResult.customer_email}</strong>.
+                    Invoice sent to <strong>{customerInfo.email || orderResult?.customer_email}</strong>.
                   </div>
                 </div>
               )}
-              {emailStatus === 'skipped' && (
+              {Boolean(customerInfo.email || orderResult?.customer_email) && emailStatus === 'skipped' && (
                 <div className="p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-[11px] text-amber-300 text-left flex gap-2.5 shadow-sm">
                   <AlertCircle size={14} className="shrink-0 mt-0.5 text-amber-450" />
                   <div>
@@ -507,12 +532,12 @@ export default function EnquiryPage() {
                   </div>
                 </div>
               )}
-              {emailStatus === 'failed' && (
+              {Boolean(customerInfo.email || orderResult?.customer_email) && emailStatus === 'failed' && (
                 <div className="p-2.5 bg-rose-500/10 border border-rose-500/20 rounded-xl text-xs text-rose-300 text-left flex gap-2.5 shadow-sm">
                   <AlertCircle size={16} className="shrink-0 mt-0.5 text-rose-450" />
                   <div>
                     <strong className="block text-rose-400">Email Delivery Interrupted</strong>
-                    Could not send confirmation email to {customerInfo.email || orderResult.customer_email}.
+                    Could not send confirmation email to {customerInfo.email || orderResult?.customer_email}.
                   </div>
                 </div>
               )}
@@ -646,9 +671,21 @@ export default function EnquiryPage() {
                           >
                             <Minus size={12} />
                           </button>
-                          <div className="w-8 text-center text-xs font-bold border-x border-[var(--border)] h-full flex items-center justify-center">
-                            {item.quantity}
-                          </div>
+                          <input
+                            type="number"
+                            min="1"
+                            max="9999"
+                            value={item.quantity}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value, 10);
+                              if (!isNaN(val)) updateQuantity(item.product.id, val);
+                            }}
+                            onBlur={(e) => {
+                              const val = parseInt(e.target.value, 10);
+                              if (isNaN(val) || val < 1) updateQuantity(item.product.id, 1);
+                            }}
+                            className="w-12 text-center text-xs font-bold border-x border-[var(--border)] h-full flex items-center justify-center bg-transparent focus:outline-none focus:bg-[var(--surface-highest)] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                          />
                           <button
                             onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
                             className="w-7 flex justify-center items-center h-full hover:bg-[var(--surface-highest)] transition-colors"
@@ -779,9 +816,9 @@ export default function EnquiryPage() {
             <div className="grid sm:grid-cols-2 gap-5">
               <div>
                 <label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">
-                  Email Address
+                  Email Address <span className="text-[10px] text-[var(--text-muted)] font-normal normal-case">(Optional)</span>
                 </label>
-                <input type="email" value={customerInfo.email} onChange={(e) => setCustomerInfo({...customerInfo, email: e.target.value})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all" placeholder="you@email.com" />
+                <input type="email" value={customerInfo.email} onChange={(e) => setCustomerInfo({...customerInfo, email: e.target.value})} className="w-full bg-[var(--surface-high)] border border-[var(--border)] rounded-xl px-4 py-3 text-sm focus:border-[var(--color-gold)] focus:outline-none transition-all" placeholder="you@email.com (Optional)" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-[var(--text-muted)] mb-2 uppercase tracking-wider">
