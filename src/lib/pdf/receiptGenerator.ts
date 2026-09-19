@@ -1,127 +1,19 @@
 import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
-// Helper to render mixed Tamil and English lines (with optional bold title) to a canvas and return an image data URL
-function renderTamilEnglishSectionToImage(title: string, lines: string[], fontSize: number, widthMm: number, lineSpacing: number = 3): { dataUrl: string, heightMm: number } {
-  if (typeof window === 'undefined' || typeof document === 'undefined') {
-    return { dataUrl: '', heightMm: 0 };
-  }
-  
-  const scale = 1.5; // Optimized scale to prevent payload size issues (413 Payload Too Large)
-  const mmToPx = 3.78; // 1mm ≈ 3.78px at standard 96 DPI
-  const widthPx = widthMm * mmToPx;
-  
-  // Set up temp canvas to measure text wrapping height
-  const tempCanvas = document.createElement('canvas');
-  tempCanvas.width = widthPx;
-  tempCanvas.height = 3000;
-  const tempCtx = tempCanvas.getContext('2d');
-  if (!tempCtx) return { dataUrl: '', heightMm: 0 };
-  
-  const paddingPx = 5;
-  const maxTextWidth = widthPx - paddingPx * 2;
-  
-  // Wrap lines helper
-  const wrapText = (ctx: CanvasRenderingContext2D, text: string, maxW: number, font: string): string[] => {
-    ctx.font = font;
-    const words = text.split(' ');
-    const wrapped: string[] = [];
-    let currentLine = '';
-    
-    for (let i = 0; i < words.length; i++) {
-      const testLine = currentLine ? currentLine + ' ' + words[i] : words[i];
-      const metrics = ctx.measureText(testLine);
-      if (metrics.width > maxW) {
-        wrapped.push(currentLine);
-        currentLine = words[i];
-      } else {
-        currentLine = testLine;
-      }
-    }
-    if (currentLine) {
-      wrapped.push(currentLine);
-    }
-    return wrapped;
-  };
-
-  const titleFont = `bold ${fontSize + 2.5}px "Segoe UI", "Nirmala UI", Arial, sans-serif`;
-  const bodyFont = `bold ${fontSize}px "Segoe UI", "Nirmala UI", Arial, sans-serif`;
-
-  const allWrappedItems: Array<{ text: string, isTitle: boolean }> = [];
-  
-  if (title) {
-    const wrappedTitle = wrapText(tempCtx, title, maxTextWidth, titleFont);
-    wrappedTitle.forEach(t => allWrappedItems.push({ text: t, isTitle: true }));
-    // Add an empty line spacing after title
-    allWrappedItems.push({ text: '', isTitle: false });
-  }
-
-  lines.forEach(line => {
-    const wrappedBody = wrapText(tempCtx, line, maxTextWidth, bodyFont);
-    wrappedBody.forEach(b => allWrappedItems.push({ text: b, isTitle: false }));
-  });
-
-  const totalHeightPx = allWrappedItems.reduce((acc, item) => {
-    if (item.text === '') return acc + lineSpacing * 2;
-    const itemH = item.isTitle ? (fontSize + 2.5) : fontSize;
-    return acc + itemH + lineSpacing;
-  }, 0) + paddingPx * 2;
-  
-  const heightMm = totalHeightPx / mmToPx;
-  
-  // Create final canvas for drawing
-  const canvas = document.createElement('canvas');
-  canvas.width = widthPx * scale;
-  canvas.height = totalHeightPx * scale;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) return { dataUrl: '', heightMm: 0 };
-  
-  // Fill background with white to support JPEG conversion (no transparency)
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  
-  ctx.scale(scale, scale);
-  ctx.textBaseline = 'top';
-  
-  let drawY = paddingPx;
-  allWrappedItems.forEach(item => {
-    if (item.text === '') {
-      drawY += lineSpacing * 2;
-      return;
-    }
-    if (item.isTitle) {
-      ctx.fillStyle = '#C8102E'; // Red color matching --red
-      ctx.font = titleFont;
-      ctx.textAlign = 'center';
-      ctx.fillText(item.text, widthPx / 2, drawY);
-      drawY += (fontSize + 2.5) + lineSpacing;
-    } else {
-      ctx.fillStyle = '#3c3c3c'; // Matches C.dark
-      ctx.font = bodyFont;
-      ctx.textAlign = 'center';
-      ctx.fillText(item.text, widthPx / 2, drawY);
-      drawY += fontSize + lineSpacing;
-    }
-  });
-  
-  return {
-    dataUrl: canvas.toDataURL('image/jpeg', 0.7),
-    heightMm: heightMm
-  };
-}
-
-interface ReceiptItem {
+export interface ReceiptItem {
   name: string;
   quantity: number;
   price: number;
-  mrp: number;
+  mrp?: number;
   category?: string;
 }
 
-interface ReceiptData {
+export interface ReceiptData {
   orderNumber: string;
   date: string;
   customerName: string;
-  customerEmail: string;
+  customerEmail?: string;
   customerPhone: string;
   customerAddress?: string;
   customerCity?: string;
@@ -135,587 +27,587 @@ interface ReceiptData {
   packingCharges?: number;
 }
 
-// ─── COLOR CONSTANTS ────────────────────────────────────────────────────────
-const C = {
-  black:     [27, 36, 64]     as const, // ink (#1B2440)
-  navyDeep:  [16, 27, 66]     as const, // navy-deep (#101B42)
-  navy:      [27, 42, 94]     as const, // navy (#1B2A5E)
-  red:       [200, 16, 46]    as const, // red (#C8102E)
-  redDeep:   [140, 11, 32]    as const, // red-deep (#8C0B20)
-  dark:      [45, 55, 85]     as const,
-  mid:       [100, 110, 130]  as const,
-  light:     [154, 160, 180]  as const,
-  border:    [215, 215, 225]  as const,
-  bgRow:     [251, 246, 228]  as const, // cream / sand alternate row (#FBF6E4)
-  bgCard:    [255, 251, 239]  as const, // cream (#FFFBEF)
-  white:     [255, 255, 255]  as const,
-  gold:      [245, 163, 0]    as const, // marigold (#F5A300)
-  yellowSoft:[255, 230, 133]  as const, // yellow-soft (#FFE685)
-  green:     [47, 122, 69]    as const, // green (#2F7A45)
-  greenBg:   [235, 250, 240]  as const,
-  greenBdr:  [34, 160, 72]    as const,
-  tableHead: [16, 27, 66]     as const, // navy-deep (#101B42)
-};
-
-const PAGE_W = 210;
-const PAGE_H = 297;
-const M = 14;
-const CW = PAGE_W - M * 2;
-const FOOTER_ZONE = 20;
-const MAX_Y = PAGE_H - M - FOOTER_ZONE;
-
-// ─── Rupee formatter (uses "Rs." to avoid font glyph issues) ────────────────
-function rs(n: number): string {
-  return 'Rs. ' + n.toLocaleString('en-IN');
+function escapeHtml(str: string = ''): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
-// ─── MAIN EXPORT ────────────────────────────────────────────────────────────
-export async function generateReceipt(data: ReceiptData): Promise<jsPDF> {
-  const doc = new jsPDF('p', 'mm', 'a4');
-  let y = M;
+function formatCurrency(n: number): string {
+  return 'Rs. ' + Math.round(n).toLocaleString('en-IN');
+}
 
-  // ─── Load logo ────────────────────────────────────────────────────────
-  let logoLoaded = false;
-  const logoImg = new Image();
-  logoImg.crossOrigin = 'anonymous';
-  try {
-    await new Promise<void>((resolve) => {
-      logoImg.onload = () => { logoLoaded = true; resolve(); };
-      logoImg.onerror = () => resolve();
-      logoImg.src = '/logo/logo.png';
-    });
-  } catch { /* silent */ }
+/**
+ * Builds the exact HTML matching jj-crackers-invoice.html template for any order data
+ */
+function buildInvoiceHtml(data: ReceiptData): string {
+  const items = (data.items || []).map((item, idx) => {
+    const qty = Number(item.quantity || 1);
+    const netPrice = Number(item.price || 0);
+    const mrp = item.mrp && Number(item.mrp) > netPrice
+      ? Number(item.mrp)
+      : Math.round(netPrice / 0.4);
+    const actualTotal = mrp * qty;
+    const netTotal = netPrice * qty;
+    const discountAmt = Math.max(0, actualTotal - netTotal);
+    const offPct = mrp > 0 ? Math.round(((mrp - netPrice) / mrp) * 100) : 60;
 
-  // ═══════════════════════════════════════════════════════════════════════
-  //  COLUMN LAYOUT — well-spaced, no overflow
-  //  Total content width = 182mm (M=14 on each side)
-  // ═══════════════════════════════════════════════════════════════════════
-  //  S.No: 10mm | Product Description: 65mm | Qty: 12mm | Actual Price: 22mm | Actual Total: 25mm | Actual Discount: 24mm | Net Total: 24mm = 182
-  const col = {
-    sno:         M,             // x = 14, width = 10
-    prod:        M + 10,        // x = 24, width = 65
-    qty:         M + 75,        // x = 89, width = 12
-    actPrice:    M + 87,        // x = 101, width = 22
-    actTotal:    M + 109,       // x = 123, width = 25
-    actDiscount: M + 134,       // x = 148, width = 24
-    netTotal:    M + 158,       // x = 172, width = 24
-    end:         M + CW,        // x = 196
-  };
-  const colBorders = [col.sno, col.prod, col.qty, col.actPrice, col.actTotal, col.actDiscount, col.netTotal, col.end];
-
-  // ═══════════════════════════════════════════════════════════════════════
-  //  HELPER: Company Header (repeated every page)
-  // ═══════════════════════════════════════════════════════════════════════
-  const drawCompanyHeader = (isFirstPage: boolean) => {
-    y = M;
-
-    // Navy header box matching jj-crackers-invoice.html
-    doc.setFillColor(...C.navyDeep);
-    doc.roundedRect(M, y, CW, 24, 2, 2, 'F');
-
-    // Logo with gold circular ring
-    if (logoLoaded && logoImg.complete && logoImg.naturalHeight > 0) {
-      doc.setFillColor(255, 255, 255);
-      doc.circle(M + 12, y + 12, 9, 'F');
-      doc.setDrawColor(...C.gold);
-      doc.setLineWidth(0.8);
-      doc.circle(M + 12, y + 12, 9.2);
-      doc.addImage(logoImg, 'PNG', M + 4, y + 4, 16, 16, undefined, 'FAST');
-    }
-
-    // Company name block
-    const tx = M + 25;
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(16);
-    doc.setTextColor(...C.white);
-    doc.text('JJ CRACKERS', tx, y + 7.2);
-
-    doc.setFontSize(7.5);
-    doc.setTextColor(...C.yellowSoft);
-    doc.text('JEGAJOTHI CRACKERS | PREMIUM SIVAKASI FIREWORKS', tx, y + 12);
-
-    doc.setFontSize(6.2);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(240, 240, 245);
-    doc.text('1/406, Sivakasi-Vembakottai Main Road, Opp. EB Office, Vembakottai, Tamil Nadu', tx, y + 16.5);
-    doc.text('Phone: +91 70923 00252  |  Email: jjcrackersworld@gmail.com', tx, y + 20);
-
-    // Receipt tag (right side)
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7);
-    doc.setTextColor(...C.yellowSoft);
-    doc.text('ORDER RECEIPT', PAGE_W - M - 6, y + 6.5, { align: 'right' });
-
-    doc.setFontSize(10);
-    doc.setTextColor(...C.white);
-    doc.text(String(data.orderNumber || ''), PAGE_W - M - 6, y + 12, { align: 'right' });
-
-    doc.setFillColor(255, 255, 255);
-    doc.roundedRect(PAGE_W - M - 28, y + 14.5, 24, 5.5, 1, 1, 'F');
-    doc.setFontSize(6);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...C.navyDeep);
-    doc.text('CONFIRMED', PAGE_W - M - 16, y + 18.2, { align: 'center' });
-
-    y += 28;
-  };
-
-  // ═══════════════════════════════════════════════════════════════════════
-  //  HELPER: Footer (post-processed on every page)
-  // ═══════════════════════════════════════════════════════════════════════
-  const drawFooter = (pageNum: number, totalPgs: number) => {
-    const fy = PAGE_H - M - FOOTER_ZONE + 4;
-    doc.setDrawColor(...C.border);
-    doc.setLineWidth(0.3);
-    doc.line(M, fy, PAGE_W - M, fy);
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(7);
-    doc.setTextColor(...C.black);
-    doc.text('JJ CRACKERS  |  SIVAKASI', PAGE_W / 2, fy + 5, { align: 'center' });
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6);
-    doc.setTextColor(...C.mid);
-    doc.text('Premium Friendly Sivakasi Fireworks Since 2015  |  Contact: +91 70923 00252', PAGE_W / 2, fy + 9, { align: 'center' });
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(6.5);
-    doc.setTextColor(...C.dark);
-    doc.text('Page ' + pageNum + ' of ' + totalPgs, PAGE_W / 2, fy + 14, { align: 'center' });
-  };
-
-  // ═══════════════════════════════════════════════════════════════════════
-  //  HELPER: Draw Table Header with vertical borders
-  // ═══════════════════════════════════════════════════════════════════════
-  const TH = 7; // table header row height
-
-  const drawTableHeader = () => {
-    // Dark background
-    doc.setFillColor(...C.tableHead);
-    doc.rect(M, y, CW, TH, 'F');
-
-    doc.setFontSize(6.5);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...C.yellowSoft);
-
-    const ty = y + 4.8;
-    doc.text('S.No',               col.sno + 2,         ty);
-    doc.text('Product Description', col.prod + 2,        ty);
-    doc.text('Qty',                 col.qty + 10,        ty, { align: 'right' });
-    doc.text('Actual Price',        col.actPrice + 20,   ty, { align: 'right' });
-    doc.text('Actual Total',        col.actTotal + 23,   ty, { align: 'right' });
-    doc.text('Actual Discount',     col.actDiscount + 22, ty, { align: 'right' });
-    doc.text('Net Total',           col.end - 2,         ty, { align: 'right' });
-
-    // Vertical white separators inside header
-    doc.setDrawColor(...C.white);
-    doc.setLineWidth(0.15);
-    for (let i = 1; i < colBorders.length - 1; i++) {
-      doc.line(colBorders[i], y, colBorders[i], y + TH);
-    }
-
-    y += TH;
-  };
-
-  // ═══════════════════════════════════════════════════════════════════════
-  //  HELPER: Draw vertical grid lines for a table row
-  // ═══════════════════════════════════════════════════════════════════════
-  const ROW_H = 7.5;
-
-  const drawRowBorders = (rowY: number) => {
-    doc.setDrawColor(...C.border);
-    doc.setLineWidth(0.15);
-    // Vertical lines
-    for (const bx of colBorders) {
-      doc.line(bx, rowY, bx, rowY + ROW_H);
-    }
-    // Bottom horizontal line
-    doc.line(M, rowY + ROW_H, PAGE_W - M, rowY + ROW_H);
-  };
-
-  // ═══════════════════════════════════════════════════════════════════════
-  //  HELPER: New page with header + table header
-  // ═══════════════════════════════════════════════════════════════════════
-  const startNewPage = () => {
-    doc.addPage();
-    drawCompanyHeader(false);
-    drawTableHeader();
-  };
-
-  // ═══════════════════════════════════════════════════════════════════════
-  //  PAGE 1: Header
-  // ═══════════════════════════════════════════════════════════════════════
-  drawCompanyHeader(true);
-
-  // ── Order Info Card ──────────────────────────────────────────────────
-  const cardH = 16;
-  doc.setFillColor(...C.bgCard);
-  doc.setDrawColor(...C.border);
-  doc.setLineWidth(0.3);
-  doc.roundedRect(M, y, CW, cardH, 1.5, 1.5, 'FD');
-
-  // Row 1: Order Ref & Date
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7.5);
-  doc.setTextColor(...C.dark);
-  doc.text('Order Reference:', M + 6, y + 5.5);
-  doc.setTextColor(...C.gold);
-  doc.text(String(data.orderNumber || ''), M + 38, y + 5.5);
-
-  doc.setTextColor(...C.dark);
-  doc.text('Order Date:', M + 100, y + 5.5);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...C.mid);
-  doc.text(String(data.date || ''), M + 122, y + 5.5);
-
-  // Row 2: Order Status — CONFIRMED badge
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...C.dark);
-  doc.text('Order Status:', M + 6, y + 11.5);
-
-  // Green badge — wider to prevent clipping
-  const bx = M + 38;
-  const by = y + 8;
-  const bw = 32;
-  const bh = 5.5;
-  doc.setFillColor(...C.greenBg);
-  doc.setDrawColor(...C.greenBdr);
-  doc.setLineWidth(0.5);
-  doc.roundedRect(bx, by, bw, bh, 1.5, 1.5, 'FD');
-  doc.setFontSize(7);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...C.green);
-  doc.text('CONFIRMED', bx + bw / 2, by + 3.8, { align: 'center' });
-
-  y += cardH + 5;
-
-  // ── Customer Details — 2-Column Card ───────────────────────────────
-  const custState = data.customerState || '';
-  const custDistrict = data.customerDistrict || '';
-  const custAddress = data.customerAddress || '';
-  const custCity = data.customerCity || '';
-  const custPincode = data.customerPincode || '';
-  const hasAddr = !!(custAddress || custCity || custPincode);
-  const boxH = hasAddr ? 34 : 26;
-
-  doc.setFillColor(...C.bgCard);
-  doc.setDrawColor(...C.border);
-  doc.setLineWidth(0.3);
-  doc.roundedRect(M, y, CW, boxH, 1.5, 1.5, 'FD');
-
-  // Vertical divider
-  const midX = M + CW / 2;
-  doc.setDrawColor(...C.border);
-  doc.setLineWidth(0.2);
-  doc.line(midX, y + 2, midX, y + boxH - 2);
-
-  // LEFT: Customer Details
-  doc.setFontSize(7);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...C.gold);
-  doc.text('CUSTOMER DETAILS', M + 6, y + 6);
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(...C.black);
-  doc.text(String(data.customerName || ''), M + 6, y + 12);
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7);
-  doc.setTextColor(...C.dark);
-  doc.text('Phone:  ' + String(data.customerPhone || ''), M + 6, y + 17);
-  if (data.customerEmail) {
-    doc.text('Email:  ' + String(data.customerEmail), M + 6, y + 21.5);
-  }
-  if (hasAddr) {
-    doc.setFontSize(6.5);
-    doc.setTextColor(...C.mid);
-    const addr = [custAddress, custCity, custPincode].filter(Boolean).join(', ');
-    const addrLines = doc.splitTextToSize(addr, CW / 2 - 14);
-    doc.text(addrLines, M + 6, data.customerEmail ? y + 26 : y + 21.5);
-  }
-
-  // RIGHT: Place of Supply & Transport
-  const rx = midX + 6;
-  doc.setFontSize(7);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...C.gold);
-  doc.text('PLACE OF SUPPLY & TRANSPORT', rx, y + 6);
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7);
-  const supplyData = [
-    ['State:', custState || 'N/A'],
-    ['District:', custDistrict || 'N/A'],
-    ['Destination:', custCity || 'N/A'],
-    ['Postal Code:', custPincode || 'N/A'],
-  ];
-  let ry = y + 12;
-  for (const [label, value] of supplyData) {
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...C.dark);
-    doc.text(label, rx, ry);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...C.black);
-    doc.text(String(value), rx + 26, ry);
-    ry += 4.5;
-  }
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(6.5);
-  doc.setTextColor(...C.gold);
-  doc.text('Pickup: Nearest Transport Office Hub', rx, ry + 1);
-
-  y += boxH + 5;
-
-  // ═══════════════════════════════════════════════════════════════════════
-  //  PRODUCT TABLE
-  // ═══════════════════════════════════════════════════════════════════════
-
-  // Top border of entire table
-  doc.setDrawColor(...C.border);
-  doc.setLineWidth(0.3);
-  doc.line(M, y, PAGE_W - M, y);
-
-  drawTableHeader();
-
-  data.items.forEach((item, index) => {
-    // Check for page break
-    if (y > MAX_Y - ROW_H) {
-      startNewPage();
-    }
-
-    const rowTop = y;
-
-    // Alternating row background
-    if (index % 2 === 0) {
-      doc.setFillColor(...C.bgRow);
-      doc.rect(M, rowTop, CW, ROW_H, 'F');
-    }
-
-    const ty = rowTop + 5;
-
-    // S.No
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    doc.setTextColor(...C.mid);
-    doc.text(String(index + 1), col.sno + 5, ty, { align: 'center' });
-
-    // Product Description
-    doc.setTextColor(...C.black);
-    doc.setFont('helvetica', 'normal');
-    const nameStr = String(item.name || '');
-    const maxNameW = col.qty - col.prod - 4; // 89 - 24 - 4 = 61mm
-    const nameLines = doc.splitTextToSize(nameStr, maxNameW);
-    doc.text(nameLines[0] || '', col.prod + 2, ty);
-
-    // Qty (right-aligned)
-    doc.setTextColor(...C.dark);
-    doc.text(String(item.quantity || 0), col.qty + 10, ty, { align: 'right' });
-
-    // Actual Price (MRP, right-aligned) - ensure effective MRP is displayed
-    const effectiveMrp = (item.mrp && item.mrp > item.price) ? item.mrp : Math.round(item.price / 0.4);
-    doc.setTextColor(...C.light);
-    doc.text(rs(effectiveMrp), col.actPrice + 20, ty, { align: 'right' });
-
-    // Actual Total (MRP * Qty, right-aligned)
-    const lineMrpTotal = effectiveMrp * (item.quantity || 0);
-    doc.text(rs(lineMrpTotal), col.actTotal + 23, ty, { align: 'right' });
-
-    // Actual Discount (Discount * Qty, right-aligned)
-    const lineDiscount = Math.max(0, (effectiveMrp - item.price) * (item.quantity || 0));
-    doc.setTextColor(...C.green);
-    doc.text(rs(lineDiscount), col.actDiscount + 22, ty, { align: 'right' });
-
-    // Net Total (Price * Qty, right-aligned, bold)
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...C.black);
-    const lineTotal = (item.price || 0) * (item.quantity || 0);
-    doc.text(rs(lineTotal), col.end - 2, ty, { align: 'right' });
-    doc.setFont('helvetica', 'normal');
-
-    // Draw row grid lines
-    drawRowBorders(rowTop);
-
-    y += ROW_H;
+    return {
+      sno: idx + 1,
+      name: item.name,
+      quantity: qty,
+      mrp,
+      actualTotal,
+      netPrice,
+      netTotal,
+      discountAmt,
+      offPct: offPct > 0 ? offPct : 60,
+    };
   });
 
-  // ═══════════════════════════════════════════════════════════════════════
-  //  TOTALS (last page only)
-  // ═══════════════════════════════════════════════════════════════════════
+  const calculatedGross = items.reduce((sum, i) => sum + i.actualTotal, 0);
+  const calculatedNet = items.reduce((sum, i) => sum + i.netTotal, 0);
+  const calculatedDiscount = Math.max(0, calculatedGross - calculatedNet);
+  
+  const grossAmount = data.subtotal && data.subtotal > calculatedNet ? data.subtotal : calculatedGross;
+  const discountTotal = data.discountTotal && data.discountTotal > 0 ? data.discountTotal : calculatedDiscount;
+  const netValue = grossAmount - discountTotal;
+  
+  const packingCharges = data.packingCharges !== undefined
+    ? Number(data.packingCharges)
+    : Math.round(netValue * 0.03);
 
-  // Ensure enough space for totals (~45mm)
-  if (y > MAX_Y - 45) {
-    doc.addPage();
-    drawCompanyHeader(false);
-  }
+  const netPayable = data.totalAmount && data.totalAmount > 0
+    ? Number(data.totalAmount)
+    : netValue + packingCharges;
 
-  y += 5;
+  const avgDiscount = grossAmount > 0 ? Math.round((discountTotal / grossAmount) * 100) : 60;
 
-  const totLabelX = M + 105;
-  const totValueX = PAGE_W - M - 4;
+  const stateVal = data.customerState || 'Tamil Nadu';
+  const districtVal = data.customerDistrict || 'N/A';
+  const cityVal = data.customerCity || 'Sivakasi';
+  const pincodeVal = data.customerPincode || '626123';
+  const addressVal = data.customerAddress || '';
 
-  // 1. Gross Amount (Actual Total MRP)
-  const calculatedGross = data.items.reduce((sum, item) => {
-    const effectiveMrp = (item.mrp && item.mrp > item.price) ? item.mrp : Math.round(item.price / 0.4);
-    return sum + effectiveMrp * (item.quantity || 0);
-  }, 0);
-  const itemsNetTotal = data.items.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 0), 0);
-  const grossAmount = (data.subtotal && data.subtotal > itemsNetTotal) ? data.subtotal : calculatedGross;
-  const totalDiscount = (data.discountTotal && data.discountTotal > 0) ? data.discountTotal : Math.max(0, grossAmount - itemsNetTotal);
+  const orderDateStr = data.date || new Date().toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
 
-  doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...C.mid);
-  doc.text('Gross Amount (Actual MRP Total):', totLabelX, y);
-  doc.setTextColor(...C.dark);
-  doc.setFont('helvetica', 'bold');
-  doc.text(rs(grossAmount), totValueX, y, { align: 'right' });
-  y += 5.5;
+  const tableRowsHtml = items.map(item => `
+    <tr>
+      <td class="snum">${item.sno}</td>
+      <td class="prod">${escapeHtml(item.name)}</td>
+      <td class="num">${item.quantity}</td>
+      <td class="num strike">${formatCurrency(item.mrp)}</td>
+      <td class="num strike">${formatCurrency(item.actualTotal)}</td>
+      <td class="pct"><span class="chip">-${item.offPct}%</span></td>
+      <td class="num discount">${formatCurrency(item.discountAmt)}</td>
+      <td class="num net">${formatCurrency(item.netTotal)}</td>
+    </tr>
+  `).join('');
 
-  // 2. Less: Festival Discount (60% OFF)
-  if (totalDiscount > 0) {
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...C.green);
-    doc.text('Less: Festival Discount (60% Off):', totLabelX, y);
-    doc.setFont('helvetica', 'bold');
-    doc.text('-' + rs(totalDiscount), totValueX, y, { align: 'right' });
-    y += 5.5;
-  }
+  return `
+<div class="sheet">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-row">
+      <div class="brand">
+        <div class="logo-frame">
+          <img src="/logo/logo.png" alt="JJ Crackers Logo" crossorigin="anonymous" />
+        </div>
+        <div>
+          <div class="brand-name">JJ CRACKERS</div>
+          <div class="brand-sub">ஜெகஜோதி பட்டாசுகள் · PREMIUM SIVAKASI FIREWORKS</div>
+          <div class="brand-addr">1/406, Sivakasi-Vembakottai Main Road, Opp. EB Office,<br>Vembakottai, Tamil Nadu · +91 70923 00252</div>
+        </div>
+      </div>
+      <div class="receipt-tag">
+        <div class="kicker">Order Receipt</div>
+        <div class="title">${escapeHtml(data.orderNumber)}</div>
+        <div class="status-pill"><span class="dot"></span> Confirmed</div>
+      </div>
+    </div>
+  </div>
 
-  // 3. Total Value (Net)
-  const netValue = grossAmount - totalDiscount;
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...C.mid);
-  doc.text('Total Value (Net Amount):', totLabelX, y);
-  doc.setTextColor(...C.dark);
-  doc.setFont('helvetica', 'bold');
-  doc.text(rs(netValue), totValueX, y, { align: 'right' });
-  y += 5.5;
+  <!-- SPARK STRIP -->
+  <div class="spark-strip"></div>
 
-  // 4. Add: Packing & Forwarding Charges (3%)
-  const packingCharges = data.packingCharges !== undefined ? data.packingCharges : Math.round(netValue * 0.03);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...C.mid);
-  doc.text('Add: Packing Charges (3%):', totLabelX, y);
-  doc.setTextColor(...C.dark);
-  doc.setFont('helvetica', 'bold');
-  doc.text(rs(packingCharges), totValueX, y, { align: 'right' });
-  y += 5.5;
+  <!-- DIYA ROW -->
+  <div class="diya-row">
+    <svg viewBox="0 0 64 64"><path d="M12 42 C12 52, 22 56, 32 56 C42 56, 52 52, 52 42 Z" fill="#F5A300"/><ellipse cx="32" cy="42" rx="20" ry="5" fill="#FFD400"/><path d="M32 14 C36 22, 38 28, 32 37 C26 28, 28 22, 32 14 Z" fill="#C8102E"/><path d="M32 20 C34 25, 35 29, 32 35 C29 29, 30 25, 32 20 Z" fill="#FFD400"/></svg>
+    <svg viewBox="0 0 64 64"><path d="M12 42 C12 52, 22 56, 32 56 C42 56, 52 52, 52 42 Z" fill="#F5A300"/><ellipse cx="32" cy="42" rx="20" ry="5" fill="#FFD400"/><path d="M32 14 C36 22, 38 28, 32 37 C26 28, 28 22, 32 14 Z" fill="#C8102E"/><path d="M32 20 C34 25, 35 29, 32 35 C29 29, 30 25, 32 20 Z" fill="#FFD400"/></svg>
+    <svg viewBox="0 0 64 64"><path d="M12 42 C12 52, 22 56, 32 56 C42 56, 52 52, 52 42 Z" fill="#F5A300"/><ellipse cx="32" cy="42" rx="20" ry="5" fill="#FFD400"/><path d="M32 14 C36 22, 38 28, 32 37 C26 28, 28 22, 32 14 Z" fill="#C8102E"/><path d="M32 20 C34 25, 35 29, 32 35 C29 29, 30 25, 32 20 Z" fill="#FFD400"/></svg>
+  </div>
 
-  // Divider
-  doc.setDrawColor(...C.border);
-  doc.setLineWidth(0.3);
-  doc.line(totLabelX - 2, y, PAGE_W - M, y);
-  y += 4;
+  <!-- META STRIP -->
+  <div class="meta-strip">
+    <div class="meta-item">
+      <div class="label">Order Date</div>
+      <div class="value">${escapeHtml(orderDateStr)}</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">Customer</div>
+      <div class="value accent">${escapeHtml(data.customerName)}</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">Contact</div>
+      <div class="value">${escapeHtml(data.customerPhone)}</div>
+    </div>
+    <div class="meta-item">
+      <div class="label">Discount Applied</div>
+      <div class="value pct">${avgDiscount}% OFF</div>
+    </div>
+  </div>
 
-  // NET PAYABLE bar (Grand Total) - Crimson red banner
-  const finalGrandTotal = netValue + packingCharges;
-  const npX = totLabelX - 4;
-  const npW = PAGE_W - M - npX;
-  doc.setFillColor(...C.red);
-  doc.roundedRect(npX, y - 2.5, npW, 11, 1.5, 1.5, 'F');
+  <!-- BODY -->
+  <div class="body">
+    <!-- GARLAND -->
+    <div class="garland">
+      ${Array(7).fill(`
+        <svg viewBox="0 0 24 24">
+          <g fill="#F5A300">
+            <circle cx="12" cy="5" r="3.6"/><circle cx="12" cy="19" r="3.6"/>
+            <circle cx="5" cy="12" r="3.6"/><circle cx="19" cy="12" r="3.6"/>
+            <circle cx="7.2" cy="7.2" r="3.6"/><circle cx="16.8" cy="16.8" r="3.6"/>
+            <circle cx="7.2" cy="16.8" r="3.6"/><circle cx="16.8" cy="7.2" r="3.6"/>
+          </g>
+          <circle cx="12" cy="12" r="3.4" fill="#C8102E"/>
+        </svg>
+      `).join('')}
+    </div>
 
-  doc.setFontSize(8.5);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...C.yellowSoft);
-  doc.text('NET PAYABLE AMOUNT:', npX + 4, y + 4.5);
-  doc.setTextColor(...C.white);
-  doc.text(rs(finalGrandTotal), PAGE_W - M - 4, y + 4.5, { align: 'right' });
+    <!-- TWO COLUMNS -->
+    <div class="two-col">
+      <div class="info-card">
+        <h3>Customer Details</h3>
+        <div class="name">${escapeHtml(data.customerName)}</div>
+        <p>${escapeHtml(addressVal || 'Customer Pickup / Delivery Address')}</p>
+        <p>${escapeHtml(cityVal)}${districtVal && districtVal !== 'N/A' ? ', ' + escapeHtml(districtVal) : ''} - ${escapeHtml(pincodeVal)}</p>
+        <p>Phone: ${escapeHtml(data.customerPhone)}</p>
+        ${data.customerEmail ? `<p>Email: ${escapeHtml(data.customerEmail)}</p>` : ''}
+      </div>
 
-  // ── Authorized Signatory (left side, dynamically aligned with Net Payable) ──
-  const sigX = 44;
-  const sigLineY = y - 1; // Aligned near the top of the Net Payable bar
-  if (logoLoaded && logoImg.complete && logoImg.naturalHeight > 0) {
-    doc.addImage(logoImg, 'PNG', 57.5, sigLineY - 20, 18, 18, undefined, 'FAST');
-  }
-  doc.setDrawColor(...C.border);
-  doc.setLineWidth(0.3);
-  doc.line(sigX, sigLineY, sigX + 45, sigLineY);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(6.5);
-  doc.setTextColor(...C.mid);
-  doc.text('Authorized Signatory', 66.5, sigLineY + 4, { align: 'center' });
+      <div class="info-card">
+        <h3>Place of Supply &amp; Transport</h3>
+        <div class="kv"><span>State</span><b>${escapeHtml(stateVal)}</b></div>
+        <div class="kv"><span>District</span><b>${escapeHtml(districtVal)}</b></div>
+        <div class="kv"><span>Destination</span><b>${escapeHtml(cityVal)}</b></div>
+        <div class="kv"><span>Postal Code</span><b>${escapeHtml(pincodeVal)}</b></div>
+        <div class="hub-note">📍 Pickup: Nearest Transport Office Hub</div>
+      </div>
+    </div>
 
-  y += 18;
+    <!-- ITEMS TABLE -->
+    <div class="section-label">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.3 7.2-6.3-4.6-6.3 4.6 2.3-7.2-6-4.8h7.6z" fill="#C8102E"/></svg>
+      Order Items
+    </div>
 
-  // ═══════════════════════════════════════════════════════════════════════
-  //  THANK YOU NOTE (below Net Payable / Signatory area if space permits)
-  // ═══════════════════════════════════════════════════════════════════════
+    <table class="items">
+      <thead>
+        <tr>
+          <th style="width:36px;">S.No</th>
+          <th>Product Description</th>
+          <th class="num" style="width:40px;">Qty</th>
+          <th class="num">Actual Price</th>
+          <th class="num">Actual Total</th>
+          <th style="text-align:right; width:65px;">Off %</th>
+          <th class="num">Discount</th>
+          <th class="num">Net Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${tableRowsHtml}
+      </tbody>
+    </table>
 
-  if (y + 20 > MAX_Y) {
-    doc.addPage();
-    drawCompanyHeader(false);
-  }
+    <!-- TOTALS -->
+    <div class="totals-wrap">
+      <div class="totals">
+        <div class="row">
+          <span>Gross Amount (MRP Total)</span>
+          <b>${formatCurrency(grossAmount)}</b>
+        </div>
+        <div class="row discount">
+          <span>Festival Discount <span class="pct-tag">${avgDiscount}% OFF</span></span>
+          <b>-${formatCurrency(discountTotal)}</b>
+        </div>
+        <div class="row">
+          <span>Total Value (Net Amount)</span>
+          <b>${formatCurrency(netValue)}</b>
+        </div>
+        <div class="row">
+          <span>Packing Charges (3%)</span>
+          <b>${formatCurrency(packingCharges)}</b>
+        </div>
+        <div class="net-payable">
+          <span class="lbl">Net Payable</span>
+          <span class="amt">${formatCurrency(netPayable)}</span>
+        </div>
+      </div>
+    </div>
 
-  // ── Professional Thank You Message ──
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
-  doc.setTextColor(...C.gold);
-  doc.text('Thank you for choosing us!', PAGE_W / 2, y + 5, { align: 'center' });
+    <!-- THANK YOU NOTE -->
+    <div class="thanks">
+      <svg class="burst" viewBox="0 0 48 48" fill="none">
+        <g stroke="#F5A300" stroke-width="2.5" stroke-linecap="round">
+          <line x1="24" y1="4" x2="24" y2="16"/>
+          <line x1="24" y1="32" x2="24" y2="44"/>
+          <line x1="4" y1="24" x2="16" y2="24"/>
+          <line x1="32" y1="24" x2="44" y2="24"/>
+          <line x1="10" y1="10" x2="18" y2="18"/>
+          <line x1="30" y1="30" x2="38" y2="38"/>
+          <line x1="10" y1="38" x2="18" y2="30"/>
+          <line x1="30" y1="18" x2="38" y2="10"/>
+        </g>
+        <circle cx="24" cy="24" r="5" fill="#C8102E"/>
+      </svg>
+      <h4>Thank you for choosing us!</h4>
+      <p>Celebrate the joy from JJ Crackers.</p>
+    </div>
+  </div>
 
-  doc.setFont('helvetica', 'italic');
-  doc.setFontSize(12);
-  doc.setTextColor(...C.dark);
-  doc.text('Celebrate the joy from JJ Crackers.', PAGE_W / 2, y + 12, { align: 'center' });
+  <!-- GARLAND DIVIDER -->
+  <div class="garland-divider">
+    ${Array(14).fill(`
+      <svg viewBox="0 0 24 24">
+        <g fill="#F5A300">
+          <circle cx="12" cy="5" r="3.6"/><circle cx="12" cy="19" r="3.6"/>
+          <circle cx="5" cy="12" r="3.6"/><circle cx="19" cy="12" r="3.6"/>
+          <circle cx="7.2" cy="7.2" r="3.6"/><circle cx="16.8" cy="16.8" r="3.6"/>
+          <circle cx="7.2" cy="16.8" r="3.6"/><circle cx="16.8" cy="7.2" r="3.6"/>
+        </g>
+        <circle cx="12" cy="12" r="3.4" fill="#C8102E"/>
+      </svg>
+    `).join('')}
+  </div>
 
-  y += 20;
+  <!-- BILINGUAL TERMS & SAFETY -->
+  <div class="panels">
+    <div class="panel">
+      <h4>
+        <svg viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4M4 6h16v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6Z" stroke="#C8102E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Terms &amp; Conditions
+      </h4>
+      <ol>
+        <li>Goods once booked cannot be cancelled or returned.<span class="ta">பதிவு செய்யப்பட்ட பொருட்கள் திரும்பப் பெறப்பட மாட்டாது.</span></li>
+        <li>Delivery is subject to transport service availability.<span class="ta">பொருட்கள் போக்குவரத்து சேவை கிடைக்கும் தன்மையை பொறுத்து விநியோகம் செய்யப்படும்.</span></li>
+        <li>Price includes local taxes; transport charges are extra.<span class="ta">விலையில் உள்ளூர் வரிகள் அடங்கும்; போக்குவரத்து கட்டணம் தனி.</span></li>
+        <li>Customer must verify goods quantity at transport pickup hub.<span class="ta">போக்குவரத்து மையத்தில் பொருட்களைப் பெறும்போது அளவைச் சரிபார்க்கவும்.</span></li>
+      </ol>
+    </div>
 
-  // ═══════════════════════════════════════════════════════════════════════
-  //  TERMS & SAFETY INSTRUCTIONS (last page only, English & Tamil)
-  // ═══════════════════════════════════════════════════════════════════════
+    <div class="panel safety">
+      <h4>
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 2 4 5v6c0 5 3.4 8.4 8 11 4.6-2.6 8-6 8-11V5l-8-3Z" stroke="#C8102E" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        Safety Instructions
+      </h4>
+      <ol>
+        <li>Store fireworks in a cool, dry, and secure place.<span class="ta">பட்டாசுகளை குளிர்ந்த, உலர்ந்த இடத்தில் வைக்கவும்.</span></li>
+        <li>Maintain safe distance while lighting fireworks.<span class="ta">பட்டாசு பற்றவைக்கும்போது பாதுகாப்பான தூரத்தை பராமரிக்கவும்.</span></li>
+        <li>Use an incense stick (Agarbatti) for lighting; avoid open flame.<span class="ta">ஊதுபத்தி பயன்படுத்தவும்; திறந்த சுடரை தவிர்க்கவும்.</span></li>
+        <li>Keep a bucket of water nearby for emergencies.<span class="ta">அவசர காலத்திற்கு தண்ணீர் வாலி வைத்திருக்கவும்.</span></li>
+        <li>Supervision by adults is mandatory for children.<span class="ta">குழந்தைகளுக்கு பெரியவர்களின் கண்காணிப்பு கட்டாயமாகும்.</span></li>
+      </ol>
+    </div>
+  </div>
 
-  const termsLines = [
-    '1. Goods once booked cannot be cancelled or returned. (பதிவு செய்யப்பட்ட பொருட்கள் திரும்பப் பெறப்பட மாட்டாது.)',
-    '2. Delivery is subject to transport service availability. (பொருட்கள் போக்குவரத்து சேவை கிடைக்கும் தன்மையைப் பொறுத்து விநியோகம் செய்யப்படும்.)',
-    '3. Price includes local taxes; transport charges are extra. (விலையில் உள்ளூர் வரிகள் அடங்கும்; போக்குவரத்து கட்டணம் தனி.)',
-    '4. Customer must verify goods quantity at transport pickup hub. (போக்குவரத்து மையத்தில் பொருட்களைப் பெறும்போது அளவைச் சரிபார்க்கவும்.)'
-  ];
-
-  const safetyLines = [
-    '1. Store fireworks in a cool, dry, and secure place. (பட்டாசுகளை குளிர்ந்த, உலர்ந்த மற்றும் பாதுகாப்பான இடத்தில் வைக்கவும்.)',
-    '2. Maintain safe distance while lighting fireworks. (பட்டாசு பற்றவைக்கும்போது பாதுகாப்பான தூரத்தை பராமரிக்கவும்.)',
-    '3. Use an incense stick (Agarbatti) for lighting; do not use open flame. (பற்றவைக்க ஊதுபத்தி பயன்படுத்தவும்; திறந்த சுடரை பயன்படுத்த வேண்டாம்.)',
-    '4. Keep a bucket of water nearby in case of emergency. (அவசர காலத்திற்கு அருகில் ஒரு வாலி தண்ணீரை வைத்திருக்கவும்.)',
-    '5. Supervision by adults is mandatory for children. (குழந்தைகளுக்கு பெரியவர்களின் கண்காணிப்பு கட்டாயமாகும்.)'
-  ];
-
-  // Draw Terms & Conditions
-  const termsRes = renderTamilEnglishSectionToImage('TERMS & CONDITIONS / விதிகளும் நிபந்தனைகளும்', termsLines, 12, CW);
-  if (termsRes.dataUrl) {
-    if (y + termsRes.heightMm > MAX_Y) {
-      doc.addPage();
-      drawCompanyHeader(false);
-    }
-    doc.addImage(termsRes.dataUrl, 'JPEG', M, y, CW, termsRes.heightMm, undefined, 'FAST');
-    y += termsRes.heightMm + 6;
-  }
-
-  // Draw Safety Instructions
-  const safetyRes = renderTamilEnglishSectionToImage('SAFETY INSTRUCTIONS / பாதுகாப்பு வழிமுறைகள்', safetyLines, 12, CW);
-  if (safetyRes.dataUrl) {
-    if (y + safetyRes.heightMm > MAX_Y) {
-      doc.addPage();
-      drawCompanyHeader(false);
-    }
-    doc.addImage(safetyRes.dataUrl, 'JPEG', M, y, CW, safetyRes.heightMm, undefined, 'FAST');
-    y += safetyRes.heightMm;
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════
-  //  POST-PROCESSING: Footers on all pages
-  // ═══════════════════════════════════════════════════════════════════════
-  const finalTotal = doc.getNumberOfPages();
-  for (let i = 1; i <= finalTotal; i++) {
-    doc.setPage(i);
-    drawFooter(i, finalTotal);
-  }
-
-  return doc;
+  <!-- FOOTER -->
+  <div class="footer">
+    <b>JJ CRACKERS · SIVAKASI</b>
+    <div class="tag">Premium Friendly Sivakasi Fireworks Since 2015 · Contact: +91 70923 00252</div>
+  </div>
+</div>
+  `;
 }
 
-// ─── Download helper ────────────────────────────────────────────────────────
+const INVOICE_CSS = `
+  :root {
+    --navy: #1B2A5E;
+    --navy-deep: #101B42;
+    --red: #C8102E;
+    --red-deep: #8C0B20;
+    --maroon: #7B2D26;
+    --yellow: #FFD400;
+    --yellow-soft: #FFE685;
+    --marigold: #F5A300;
+    --ink: #1B2440;
+    --cream: #FFFBEF;
+    --sand: #FCEFCB;
+    --green: #2F7A45;
+    --line: rgba(27,36,64,0.14);
+  }
+  * { box-sizing: border-box; }
+  .sheet {
+    width: 860px;
+    margin: 0 auto;
+    background: var(--cream);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 30px 60px rgba(16,27,66,0.24);
+    border: 1px solid rgba(27,36,64,0.08);
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  .header {
+    position: relative;
+    background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy) 60%, #22326B 100%);
+    color: var(--cream);
+    padding: 30px 40px 26px;
+    overflow: hidden;
+  }
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+  }
+  .brand { display: flex; align-items: center; gap: 18px; }
+  .logo-frame {
+    width: 78px; height: 78px; border-radius: 50%;
+    background: #fff;
+    padding: 4px;
+    box-shadow: 0 0 0 4px var(--yellow), 0 8px 18px rgba(0,0,0,0.30);
+    flex-shrink: 0;
+  }
+  .logo-frame img { width: 100%; height: 100%; border-radius: 50%; display: block; object-fit: cover; }
+  .brand-name { font-family: 'Fraunces', serif; font-weight: 800; font-size: 29px; letter-spacing: 0.4px; line-height: 1.05; text-transform: uppercase; color: #FFFBEF; }
+  .brand-sub { font-size: 12px; color: var(--yellow-soft); margin-top: 5px; font-weight: 700; letter-spacing: 0.3px; }
+  .brand-addr { font-size: 11.3px; color: rgba(255,251,239,0.72); margin-top: 8px; line-height: 1.5; max-width: 340px; }
+  .receipt-tag { text-align: right; }
+  .receipt-tag .kicker { font-size: 11px; color: var(--yellow-soft); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+  .receipt-tag .title { font-family: 'Fraunces', serif; font-size: 23px; font-weight: 700; margin-top: 3px; color: #FFFBEF; }
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 10px; padding: 6px 14px; border-radius: 999px;
+    background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.35);
+    font-size: 12px; font-weight: 700; letter-spacing: 0.4px; color: var(--cream);
+  }
+  .status-pill .dot { width: 7px; height: 7px; border-radius: 50%; background: #7CE38B; box-shadow: 0 0 0 3px rgba(124,227,139,0.25); }
+  .spark-strip {
+    height: 14px;
+    background: repeating-linear-gradient(90deg, var(--yellow) 0 10px, var(--red) 10px 20px);
+  }
+  .diya-row {
+    display: flex; justify-content: center; gap: 26px;
+    background: var(--sand);
+    padding: 10px 10px 4px;
+  }
+  .diya-row svg { width: 30px; height: 30px; }
+  .meta-strip {
+    display: flex; flex-wrap: wrap; justify-content: space-between;
+    background: var(--sand);
+    padding: 12px 40px 16px;
+    gap: 20px;
+    border-bottom: 1px dashed rgba(27,36,64,0.25);
+  }
+  .meta-item { flex: 1 1 0; min-width: 120px; }
+  .meta-item .label { font-size: 11px; color: #8A6A1E; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; }
+  .meta-item .value { font-size: 14.5px; font-weight: 700; color: var(--ink); margin-top: 2px; }
+  .meta-item .value.accent { color: var(--red); }
+  .meta-item .value.pct { color: var(--green); }
+  .body { padding: 30px 40px 8px; }
+  .garland { display: flex; justify-content: center; gap: 6px; margin-bottom: 26px; }
+  .garland svg { width: 26px; height: 26px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+  .info-card {
+    background: #FFFFFF;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 20px;
+    position: relative;
+  }
+  .info-card::before {
+    content: "";
+    position: absolute; left: 0; top: 14px; bottom: 14px; width: 4px;
+    background: var(--yellow);
+    border-radius: 0 4px 4px 0;
+  }
+  .info-card h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 13.5px; margin: 0 0 10px; color: var(--red);
+    text-transform: uppercase; letter-spacing: 0.6px; font-weight: 700;
+  }
+  .info-card .name { font-weight: 800; font-size: 15.5px; margin-bottom: 4px; color: var(--ink); }
+  .info-card p { margin: 2px 0; font-size: 13.5px; color: #3C4260; line-height: 1.55; }
+  .info-card .kv { display: flex; justify-content: space-between; font-size: 13.5px; padding: 3px 0; color: #3C4260; }
+  .info-card .kv b { color: var(--ink); font-weight: 700; }
+  .hub-note {
+    margin-top: 10px; padding: 7px 10px; border-radius: 8px;
+    background: rgba(200,16,46,0.08); color: var(--red); font-size: 12px; font-weight: 700;
+    display: inline-block;
+  }
+  .section-label {
+    font-family: 'Fraunces', serif; font-weight: 700; font-size: 15px; color: var(--ink);
+    margin: 4px 0 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .section-label svg { width: 16px; height: 16px; }
+  table.items {
+    width: 100%; border-collapse: separate; border-spacing: 0;
+    border-radius: 12px; overflow: hidden;
+    border: 1px solid var(--line);
+    margin-bottom: 8px;
+  }
+  table.items thead th {
+    background: var(--navy-deep);
+    color: var(--yellow-soft);
+    font-size: 11.2px; text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 12px 12px; text-align: left; font-weight: 700;
+  }
+  table.items thead th.num { text-align: right; }
+  table.items tbody td {
+    padding: 12px 12px; font-size: 13.5px; border-bottom: 1px solid var(--line);
+    background: #fff; color: var(--ink);
+  }
+  table.items tbody tr:nth-child(even) td { background: #FBF6E4; }
+  table.items tbody tr:last-child td { border-bottom: none; }
+  table.items td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.items td.strike { color: #9AA0B4; text-decoration: line-through; font-size: 12.5px; }
+  table.items td.discount { color: var(--green); font-weight: 700; }
+  table.items td.pct { text-align: right; }
+  table.items td.pct .chip {
+    display: inline-block; background: rgba(200,16,46,0.10); color: var(--red);
+    font-weight: 800; font-size: 12px; padding: 3px 9px; border-radius: 999px;
+  }
+  table.items td.net { font-weight: 800; color: var(--red); }
+  table.items td.snum { color: #8A8FA6; font-size: 12.5px; text-align: center; }
+  table.items td.prod { font-weight: 700; color: var(--ink); }
+  .totals-wrap { display: flex; justify-content: flex-end; margin: 18px 0 30px; }
+  .totals {
+    width: 330px; background: #fff; border: 1px solid var(--line); border-radius: 14px;
+    padding: 16px 20px;
+  }
+  .totals .row { display: flex; justify-content: space-between; font-size: 13.5px; padding: 5px 0; color: #3C4260; }
+  .totals .row b { color: var(--ink); font-weight: 700; }
+  .totals .row.discount { color: var(--green); font-weight: 700; }
+  .totals .row.discount .pct-tag {
+    background: var(--green); color: #fff; font-size: 10.5px; font-weight: 800;
+    padding: 1px 7px; border-radius: 999px; margin-left: 6px;
+  }
+  .totals .net-payable {
+    margin-top: 10px; padding: 14px 16px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--red) 0%, var(--red-deep) 100%);
+    color: #fff; display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 8px 18px rgba(200,16,46,0.30);
+  }
+  .net-payable .lbl { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--yellow-soft); }
+  .net-payable .amt { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 700; color: #fff; }
+  .thanks { text-align: center; padding: 6px 0 26px; }
+  .thanks .burst { margin: 0 auto 10px; width: 46px; height: 46px; }
+  .thanks h4 { font-family: 'Fraunces', serif; font-size: 20px; margin: 0; color: var(--red); font-weight: 700; }
+  .thanks p { margin: 6px 0 0; font-size: 13px; color: #6B6350; font-style: italic; }
+  .garland-divider { display: flex; justify-content: center; align-items: center; gap: 2px; padding: 0 40px 24px; }
+  .garland-divider svg { width: 24px; height: 24px; margin: 0 -3px; }
+  .panels { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; padding: 0 40px 30px; }
+  .panel { background: var(--sand); border-radius: 12px; padding: 18px 20px; border: 1px solid rgba(27,36,64,0.08); }
+  .panel.safety { background: #FDE7E1; }
+  .panel h4 {
+    font-family: 'Fraunces', serif; font-size: 13.5px; margin: 0 0 12px; color: var(--red);
+    text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 7px; font-weight: 700;
+  }
+  .panel h4 svg { width: 15px; height: 15px; }
+  .panel ol { margin: 0; padding-left: 18px; }
+  .panel li { font-size: 12.2px; line-height: 1.65; color: #3C4260; margin-bottom: 9px; }
+  .panel li .ta { display: block; font-size: 11.2px; color: #7A7460; margin-top: 1px; }
+  .footer {
+    background: var(--navy-deep); color: rgba(255,251,239,0.82);
+    padding: 20px 40px; text-align: center; font-size: 12px;
+  }
+  .footer b { color: var(--yellow-soft); letter-spacing: 0.6px; font-weight: 800; font-size: 13.5px; }
+  .footer .tag { margin-top: 4px; font-size: 11.3px; color: rgba(255,251,239,0.55); }
+`;
+
+/**
+ * Generates an ultra-premium, pixel-perfect PDF matching jj-crackers-invoice.html
+ */
+export async function generateReceipt(data: ReceiptData): Promise<jsPDF> {
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    // SSR fallback dummy
+    return new jsPDF('p', 'mm', 'a4');
+  }
+
+  // Ensure fonts are loaded
+  if (document.fonts) {
+    try {
+      await document.fonts.ready;
+    } catch { /* continue */ }
+  }
+
+  // Create clean offscreen rendering container to ensure perfect desktop layout on ALL devices (mobile/desktop)
+  const renderContainer = document.createElement('div');
+  renderContainer.id = 'jj-pdf-offscreen-render';
+  renderContainer.style.position = 'fixed';
+  renderContainer.style.left = '-9999px';
+  renderContainer.style.top = '0';
+  renderContainer.style.width = '860px';
+  renderContainer.style.zIndex = '-9999';
+  renderContainer.style.background = '#FFFBEF';
+  renderContainer.style.overflow = 'visible';
+
+  // Inject style tag + HTML content
+  const styleEl = document.createElement('style');
+  styleEl.textContent = INVOICE_CSS;
+  renderContainer.appendChild(styleEl);
+
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = buildInvoiceHtml(data);
+  renderContainer.appendChild(wrapper);
+
+  document.body.appendChild(renderContainer);
+
+  // Wait briefly for images and layout to render cleanly
+  await new Promise(r => setTimeout(r, 120));
+
+  const sheetEl = renderContainer.querySelector('.sheet') as HTMLElement || renderContainer;
+
+  try {
+    const canvas = await html2canvas(sheetEl, {
+      scale: 2, // 2x high resolution for retina crispness
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#FFFBEF',
+      logging: false,
+      width: 860,
+      windowWidth: 1024,
+    });
+
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const pdfWidth = 210;
+    const pdfHeight = 297;
+    const imgWidth = pdfWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    doc.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+    heightLeft -= pdfHeight;
+
+    while (heightLeft > 0) {
+      position -= pdfHeight;
+      doc.addPage();
+      doc.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+      heightLeft -= pdfHeight;
+    }
+
+    return doc;
+  } finally {
+    if (renderContainer.parentNode) {
+      document.body.removeChild(renderContainer);
+    }
+  }
+}
+
+/**
+ * Downloads the generated PDF to user's device
+ */
 export function downloadReceipt(doc: jsPDF, orderNumber: string) {
   doc.save('JJ-Crackers-Receipt-' + String(orderNumber || 'order') + '.pdf');
 }
