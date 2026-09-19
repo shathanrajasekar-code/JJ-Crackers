@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>JJ Crackers — Premium Order Invoice</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JJ Crackers Order Invoice #JJ-20260911-6601</title>
 <style>
+
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap');
+
   :root {
     --midnight: #101827;
     --navy-deep: #0B1220;
@@ -23,80 +23,70 @@
     --light-border: #E2E8F0;
     --subtle-bg: #F8F7F3;
     --green: #16A34A;
-    --green-bg: #DCFCE7;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body {
-    background: #ECE9E1;
+
+  body {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     color: var(--ink);
     -webkit-font-smoothing: antialiased;
+    background: #ECE9E1;
+    padding: 30px 16px;
   }
 
-  /* Screen Container */
   .invoice-wrapper {
-    max-width: 900px;
-    margin: 24px auto;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  /* Page Sheet styling */
+  .page-sheet {
+    width: 860px;
+    min-height: 1216px;
+    background: #FFFFFF;
+    margin: 0 auto 36px;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.1);
+    border-radius: 6px;
+    position: relative;
     display: flex;
     flex-direction: column;
-    gap: 28px;
-  }
-
-  /* Page Sheet Structure */
-  .page-sheet {
-    width: 100%;
-    background: #FFFFFF;
-    border: 1px solid rgba(16, 24, 39, 0.12);
-    border-radius: 4px;
-    box-shadow: 0 16px 36px rgba(16, 24, 39, 0.08), 0 2px 4px rgba(16, 24, 39, 0.04);
+    justify-content: space-between;
+    box-sizing: border-box;
     overflow: hidden;
-    position: relative;
-  }
-
-  /* Subtle Watermark on background */
-  .page-sheet::before {
-    content: "JJ";
-    position: absolute;
-    top: 48%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(-25deg);
-    font-family: 'Cinzel', serif;
-    font-size: 260px;
-    font-weight: 900;
-    color: rgba(212, 167, 44, 0.02);
-    pointer-events: none;
-    z-index: 0;
   }
 
   .sheet-inner {
-    position: relative;
-    z-index: 1;
     display: flex;
     flex-direction: column;
-    min-height: 100%;
+    flex: 1;
   }
 
-  /* ===== HEADER ===== */
+  /* Header Banner */
   .header-banner {
-    background: linear-gradient(135deg, var(--navy-deep) 0%, var(--midnight) 55%, #182236 100%);
+    background: linear-gradient(135deg, var(--midnight) 0%, #1a2333 60%, #151e2e 100%);
     color: #FFFFFF;
-    padding: 22px 28px;
-    position: relative;
-    border-bottom: 3px solid var(--gold);
+    padding: 22px 28px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 20px;
+    position: relative;
+    overflow: hidden;
   }
-  .header-banner::after {
+
+  .header-banner::before {
     content: "";
     position: absolute;
-    inset: 0;
-    background-image: 
-      radial-gradient(circle at 95% 20%, rgba(242, 193, 78, 0.18) 0, transparent 45%),
-      radial-gradient(circle at 80% 80%, rgba(249, 115, 22, 0.12) 0, transparent 50%);
+    right: -40px;
+    top: -40px;
+    width: 220px;
+    height: 220px;
+    background: radial-gradient(circle, rgba(212, 167, 44, 0.15) 0%, transparent 70%);
     pointer-events: none;
+  }
+
+  .header-banner.continuation {
+    padding: 16px 28px;
   }
 
   .brand-group {
@@ -106,18 +96,25 @@
     position: relative;
     z-index: 1;
   }
+
   .logo-box {
-    width: 74px;
-    height: 74px;
+    width: 72px;
+    height: 72px;
     border-radius: 50%;
     background: #FFFFFF;
-    padding: 3px;
-    box-shadow: 0 0 0 3px var(--gold), 0 6px 16px rgba(0,0,0,0.35);
+    padding: 2px;
+    box-shadow: 0 0 0 3px var(--gold), 0 4px 14px rgba(0,0,0,0.35);
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
   }
+
+  .logo-box.small {
+    width: 52px;
+    height: 52px;
+  }
+
   .logo-box img {
     width: 100%;
     height: 100%;
@@ -125,18 +122,21 @@
     display: block;
     object-fit: cover;
   }
+
   .brand-text {
     display: flex;
     flex-direction: column;
   }
+
   .brand-name {
     font-family: 'Cinzel', serif;
     font-weight: 800;
-    font-size: 26px;
+    font-size: 25px;
     letter-spacing: 1.5px;
     color: #FFFFFF;
     line-height: 1.1;
   }
+
   .brand-sub {
     font-size: 11.5px;
     color: var(--gold-light);
@@ -148,18 +148,21 @@
     align-items: center;
     gap: 8px;
   }
+
   .brand-sub span.tamil {
     font-size: 12px;
     letter-spacing: 0.2px;
     color: #FFFFFF;
     font-weight: 600;
   }
+
   .brand-contact {
     font-size: 11px;
     color: rgba(255, 255, 255, 0.75);
     margin-top: 5px;
     line-height: 1.45;
   }
+
   .brand-contact b { color: rgba(255, 255, 255, 0.95); font-weight: 600; }
 
   /* Invoice Tag (Right) */
@@ -168,33 +171,48 @@
     position: relative;
     z-index: 1;
   }
+
   .festive-spark-icon {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    font-size: 10.5px;
+    font-size: 10px;
     font-weight: 700;
     letter-spacing: 1.5px;
     text-transform: uppercase;
     color: var(--gold-light);
     margin-bottom: 2px;
   }
-  .festive-spark-icon svg { width: 13px; height: 13px; fill: var(--gold-light); }
+
+  .festive-spark-icon svg { width: 13px; height: 13px; fill: var(--gold); }
+
   .invoice-title {
     font-family: 'Cinzel', serif;
-    font-size: 23px;
+    font-size: 22px;
     font-weight: 800;
+    letter-spacing: 2px;
     color: #FFFFFF;
-    letter-spacing: 1px;
+    line-height: 1.1;
   }
+
+  .invoice-title.small {
+    font-size: 17px;
+    letter-spacing: 1.5px;
+  }
+
   .order-number-display {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 14.5px;
+    font-size: 14px;
     font-weight: 700;
     color: var(--gold-soft);
-    margin-top: 2px;
     letter-spacing: 0.5px;
+    margin-top: 3px;
   }
+
+  .order-number-display.small {
+    font-size: 13px;
+  }
+
   .status-badge {
     display: inline-flex;
     align-items: center;
@@ -209,6 +227,7 @@
     font-weight: 700;
     letter-spacing: 0.6px;
   }
+
   .status-badge .dot {
     width: 6px;
     height: 6px;
@@ -223,7 +242,7 @@
     background: linear-gradient(90deg, var(--gold) 0%, var(--orange) 35%, var(--red) 70%, var(--gold) 100%);
   }
 
-  /* ===== ORDER SUMMARY STRIP ===== */
+  /* Order Summary Strip */
   .order-strip {
     background: var(--subtle-bg);
     border-bottom: 1px solid var(--light-border);
@@ -232,11 +251,13 @@
     grid-template-columns: 1.2fr 1.5fr 1fr 1.2fr;
     gap: 14px;
   }
+
   .strip-item {
     display: flex;
     align-items: center;
     gap: 10px;
   }
+
   .strip-icon {
     width: 30px;
     height: 30px;
@@ -249,6 +270,7 @@
     color: var(--gold);
     flex-shrink: 0;
   }
+
   .strip-icon svg { width: 15px; height: 15px; stroke-width: 2; }
   .strip-content { display: flex; flex-direction: column; }
   .strip-label {
@@ -267,29 +289,27 @@
   .strip-val.accent { color: var(--crimson); }
   .strip-val.confirmed { color: var(--green); }
 
-  /* ===== MAIN BODY ===== */
+  /* Body Content */
   .body-content {
-    padding: 18px 28px 22px;
+    padding: 16px 28px 20px;
     flex: 1;
+    display: flex;
+    flex-direction: column;
   }
 
-  /* Two Column Cards (Customer & Transport) */
-  .cards-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px;
-    margin-bottom: 20px;
-  }
-  .info-panel {
+  /* Customer Information Card (Full Width) */
+  .customer-card {
     background: #FFFFFF;
     border: 1px solid var(--light-border);
-    border-radius: 7px;
-    padding: 14px 18px;
+    border-radius: 8px;
+    padding: 12px 18px 14px;
     position: relative;
     border-top: 3px solid var(--gold);
     box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    margin-bottom: 16px;
   }
-  .panel-header {
+
+  .card-header-bar {
     display: flex;
     align-items: center;
     gap: 7px;
@@ -298,49 +318,68 @@
     text-transform: uppercase;
     letter-spacing: 0.8px;
     color: var(--midnight);
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     padding-bottom: 6px;
     border-bottom: 1px dashed var(--light-border);
   }
-  .panel-header svg { width: 14px; height: 14px; color: var(--gold); }
-  .panel-title-name {
-    font-size: 14.5px;
-    font-weight: 800;
-    color: var(--ink);
-    margin-bottom: 4px;
+
+  .card-header-bar svg { width: 14px; height: 14px; color: var(--gold); }
+
+  .customer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    row-gap: 8px;
+    column-gap: 32px;
   }
-  .panel-detail-row {
-    font-size: 12px;
-    color: #334155;
-    line-height: 1.5;
+
+  .cust-field {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+  }
+
+  .cust-field.full-width {
+    grid-column: 1 / -1;
+    margin-top: 2px;
+    padding-top: 6px;
+    border-top: 1px solid #F1F5F9;
+  }
+
+  .cust-label {
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-weight: 700;
+    color: var(--muted);
     margin-bottom: 2px;
   }
-  .panel-detail-row span.lbl { color: var(--muted); font-size: 11.5px; }
-  .panel-detail-row span.val { font-weight: 600; color: var(--ink); text-align: right; }
-  .hub-pill {
-    margin-top: 8px;
-    padding: 5px 9px;
-    border-radius: 5px;
-    background: rgba(249, 115, 22, 0.08);
-    border: 1px solid rgba(249, 115, 22, 0.25);
-    color: #C2410C;
-    font-size: 11px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .hub-pill svg { width: 13px; height: 13px; flex-shrink: 0; }
 
-  /* ===== PRODUCT TABLE ===== */
+  .cust-val {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+
+  .cust-val.name {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--midnight);
+  }
+
+  .cust-val.phone {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  /* Product Table */
   .table-section-title {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 8px;
   }
+
   .table-title-text {
     font-family: 'Cinzel', serif;
     font-size: 14px;
@@ -349,491 +388,542 @@
     letter-spacing: 0.5px;
     display: flex;
     align-items: center;
-    gap: 7px;
-  }
-  .table-title-text svg { width: 15px; height: 15px; fill: var(--gold); }
-  .table-meta-note {
-    font-size: 11px;
-    color: var(--muted);
-    font-weight: 600;
+    gap: 6px;
   }
 
-  table.product-table {
-    width: 100%;
-    border-collapse: collapse;
-    border: 1px solid var(--light-border);
-    border-radius: 6px;
-    overflow: hidden;
-    margin-bottom: 20px;
+  .table-title-text svg { width: 14px; height: 14px; fill: var(--gold); }
+
+  .table-subtitle {
+    font-size: 10.5px;
+    color: var(--muted);
+    font-weight: 500;
   }
-  table.product-table thead th {
+
+  .product-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid var(--light-border);
+    border-radius: 7px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .product-table th {
     background: var(--midnight);
-    color: var(--gold-soft);
+    color: #FFFFFF;
     font-size: 10.5px;
     font-weight: 700;
+    letter-spacing: 0.8px;
     text-transform: uppercase;
-    letter-spacing: 0.7px;
-    padding: 9px 12px;
-    text-align: left;
-    border-right: 1px solid rgba(255,255,255,0.08);
+    padding: 10px 10px;
+    border: none;
   }
-  table.product-table thead th:last-child { border-right: none; }
-  table.product-table thead th.num { text-align: right; }
-  table.product-table thead th.center { text-align: center; }
 
-  table.product-table tbody td {
-    padding: 9px 12px;
-    font-size: 12.5px;
+  .product-table th.center, .product-table td.center { text-align: center; }
+  .product-table th.left, .product-table td.left { text-align: left; }
+  .product-table th.right, .product-table td.right { text-align: right; }
+
+  .product-table td {
+    padding: 9px 10px;
+    font-size: 12px;
     border-bottom: 1px solid var(--light-border);
-    border-right: 1px solid rgba(0,0,0,0.04);
     background: #FFFFFF;
     vertical-align: middle;
   }
-  table.product-table tbody tr:nth-child(even) td {
-    background: #FAFAF7;
+
+  .product-table tr:nth-child(even) td {
+    background: #FCFBFA;
   }
-  table.product-table tbody tr:last-child td {
+
+  .product-table tr:last-child td {
     border-bottom: none;
   }
-  table.product-table td.center { text-align: center; color: var(--muted); font-size: 11.5px; font-weight: 600; }
-  table.product-table td.prod-col {
-    font-weight: 700;
+
+  .sno-col {
+    color: #64748B;
+    font-weight: 600;
+  }
+
+  .prod-col {
+    font-weight: 600;
     color: var(--ink);
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    word-break: break-word;
+    line-height: 1.4;
   }
-  .cat-icon {
-    width: 22px;
-    height: 22px;
-    border-radius: 4px;
-    background: rgba(212, 167, 44, 0.1);
-    color: var(--gold);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-  .cat-icon svg { width: 13px; height: 13px; }
-  table.product-table td.num {
-    text-align: right;
-    font-family: 'JetBrains Mono', monospace;
+
+  .prod-bullet {
+    display: inline-block;
+    margin-right: 6px;
     font-size: 12px;
+    vertical-align: middle;
+  }
+
+  .qty-col {
+    font-weight: 700;
+    color: var(--midnight);
+  }
+
+  .regular-price {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
     color: #1E293B;
   }
-  /* Actual price is clean regular text, not struck through */
-  table.product-table td.regular-price {
-    color: #475569;
-    font-weight: 500;
-  }
-  table.product-table td.disc-val {
+
+  .disc-val {
+    font-family: 'JetBrains Mono', monospace;
     color: var(--green);
     font-weight: 700;
   }
-  .disc-sub {
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--red);
-    margin-left: 4px;
-  }
-  table.product-table td.net-val {
+
+  .net-val {
+    font-family: 'JetBrains Mono', monospace;
     color: var(--crimson);
     font-weight: 800;
-    font-size: 12.5px;
   }
 
-  /* ===== LOWER BOTTOM GRID: SAVINGS + BILL SUMMARY ===== */
+  /* Bottom Financial Summary Grid */
   .bottom-summary-grid {
     display: grid;
     grid-template-columns: 1.15fr 1fr;
     gap: 18px;
-    align-items: stretch;
-    margin-bottom: 20px;
+    margin-top: 4px;
+    margin-bottom: 16px;
   }
 
-  /* Left: Savings Card & Festival Guarantee */
-  .left-summary-box {
+  .savings-card {
+    background: linear-gradient(135deg, #FFFDF5 0%, #FFF8E7 100%);
+    border: 1px solid #FDE68A;
+    border-radius: 8px;
+    padding: 14px 16px;
+    position: relative;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    gap: 14px;
   }
-  .savings-card {
-    background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
-    border: 1px solid #FCD34D;
-    border-radius: 7px;
-    padding: 16px 18px;
-    position: relative;
-    overflow: hidden;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
+
   .savings-card::after {
     content: "★";
     position: absolute;
     right: 14px;
-    bottom: -8px;
-    font-size: 68px;
-    color: rgba(245, 158, 11, 0.15);
+    top: 14px;
+    font-size: 54px;
+    color: rgba(212, 167, 44, 0.12);
+    font-weight: 900;
+    line-height: 1;
     pointer-events: none;
   }
-  .savings-header {
+
+  .savings-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #B45309;
+  }
+
+  .savings-badge svg { width: 13px; height: 13px; fill: var(--gold); }
+
+  .savings-amount {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 26px;
+    font-weight: 800;
+    color: #92400E;
+    margin: 6px 0 3px;
+    letter-spacing: -0.5px;
+  }
+
+  .savings-meta {
+    font-size: 10px;
+    font-weight: 700;
+    color: #B45309;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+
+  .savings-meta svg { width: 12px; height: 12px; fill: #D97706; }
+
+  .factory-direct-note {
+    font-size: 10.5px;
+    color: #78350F;
+    line-height: 1.45;
+    padding-top: 8px;
+    border-top: 1px dashed rgba(217, 119, 6, 0.25);
+  }
+
+  .factory-direct-note b { color: #451A03; font-weight: 700; }
+
+  .totals-table-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .totals-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+  }
+
+  .totals-table td {
+    padding: 6px 2px;
+    font-size: 12.5px;
+    line-height: 1.3;
+  }
+
+  .tot-label {
+    color: #475569;
+    font-weight: 500;
+  }
+
+  .tot-val {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .tot-val.bold { font-weight: 800; }
+
+  .discount-row td {
+    color: var(--green);
+  }
+
+  .discount-val {
+    color: var(--green) !important;
+  }
+
+  .net-payable-bar {
+    background: var(--midnight);
+    color: #FFFFFF;
+    border-radius: 7px;
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(11, 18, 32, 0.2);
+  }
+
+  .payable-label {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .payable-label .main {
+    font-family: 'Cinzel', serif;
     font-size: 11px;
     font-weight: 800;
     letter-spacing: 1px;
-    text-transform: uppercase;
-    color: #B45309;
+    color: var(--gold-light);
   }
-  .savings-amount {
-    font-family: 'Cinzel', serif;
-    font-size: 28px;
-    font-weight: 900;
-    color: #B45309;
-    margin: 4px 0 2px;
+
+  .payable-label .sub {
+    font-size: 9.5px;
+    color: rgba(255, 255, 255, 0.65);
+    margin-top: 2px;
   }
-  .savings-tagline {
-    font-size: 11.5px;
-    color: #92400E;
+
+  .payable-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 800;
+    color: #FFFFFF;
+    letter-spacing: 0.5px;
+  }
+
+  /* Thank You Strip */
+  .thankyou-strip {
+    background: linear-gradient(90deg, #F8FAFC 0%, #FFFBEB 50%, #F8FAFC 100%);
+    border: 1px dashed var(--gold);
+    border-radius: 6px;
+    padding: 9px 16px;
+    text-align: center;
+    font-size: 11px;
     font-weight: 700;
+    color: var(--midnight);
+    letter-spacing: 0.6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: auto;
+  }
+
+  .thankyou-strip svg { width: 14px; height: 14px; fill: var(--gold); }
+  .thankyou-strip span { color: #854D0E; font-weight: 500; font-style: italic; }
+
+  /* Footer */
+  .invoice-footer {
+    background: var(--midnight);
+    color: rgba(255, 255, 255, 0.7);
+    padding: 10px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10.5px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .invoice-footer b { color: #FFFFFF; font-weight: 700; }
+  .footer-right { font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--gold-soft); }
+
+  /* ========================================================
+     SAFETY GUIDE PAGE (Always Final Page)
+     ======================================================== */
+  .safety-sheet {
+    background: #FFFFFF;
+  }
+
+  .safety-banner {
+    background: linear-gradient(135deg, var(--midnight) 0%, #1a2333 100%);
+    color: #FFFFFF;
+    padding: 18px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .safety-festive-tag {
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .safety-festive-tag svg { width: 15px; height: 15px; fill: var(--gold); }
+
+  .safety-subtitle {
+    font-size: 11px;
+    color: var(--gold-soft);
+    font-weight: 500;
+    margin-top: 3px;
+  }
+
+  .safety-badge-pill {
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgba(212, 167, 44, 0.18);
+    border: 1px solid var(--gold);
+    color: var(--gold-light);
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 1px;
     display: flex;
     align-items: center;
     gap: 5px;
   }
 
-  .dispatch-note-box {
-    background: #FFFFFF;
-    border: 1px solid var(--light-border);
-    border-radius: 7px;
-    padding: 12px 16px;
-    font-size: 11.5px;
-    color: var(--muted);
-    line-height: 1.45;
-  }
-  .dispatch-note-box b {
-    color: var(--midnight);
-    display: block;
-    margin-bottom: 2px;
-    font-size: 12px;
-  }
+  .safety-badge-pill svg { width: 13px; height: 13px; }
 
-  /* Right: Bill Calculation Box */
-  .bill-card {
-    background: #FFFFFF;
-    border: 1px solid var(--light-border);
-    border-radius: 7px;
-    overflow: hidden;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.03);
+  .safety-body {
+    padding: 16px 28px 18px;
+    flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-  }
-  .bill-rows {
-    padding: 12px 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-  }
-  .bill-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 12.5px;
-    color: #475569;
-  }
-  .bill-row span.lbl { font-weight: 500; }
-  .bill-row span.val {
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 700;
-    color: var(--ink);
-  }
-  .bill-row.discount-row {
-    color: var(--green);
-  }
-  .bill-row.discount-row span.val { color: var(--green); font-weight: 800; }
-
-  /* TOTAL PAYABLE HIGH IMPACT BANNER */
-  .total-payable-banner {
-    background: linear-gradient(135deg, var(--navy-deep) 0%, var(--midnight) 70%, #1E293B 100%);
-    border-top: 2px solid var(--gold);
-    color: #FFFFFF;
-    padding: 14px 18px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .total-payable-banner::before {
-    content: "";
-    position: absolute;
-    right: -10px;
-    top: -10px;
-    width: 60px;
-    height: 60px;
-    background: radial-gradient(circle, rgba(212, 167, 44, 0.25) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  .tp-label-group {
-    display: flex;
-    flex-direction: column;
-  }
-  .tp-title {
-    font-size: 11px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    color: var(--gold-light);
-  }
-  .tp-sub {
-    font-size: 9.5px;
-    color: rgba(255, 255, 255, 0.65);
-    margin-top: 1px;
-  }
-  .tp-amount {
-    font-family: 'Cinzel', serif;
-    font-size: 24px;
-    font-weight: 900;
-    color: #FFFFFF;
-    letter-spacing: 0.5px;
-    text-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  }
-
-  /* Closing Festive Note */
-  .thankyou-band {
-    background: var(--subtle-bg);
-    border: 1px dashed rgba(212, 167, 44, 0.4);
-    border-radius: 6px;
-    padding: 9px 16px;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-  }
-  .thankyou-band svg { width: 17px; height: 17px; fill: var(--gold); }
-  .thankyou-text {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--midnight);
-    letter-spacing: 0.4px;
-  }
-  .thankyou-sub {
-    font-size: 11px;
-    color: var(--muted);
-    font-style: italic;
-  }
-
-  /* Footer */
-  .sheet-footer {
-    background: var(--navy-deep);
-    color: rgba(255, 255, 255, 0.7);
-    padding: 12px 28px;
-    border-top: 2px solid var(--gold);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 11px;
-  }
-  .sheet-footer b { color: var(--gold-light); font-weight: 700; }
-  .sheet-footer span.page-num {
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 600;
-    color: #FFFFFF;
-    background: rgba(255,255,255,0.1);
-    padding: 2px 8px;
-    border-radius: 4px;
-  }
-
-  /* ===================================================
-     PAGE 2: SAFETY & CUSTOMER NOTICE GUIDE
-     =================================================== */
-  .page2-header {
-    background: linear-gradient(135deg, var(--navy-deep) 0%, var(--midnight) 70%, #1E293B 100%);
-    color: #FFFFFF;
-    padding: 18px 28px;
-    border-bottom: 3px solid var(--gold);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .page2-title-group h2 {
-    font-family: 'Cinzel', serif;
-    font-size: 19px;
-    font-weight: 800;
-    color: #FFFFFF;
-    letter-spacing: 1px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .page2-title-group h2 svg { width: 18px; height: 18px; fill: var(--gold); }
-  .page2-title-group p {
-    font-size: 11px;
-    color: var(--gold-light);
-    margin-top: 2px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
   }
 
   .safety-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-    margin-bottom: 20px;
+    gap: 12px;
+    margin-bottom: 14px;
   }
+
   .safety-card {
     background: #FFFFFF;
     border: 1px solid var(--light-border);
     border-radius: 7px;
-    padding: 14px 13px;
+    padding: 12px 14px;
     position: relative;
     border-top: 3px solid var(--gold);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
     display: flex;
     flex-direction: column;
   }
-  .safety-num-badge {
+
+  .card-num-watermark {
     position: absolute;
-    top: 10px;
-    right: 12px;
+    right: 10px;
+    top: 6px;
+    font-size: 16px;
+    font-weight: 900;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    font-weight: 800;
-    color: rgba(212, 167, 44, 0.4);
+    color: #CBD5E1;
   }
-  .safety-card-icon {
-    width: 34px;
-    height: 34px;
-    border-radius: 7px;
-    background: rgba(212, 167, 44, 0.1);
-    color: var(--gold);
+
+  .safety-card-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+
+  .safety-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    background: #FFFBEB;
+    border: 1px solid #FDE68A;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 9px;
+    color: #D97706;
+    flex-shrink: 0;
   }
-  .safety-card-icon svg { width: 17px; height: 17px; stroke-width: 2; }
-  .safety-card h4 {
-    font-size: 12px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--midnight);
-    margin-bottom: 5px;
-  }
-  .safety-card p.en {
+
+  .safety-icon svg { width: 12px; height: 12px; }
+
+  .safety-card-title {
     font-size: 11px;
+    font-weight: 800;
+    color: var(--midnight);
+    letter-spacing: 0.4px;
+  }
+
+  .safety-en-text {
+    font-size: 10.5px;
     color: #475569;
     line-height: 1.4;
-    margin-bottom: 3px;
+    margin-bottom: 5px;
+    font-weight: 500;
   }
-  .safety-card p.ta {
+
+  .safety-ta-text {
     font-size: 10px;
     color: #64748B;
     line-height: 1.35;
+    font-style: italic;
+    border-top: 1px dashed #F1F5F9;
+    padding-top: 4px;
+    margin-top: auto;
   }
 
-  /* Customer Notice Box */
   .notice-panel {
-    background: var(--subtle-bg);
-    border: 1px solid var(--light-border);
-    border-left: 4px solid var(--orange);
-    border-radius: 6px;
-    padding: 14px 18px;
-    margin-bottom: 20px;
+    background: #FFFDF5;
+    border: 1px solid #FEF3C7;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
   }
-  .notice-panel-header {
+
+  .notice-header {
     display: flex;
     align-items: center;
-    gap: 7px;
-    font-size: 11.5px;
+    gap: 6px;
+    font-size: 11px;
     font-weight: 800;
+    color: #92400E;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: var(--red);
+    letter-spacing: 0.6px;
     margin-bottom: 8px;
   }
-  .notice-panel-header svg { width: 15px; height: 15px; }
+
+  .notice-header svg { width: 14px; height: 14px; color: #D97706; }
+
   .notice-list {
-    list-style: none;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px 18px;
   }
-  .notice-list li {
-    font-size: 11.5px;
-    color: #334155;
+
+  .notice-item {
+    font-size: 10.5px;
+    color: #78350F;
     line-height: 1.45;
-    position: relative;
-    padding-left: 13px;
-  }
-  .notice-list li::before {
-    content: "•";
-    position: absolute;
-    left: 0;
-    color: var(--orange);
-    font-weight: bold;
-    font-size: 13px;
-  }
-  .notice-list li span.ta {
-    display: block;
-    font-size: 10px;
-    color: #64748B;
   }
 
-  /* Print Media Specifics */
+  .notice-item b { color: #451A03; font-weight: 700; }
+  .notice-item .ta { font-size: 9.8px; color: #92400E; display: block; margin-top: 2px; }
+
+  .safety-business-strip {
+    border-top: 1px solid var(--light-border);
+    padding-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10.5px;
+    color: var(--muted);
+  }
+
+  .biz-name {
+    font-weight: 800;
+    color: var(--midnight);
+    font-size: 12px;
+  }
+
+  .biz-addr {
+    font-size: 10px;
+    color: #64748B;
+    margin-top: 2px;
+  }
+
+  .biz-contacts {
+    text-align: right;
+  }
+
+  .biz-contacts b { color: var(--ink); font-weight: 700; }
+
+  /* Print Media Rules */
   @media print {
-    body, html {
+    @page {
+      size: A4 portrait;
+      margin: 0;
+    }
+    body {
       background: #FFFFFF !important;
       padding: 0 !important;
       margin: 0 !important;
     }
     .invoice-wrapper {
-      max-width: 100% !important;
+      max-width: none !important;
       margin: 0 !important;
-      gap: 0 !important;
+      padding: 0 !important;
     }
     .page-sheet {
+      width: 210mm !important;
+      height: 297mm !important;
+      min-height: 297mm !important;
+      max-height: 297mm !important;
+      margin: 0 !important;
+      padding: 0 !important;
       border: none !important;
       box-shadow: none !important;
       border-radius: 0 !important;
-      page-break-after: always;
-      break-after: page;
-      min-height: 100vh;
+      page-break-after: always !important;
+      break-after: page !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      overflow: hidden !important;
     }
     .page-sheet:last-child {
-      page-break-after: avoid;
-      break-after: avoid;
+      page-break-after: avoid !important;
+      break-after: avoid !important;
     }
   }
 
-  @media (max-width: 640px) {
-    .header-banner { flex-direction: column; align-items: flex-start; }
-    .invoice-tag-group { text-align: left; margin-top: 10px; }
-    .order-strip { grid-template-columns: 1fr 1fr; }
-    .cards-grid { grid-template-columns: 1fr; }
-    .bottom-summary-grid { grid-template-columns: 1fr; }
-    .safety-grid { grid-template-columns: 1fr; }
-    .notice-list { grid-template-columns: 1fr; }
-  }
 </style>
 </head>
 <body>
 
 <div class="invoice-wrapper">
 
-  <!-- ========================================================
-       PAGE 1: MAIN ORDER INVOICE
-       ======================================================== -->
+  <!-- INVOICE PAGE 1 OF 2 -->
   <div class="page-sheet" id="invoice-page-1">
     <div class="sheet-inner">
       
-      <!-- A. HEADER -->
+      <!-- A. HEADER (PAGE 1) -->
       <div class="header-banner">
         <div class="brand-group">
           <div class="logo-box">
@@ -868,7 +958,7 @@
 
       <div class="spark-accent-line"></div>
 
-      <!-- B. ORDER SUMMARY STRIP WITH ORDER TIME -->
+      <!-- B. ORDER SUMMARY STRIP -->
       <div class="order-strip">
         <div class="strip-item">
           <div class="strip-icon">
@@ -905,326 +995,317 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
           </div>
           <div class="strip-content">
-            <span class="strip-label">Destination</span>
+            <span class="strip-label">Customer / City</span>
             <span class="strip-val accent">THENI, TN</span>
           </div>
         </div>
       </div>
+      
 
-      <!-- C. BODY CONTENT -->
+      <!-- BODY CONTENT -->
       <div class="body-content">
-
-        <!-- Customer + Delivery Cards -->
-        <div class="cards-grid">
-          <div class="info-panel">
-            <div class="panel-header">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              BILL TO (CUSTOMER INFORMATION)
-            </div>
-            <div class="panel-title-name">Shathan M R</div>
-            <div class="panel-detail-row"><span class="lbl">Phone</span><span class="val">+91 86675 78789</span></div>
-            <div class="panel-detail-row"><span class="lbl">Email</span><span class="val">shathanrajasekar@gmail.com</span></div>
-            <div class="panel-detail-row"><span class="lbl">Address</span><span class="val">7/3/42, Pallivasal Street, Kuchanur</span></div>
-            <div class="panel-detail-row"><span class="lbl">City / PIN</span><span class="val">Theni - 625515</span></div>
+        
+        <!-- FULL-WIDTH BILL TO / CUSTOMER INFORMATION CARD -->
+        <div class="customer-card">
+          <div class="card-header-bar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            BILL TO / CUSTOMER INFORMATION
           </div>
-
-          <div class="info-panel">
-            <div class="panel-header">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-              DELIVERY / TRANSPORT LOGISTICS
+          <div class="customer-grid">
+            <div class="cust-field">
+              <span class="cust-label">Customer Name</span>
+              <span class="cust-val name">Shathan M R</span>
             </div>
-            <div class="panel-detail-row"><span class="lbl">State</span><span class="val">Tamil Nadu</span></div>
-            <div class="panel-detail-row"><span class="lbl">District</span><span class="val">Theni</span></div>
-            <div class="panel-detail-row"><span class="lbl">Destination Hub</span><span class="val">Theni City Central</span></div>
-            <div class="panel-detail-row"><span class="lbl">Postal Code</span><span class="val">625515</span></div>
-            <div class="hub-pill">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              Pickup: Nearest Transport Office Hub
+            <div class="cust-field">
+              <span class="cust-label">Phone Number</span>
+              <span class="cust-val phone">+91 86675 78789</span>
+            </div>
+            <div class="cust-field">
+              <span class="cust-label">Email Address</span>
+              <span class="cust-val">shathanrajasekar@gmail.com</span>
+            </div>
+            <div class="cust-field">
+              <span class="cust-label">City / PIN Code</span>
+              <span class="cust-val">Theni - 625515</span>
+            </div>
+            
+            <div class="cust-field full-width">
+              <span class="cust-label">Delivery / Billing Address</span>
+              <span class="cust-val">7/3/42, Pallivasal Street, Kuchanur</span>
             </div>
           </div>
         </div>
+        
 
-        <!-- D. PRODUCT TABLE (NO STRIKETHROUGH ON ACTUAL PRICE, CLEAN DISCOUNT + NET TOTAL) -->
+        <!-- PRODUCT TABLE SECTION -->
         <div class="table-section-title">
           <div class="table-title-text">
             <svg viewBox="0 0 24 24"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"/></svg>
             ORDERED FIREWORKS ITEMS
           </div>
-          <div class="table-meta-note">Prices include all local taxes &amp; festival discounts</div>
+          <div class="table-subtitle">Prices include all local taxes &amp; festival discounts</div>
         </div>
 
         <table class="product-table">
           <thead>
             <tr>
-              <th class="center" style="width: 44px;">S.No</th>
-              <th>PRODUCT DESCRIPTION</th>
-              <th class="center" style="width: 50px;">QTY</th>
-              <th class="center" style="width: 105px;">ACTUAL PRICE</th>
-              <th class="center" style="width: 110px;">ACTUAL TOTAL</th>
-              <th class="center" style="width: 110px;">DISCOUNT</th>
-              <th class="center" style="width: 115px;">NET TOTAL</th>
+              <th class="center" style="width: 6%;">S.NO</th>
+              <th class="left" style="width: 36%;">PRODUCT DESCRIPTION</th>
+              <th class="center" style="width: 8%;">QTY</th>
+              <th class="right" style="width: 12%;">ACTUAL PRICE</th>
+              <th class="right" style="width: 13%;">ACTUAL TOTAL</th>
+              <th class="right" style="width: 12%;">DISCOUNT</th>
+              <th class="right" style="width: 13%;">NET TOTAL</th>
             </tr>
           </thead>
           <tbody>
+            
             <tr>
-              <td class="center">01</td>
-              <td class="prod-col">
-                <span class="cat-icon" title="Crackers">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l16 16M4 20L20 4"/></svg>
-                </span>
-                2¾" Kuruvi Crackers (Pack of 5)
+              <td class="center sno-col">01</td>
+              <td class="left prod-col">
+                <span class="prod-bullet">🎆</span>
+                <span>2¾&quot; Kuruvi Crackers (Pack of 5)</span>
               </td>
-              <td class="center">9</td>
-              <td class="center num regular-price">₹225</td>
-              <td class="center num regular-price">₹2,025</td>
-              <td class="center num disc-val">₹1,215</td>
-              <td class="center num net-val">₹810</td>
+              <td class="center qty-col">9</td>
+              <td class="right regular-price">₹225</td>
+              <td class="right regular-price">₹2,025</td>
+              <td class="right disc-val">₹1,215</td>
+              <td class="right net-val">₹810</td>
             </tr>
+            
             <tr>
-              <td class="center">02</td>
-              <td class="prod-col">
-                <span class="cat-icon" title="Aerial Shots">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/></svg>
-                </span>
-                12 Shots Rider Multi-Color Sky Shot
+              <td class="center sno-col">02</td>
+              <td class="left prod-col">
+                <span class="prod-bullet">🎆</span>
+                <span>12 Shots Rider Multi-Color Sky Shot</span>
               </td>
-              <td class="center">1</td>
-              <td class="center num regular-price">₹525</td>
-              <td class="center num regular-price">₹525</td>
-              <td class="center num disc-val">₹315</td>
-              <td class="center num net-val">₹210</td>
+              <td class="center qty-col">1</td>
+              <td class="right regular-price">₹525</td>
+              <td class="right regular-price">₹525</td>
+              <td class="right disc-val">₹315</td>
+              <td class="right net-val">₹210</td>
             </tr>
+            
             <tr>
-              <td class="center">03</td>
-              <td class="prod-col">
-                <span class="cat-icon" title="Display Fireworks">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                </span>
-                15 Shots Multi-Color Mega Aerial Display
+              <td class="center sno-col">03</td>
+              <td class="left prod-col">
+                <span class="prod-bullet">🎆</span>
+                <span>15 Shots Multi-Color Mega Aerial Display</span>
               </td>
-              <td class="center">100</td>
-              <td class="center num regular-price">₹725</td>
-              <td class="center num regular-price">₹72,500</td>
-              <td class="center num disc-val">₹43,500</td>
-              <td class="center num net-val">₹29,000</td>
+              <td class="center qty-col">100</td>
+              <td class="right regular-price">₹725</td>
+              <td class="right regular-price">₹72,500</td>
+              <td class="right disc-val">₹43,500</td>
+              <td class="right net-val">₹29,000</td>
             </tr>
+            
           </tbody>
         </table>
 
-        <!-- E & F. SAVINGS & BILL SUMMARY (REMOVED SIGNATORY BOX) -->
+        
+        <!-- FINANCIAL SUMMARY & TOTAL PAYABLE (STAYS TOGETHER) -->
         <div class="bottom-summary-grid">
-          
-          <!-- Left: You Save Callout + Dispatch Note -->
-          <div class="left-summary-box">
-            <div class="savings-card">
-              <div class="savings-header">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                YOU SAVE ON THIS FESTIVE ORDER
-              </div>
-              <div class="savings-amount">₹45,030</div>
-              <div class="savings-tagline">
-                <span>🔥 60% DIRECT SIVAKASI FACTORY OFFER APPLIED</span>
-              </div>
+          <div class="savings-card">
+            <div class="savings-badge">
+              <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              YOU SAVE ON THIS FESTIVE ORDER
             </div>
-
-            <div class="dispatch-note-box">
-              <b>DIRECT SIVAKASI FACTORY DISPATCH</b>
+            <div class="savings-amount">₹45,030</div>
+            <div class="savings-meta">
+              <svg viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+              60% DIRECT SIVAKASI FACTORY OFFER APPLIED
+            </div>
+            <div class="factory-direct-note">
+              <b>DIRECT SIVAKASI FACTORY DISPATCH</b><br>
               All fireworks are manufactured in Sivakasi under strict PESO quality guidelines. Carefully packed in moisture-resistant cartons for safe transport delivery.
             </div>
           </div>
 
-          <!-- Right: Bill Calculation Table -->
-          <div class="bill-card">
-            <div class="bill-rows">
-              <div class="bill-row">
-                <span class="lbl">Gross Amount (Actual MRP Total)</span>
-                <span class="val">₹75,050</span>
-              </div>
-              <div class="bill-row discount-row">
-                <span class="lbl">Festival Discount (60% OFF)</span>
-                <span class="val">-₹45,030</span>
-              </div>
-              <div class="bill-row">
-                <span class="lbl">Net Product Value</span>
-                <span class="val">₹30,020</span>
-              </div>
-              <div class="bill-row">
-                <span class="lbl">Packing &amp; Forwarding (3%)</span>
-                <span class="val">₹901</span>
-              </div>
-            </div>
+          <div class="totals-table-wrapper">
+            <table class="totals-table">
+              <tr>
+                <td class="tot-label">Gross Amount (Actual MRP Total)</td>
+                <td class="tot-val">₹75,050</td>
+              </tr>
+              <tr class="discount-row">
+                <td class="tot-label">Festival Discount (60% OFF)</td>
+                <td class="tot-val discount-val">-₹45,030</td>
+              </tr>
+              <tr>
+                <td class="tot-label">Net Product Value</td>
+                <td class="tot-val bold">₹30,020</td>
+              </tr>
+              <tr>
+                <td class="tot-label">Packing &amp; Forwarding (3%)</td>
+                <td class="tot-val">₹901</td>
+              </tr>
+            </table>
 
-            <div class="total-payable-banner">
-              <div class="tp-label-group">
-                <span class="tp-title">TOTAL PAYABLE AMOUNT</span>
-                <span class="tp-sub">Inclusive of taxes &amp; packaging</span>
+            <div class="net-payable-bar">
+              <div class="payable-label">
+                <span class="main">TOTAL PAYABLE AMOUNT</span>
+                <span class="sub">Inclusive of taxes &amp; packaging</span>
               </div>
-              <div class="tp-amount">₹30,921</div>
+              <div class="payable-val">₹30,921</div>
             </div>
           </div>
         </div>
 
-        <!-- H. THANK YOU SECTION -->
-        <div class="thankyou-band">
+        <!-- THANK YOU NOTE -->
+        <div class="thankyou-strip">
           <svg viewBox="0 0 24 24"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"/></svg>
-          <span class="thankyou-text">THANK YOU FOR CHOOSING JJ CRACKERS!</span>
-          <span class="thankyou-sub">"Celebrate the joy from JJ Crackers."</span>
+          THANK YOU FOR CHOOSING JJ CRACKERS!
+          <span>"Celebrate the joy from JJ Crackers."</span>
         </div>
-
+        
       </div>
+    </div>
 
-      <!-- FOOTER -->
-      <div class="sheet-footer">
-        <div><b>JJ CRACKERS</b> · Licensed Under Explosives Act, 1884 · Sivakasi Direct Factory Outlet</div>
-        <div>Page <span class="page-num">1 of 2</span></div>
+    <!-- FOOTER -->
+    <div class="invoice-footer">
+      <div class="footer-left">
+        <b>JJ CRACKERS</b> · Licensed Under Explosives Act, 1884 · Sivakasi Direct Factory Outlet
       </div>
-
+      <div class="footer-right">
+        Page <b>1</b> of <b>2</b>
+      </div>
     </div>
   </div>
+    
 
-
-  <!-- ========================================================
-       PAGE 2: FIREWORKS SAFETY GUIDE & CUSTOMER NOTICE
-       ======================================================== -->
-  <div class="page-sheet" id="invoice-page-2">
+  <!-- FINAL PAGE (2 OF 2): FIREWORKS SAFETY & CELEBRATION GUIDE -->
+  <div class="page-sheet safety-sheet" id="invoice-page-2">
     <div class="sheet-inner">
-
-      <!-- Top Safety Header -->
-      <div class="page2-header">
-        <div class="page2-title-group">
-          <h2>
-            <svg viewBox="0 0 24 24"><path d="M12 2L15 9L22 12L15 15L12 22L9 15L2 12L9 9L12 2Z"/></svg>
+      <div class="safety-banner">
+        <div class="safety-title-group">
+          <div class="safety-festive-tag">
+            <svg viewBox="0 0 24 24"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"/></svg>
             FIREWORKS SAFETY &amp; CELEBRATION GUIDE
-          </h2>
-          <p>Celebrate beautifully. Celebrate responsibly. Follow Sivakasi standard safety protocols.</p>
+          </div>
+          <div class="safety-subtitle">Celebrate beautifully. Celebrate responsibly. Follow Sivakasi standard safety protocols.</div>
         </div>
-        <div>
-          <span class="status-badge" style="color:#FDE68A; border-color:rgba(253,230,138,0.4); background:rgba(253,230,138,0.1);">
-            SAFETY FIRST
-          </span>
+        <div class="safety-badge-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          SAFETY FIRST
         </div>
       </div>
 
       <div class="spark-accent-line"></div>
 
-      <div class="body-content">
-        
-        <!-- 6 SAFETY CARDS -->
+      <div class="safety-body">
+        <!-- 6 Safety Cards (3x2 grid) -->
         <div class="safety-grid">
-          
           <div class="safety-card">
-            <span class="safety-num-badge">01</span>
-            <div class="safety-card-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M3 9h18"/></svg>
+            <div class="card-num-watermark">01</div>
+            <div class="safety-card-header">
+              <div class="safety-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg></div>
+              <div class="safety-card-title">STORE SAFELY</div>
             </div>
-            <h4>STORE SAFELY</h4>
-            <p class="en">Store fireworks in a cool, dry, ventilated area away from heat sources.</p>
-            <p class="ta">பட்டாசுகளை குளிர்ந்த, உலர்ந்த மற்றும் பாதுகாப்பான இடத்தில் வைக்கவும்.</p>
+            <div class="safety-en-text">Store fireworks in a cool, dry, ventilated area away from heat sources.</div>
+            <div class="safety-ta-text">பட்டாசுகளை குளிர்ந்த, உலர்ந்த மற்றும் பாதுகாப்பான இடத்தில் வைக்கவும்.</div>
           </div>
 
           <div class="safety-card">
-            <span class="safety-num-badge">02</span>
-            <div class="safety-card-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+            <div class="card-num-watermark">02</div>
+            <div class="safety-card-header">
+              <div class="safety-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
+              <div class="safety-card-title">KEEP A SAFE DISTANCE</div>
             </div>
-            <h4>KEEP A SAFE DISTANCE</h4>
-            <p class="en">Maintain at least 5 meters distance after lighting aerial items and ground chakkars.</p>
-            <p class="ta">பட்டாசு பற்றவைத்த பிறகு பாதுகாப்பான தூரத்திற்கு செல்லவும்.</p>
+            <div class="safety-en-text">Maintain at least 5 meters distance after lighting aerial items and ground chakkars.</div>
+            <div class="safety-ta-text">பட்டாசு பற்றவைத்த பிறகு பாதுகாப்பு தூரத்திற்கு செல்லவும்.</div>
           </div>
 
           <div class="safety-card">
-            <span class="safety-num-badge">03</span>
-            <div class="safety-card-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <div class="card-num-watermark">03</div>
+            <div class="safety-card-header">
+              <div class="safety-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+              <div class="safety-card-title">USE PROPER LIGHTING</div>
             </div>
-            <h4>USE PROPER LIGHTING</h4>
-            <p class="en">Always use an incense stick (agarbatti) or sparkler to ignite. Never use open flame.</p>
-            <p class="ta">பற்றவைக்க ஊதுபத்தியை பயன்படுத்தவும்; திறந்த சுடரை தவிர்க்கவும்.</p>
+            <div class="safety-en-text">Always use an incense stick (agarbatti) or sparkler to ignite. Never use open flame.</div>
+            <div class="safety-ta-text">பற்றவைக்க ஊதுபத்தியை பயன்படுத்தவும்; திறந்த சுடரை தவிர்க்கவும்.</div>
           </div>
 
           <div class="safety-card">
-            <span class="safety-num-badge">04</span>
-            <div class="safety-card-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+            <div class="card-num-watermark">04</div>
+            <div class="safety-card-header">
+              <div class="safety-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg></div>
+              <div class="safety-card-title">KEEP WATER NEARBY</div>
             </div>
-            <h4>KEEP WATER NEARBY</h4>
-            <p class="en">Keep a bucket of clean water or sand readily available for emergency use.</p>
-            <p class="ta">அவசர காலத்திற்கு அருகில் ஒரு வாலி தண்ணீரை எப்போதும் வைத்திருக்கவும்.</p>
+            <div class="safety-en-text">Keep a bucket of clean water or sand readily available for emergency use.</div>
+            <div class="safety-ta-text">அவசர காலத்திற்கு அருகில் ஒரு வாளி தண்ணீரை எப்போதும் வைத்திருக்கவும்.</div>
           </div>
 
           <div class="safety-card">
-            <span class="safety-num-badge">05</span>
-            <div class="safety-card-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <div class="card-num-watermark">05</div>
+            <div class="safety-card-header">
+              <div class="safety-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+              <div class="safety-card-title">ADULT SUPERVISION</div>
             </div>
-            <h4>ADULT SUPERVISION</h4>
-            <p class="en">Children must light fireworks only under continuous adult guidance and care.</p>
-            <p class="ta">குழந்தைகள் பட்டாசுகளை பெரியவர்களின் மேற்பார்வையில் மட்டுமே வெடிக்க வேண்டும்.</p>
+            <div class="safety-en-text">Children must light fireworks only under continuous adult guidance and care.</div>
+            <div class="safety-ta-text">குழந்தைகள் பட்டாசுகளை பெரியவர்களின் மேற்பார்வையில் மட்டுமே வெடிக்க வேண்டும்.</div>
           </div>
 
           <div class="safety-card">
-            <span class="safety-num-badge">06</span>
-            <div class="safety-card-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+            <div class="card-num-watermark">06</div>
+            <div class="safety-card-header">
+              <div class="safety-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+              <div class="safety-card-title">RESPONSIBLE CELEBRATION</div>
             </div>
-            <h4>RESPONSIBLE CELEBRATION</h4>
-            <p class="en">Dispose of spent fireworks in water buckets before discarding. Respect your neighbors.</p>
-            <p class="ta">பாதுகாப்பு விதிகளை பின்பற்றி பிறருக்கு இடையூறின்றி மகிழ்ச்சியுடன் கொண்டாடவும்.</p>
+            <div class="safety-en-text">Dispose of spent fireworks in water buckets before discarding. Respect your neighbors.</div>
+            <div class="safety-ta-text">பாதுகாப்பு விதிகளை பின்பற்றி பிறருக்கு இடையூறின்றி மகிழ்ச்சியுடன் கொண்டாடவும்.</div>
           </div>
-
         </div>
 
-        <!-- CUSTOMER NOTICE / TERMS -->
+        <!-- Terms Panel -->
         <div class="notice-panel">
-          <div class="notice-panel-header">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div class="notice-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             IMPORTANT CUSTOMER NOTICE &amp; DISPATCH TERMS (விதிகளும் நிபந்தனைகளும்)
           </div>
-          <ul class="notice-list">
-            <li>
-              <b>Booking Cancellation:</b> Goods once booked cannot be cancelled or returned under any circumstances.
+          <div class="notice-list">
+            <div class="notice-item">
+              ● <b>Booking Cancellation:</b> Goods once booked cannot be cancelled or returned under any circumstances.
               <span class="ta">பதிவு செய்யப்பட்ட ஆர்டர்கள் எக்காரணம் கொண்டும் ரத்து செய்யப்பட மாட்டாது.</span>
-            </li>
-            <li>
-              <b>Transport Service:</b> Delivery is subject to regional transport partner service and truck availability.
+            </div>
+            <div class="notice-item">
+              ● <b>Transport Service:</b> Delivery is subject to regional transport partner service and truck availability.
               <span class="ta">பொருட்கள் போக்குவரத்து சேவை கிடைக்கும் தன்மையைப் பொறுத்து விநியோகம் செய்யப்படும்.</span>
-            </li>
-            <li>
-              <b>Transport Charges:</b> Quoted prices include local taxes; freight &amp; transport hub handling charges are payable at hub.
+            </div>
+            <div class="notice-item">
+              ● <b>Transport Charges:</b> Quoted prices include local taxes; freight &amp; transport hub handling charges are payable at hub.
               <span class="ta">போக்குவரத்து மைய கட்டணம் வாடிக்கையாளரால் நேரடியாக செலுத்தப்பட வேண்டும்.</span>
-            </li>
-            <li>
-              <b>Parcel Verification:</b> Customers must verify physical box count and seals at the transport delivery hub before taking delivery.
+            </div>
+            <div class="notice-item">
+              ● <b>Parcel Verification:</b> Customers must verify physical box count and seals at the transport delivery hub before taking delivery.
               <span class="ta">போக்குவரத்து மையத்தில் பார்சல்களைப் பெறும்போது பெட்டிகளின் எண்ணிக்கையை சரிபார்க்கவும்.</span>
-            </li>
-          </ul>
-        </div>
-
-        <!-- BRAND FOOTER HIGHLIGHT -->
-        <div style="background: #FFFFFF; border: 1px solid var(--light-border); border-radius: 7px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <div style="font-family: 'Cinzel', serif; font-size: 15.5px; font-weight: 800; color: var(--midnight);">JJ CRACKERS · JEGAJOTHI CRACKERS</div>
-            <div style="font-size: 11.5px; color: var(--muted); margin-top: 2px;">
-              Premium Sivakasi Fireworks Factory Outlet · Sivakasi-Vembakottai Main Road, Vembakottai, Tamil Nadu
             </div>
           </div>
-          <div style="text-align: right;">
-            <div style="font-size: 12px; font-weight: 700; color: var(--crimson);">Phone: +91 70923 00252</div>
-            <div style="font-size: 11px; color: var(--muted);">Email: jjcrackersworld@gmail.com</div>
-          </div>
         </div>
 
+        <!-- Business Strip -->
+        <div class="safety-business-strip">
+          <div class="biz-info">
+            <div class="biz-name">JJ CRACKERS · JEGAJOTHI CRACKERS</div>
+            <div class="biz-addr">Premium Sivakasi Fireworks Factory Outlet · Sivakasi-Vembakottai Main Road, Vembakottai, Tamil Nadu</div>
+          </div>
+          <div class="biz-contacts">
+            <div class="biz-phone">Phone: <b>+91 70923 00252</b></div>
+            <div class="biz-email">Email: jjcrackersworld@gmail.com</div>
+          </div>
+        </div>
       </div>
+    </div>
 
-      <!-- FOOTER -->
-      <div class="sheet-footer">
-        <div><b>JJ CRACKERS</b> · "Celebrate the joy. Celebrate responsibly."</div>
-        <div>Page <span class="page-num">2 of 2</span></div>
+    <div class="invoice-footer">
+      <div class="footer-left">
+        <b>JJ CRACKERS</b> · "Celebrate the joy. Celebrate responsibly."
       </div>
-
+      <div class="footer-right">
+        Page <b>2</b> of <b>2</b>
+      </div>
     </div>
   </div>
-
+  
 </div>
 
 </body>
