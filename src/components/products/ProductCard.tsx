@@ -59,6 +59,7 @@ function ProductCardInner({ product, viewMode = 'grid' }: ProductCardProps) {
                 sizes="120px"
                 className="object-cover"
                 loading="lazy"
+                unoptimized={Boolean(product.image_url?.startsWith('data:'))}
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center shimmer">
@@ -248,6 +249,7 @@ function ProductCardInner({ product, viewMode = 'grid' }: ProductCardProps) {
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             className={`object-cover transition-transform duration-700 ${product.in_stock ? 'group-hover:scale-110' : 'opacity-40 grayscale-[20%]'}`}
             loading="lazy"
+            unoptimized={Boolean(product.image_url?.startsWith('data:'))}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center shimmer">

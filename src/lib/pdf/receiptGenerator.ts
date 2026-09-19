@@ -89,7 +89,7 @@ function renderTamilEnglishSectionToImage(title: string, lines: string[], fontSi
       return;
     }
     if (item.isTitle) {
-      ctx.fillStyle = '#b8860b'; // Gold color matching C.gold
+      ctx.fillStyle = '#C8102E'; // Red color matching --red
       ctx.font = titleFont;
       ctx.textAlign = 'center';
       ctx.fillText(item.text, widthPx / 2, drawY);
@@ -137,19 +137,24 @@ interface ReceiptData {
 
 // ─── COLOR CONSTANTS ────────────────────────────────────────────────────────
 const C = {
-  black:     [30, 30, 30]     as const,
-  dark:      [55, 55, 55]     as const,
-  mid:       [110, 110, 110]  as const,
-  light:     [160, 160, 160]  as const,
-  border:    [200, 200, 200]  as const,
-  bgRow:     [248, 248, 248]  as const,
-  bgCard:    [245, 245, 245]  as const,
+  black:     [27, 36, 64]     as const, // ink (#1B2440)
+  navyDeep:  [16, 27, 66]     as const, // navy-deep (#101B42)
+  navy:      [27, 42, 94]     as const, // navy (#1B2A5E)
+  red:       [200, 16, 46]    as const, // red (#C8102E)
+  redDeep:   [140, 11, 32]    as const, // red-deep (#8C0B20)
+  dark:      [45, 55, 85]     as const,
+  mid:       [100, 110, 130]  as const,
+  light:     [154, 160, 180]  as const,
+  border:    [215, 215, 225]  as const,
+  bgRow:     [251, 246, 228]  as const, // cream / sand alternate row (#FBF6E4)
+  bgCard:    [255, 251, 239]  as const, // cream (#FFFBEF)
   white:     [255, 255, 255]  as const,
-  gold:      [184, 134, 11]   as const,
-  green:     [22, 128, 57]    as const,
+  gold:      [245, 163, 0]    as const, // marigold (#F5A300)
+  yellowSoft:[255, 230, 133]  as const, // yellow-soft (#FFE685)
+  green:     [47, 122, 69]    as const, // green (#2F7A45)
   greenBg:   [235, 250, 240]  as const,
   greenBdr:  [34, 160, 72]    as const,
-  tableHead: [38, 38, 38]     as const,
+  tableHead: [16, 27, 66]     as const, // navy-deep (#101B42)
 };
 
 const PAGE_W = 210;
@@ -204,50 +209,55 @@ export async function generateReceipt(data: ReceiptData): Promise<jsPDF> {
   const drawCompanyHeader = (isFirstPage: boolean) => {
     y = M;
 
-    // Logo
+    // Navy header box matching jj-crackers-invoice.html
+    doc.setFillColor(...C.navyDeep);
+    doc.roundedRect(M, y, CW, 24, 2, 2, 'F');
+
+    // Logo with gold circular ring
     if (logoLoaded && logoImg.complete && logoImg.naturalHeight > 0) {
-      doc.addImage(logoImg, 'PNG', M, y, 20, 20, undefined, 'FAST');
+      doc.setFillColor(255, 255, 255);
+      doc.circle(M + 12, y + 12, 9, 'F');
+      doc.setDrawColor(...C.gold);
+      doc.setLineWidth(0.8);
+      doc.circle(M + 12, y + 12, 9.2);
+      doc.addImage(logoImg, 'PNG', M + 4, y + 4, 16, 16, undefined, 'FAST');
     }
 
     // Company name block
-    const tx = M + 24;
+    const tx = M + 25;
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(20);
-    doc.setTextColor(...C.black);
-    doc.text('JJ CRACKERS', tx, y + 7);
+    doc.setFontSize(16);
+    doc.setTextColor(...C.white);
+    doc.text('JJ CRACKERS', tx, y + 7.2);
 
-    doc.setFontSize(8);
-    doc.setTextColor(...C.gold);
-    doc.text('JEGAJOTHI CRACKERS | PREMIUM SIVAKASI FIREWORKS', tx, y + 12.5);
+    doc.setFontSize(7.5);
+    doc.setTextColor(...C.yellowSoft);
+    doc.text('JEGAJOTHI CRACKERS | PREMIUM SIVAKASI FIREWORKS', tx, y + 12);
 
-    doc.setFontSize(6.5);
+    doc.setFontSize(6.2);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...C.mid);
+    doc.setTextColor(240, 240, 245);
     doc.text('1/406, Sivakasi-Vembakottai Main Road, Opp. EB Office, Vembakottai, Tamil Nadu', tx, y + 16.5);
     doc.text('Phone: +91 70923 00252  |  Email: jjcrackersworld@gmail.com', tx, y + 20);
 
-    // Receipt title (right side)
+    // Receipt tag (right side)
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(15);
-    doc.setTextColor(...C.gold);
-    doc.text('ORDER RECEIPT', PAGE_W - M, y + 7, { align: 'right' });
-
     doc.setFontSize(7);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...C.mid);
-    if (isFirstPage) {
-      doc.text('ORIGINAL FOR CUSTOMER - ' + String(data.customerName || ''), PAGE_W - M, y + 12, { align: 'right' });
-    } else {
-      doc.text('Order: ' + String(data.orderNumber || '') + '  (Continued)', PAGE_W - M, y + 12, { align: 'right' });
-    }
+    doc.setTextColor(...C.yellowSoft);
+    doc.text('ORDER RECEIPT', PAGE_W - M - 6, y + 6.5, { align: 'right' });
 
-    y += 24;
+    doc.setFontSize(10);
+    doc.setTextColor(...C.white);
+    doc.text(String(data.orderNumber || ''), PAGE_W - M - 6, y + 12, { align: 'right' });
 
-    // Separator line
-    doc.setDrawColor(...C.border);
-    doc.setLineWidth(0.5);
-    doc.line(M, y, PAGE_W - M, y);
-    y += 5;
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(PAGE_W - M - 28, y + 14.5, 24, 5.5, 1, 1, 'F');
+    doc.setFontSize(6);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...C.navyDeep);
+    doc.text('CONFIRMED', PAGE_W - M - 16, y + 18.2, { align: 'center' });
+
+    y += 28;
   };
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -287,7 +297,7 @@ export async function generateReceipt(data: ReceiptData): Promise<jsPDF> {
 
     doc.setFontSize(6.5);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...C.white);
+    doc.setTextColor(...C.yellowSoft);
 
     const ty = y + 4.8;
     doc.text('S.No',               col.sno + 2,         ty);
@@ -600,18 +610,18 @@ export async function generateReceipt(data: ReceiptData): Promise<jsPDF> {
   doc.line(totLabelX - 2, y, PAGE_W - M, y);
   y += 4;
 
-  // NET PAYABLE bar (Grand Total)
+  // NET PAYABLE bar (Grand Total) - Crimson red banner
   const finalGrandTotal = netValue + packingCharges;
   const npX = totLabelX - 4;
   const npW = PAGE_W - M - npX;
-  doc.setFillColor(...C.tableHead);
+  doc.setFillColor(...C.red);
   doc.roundedRect(npX, y - 2.5, npW, 11, 1.5, 1.5, 'F');
 
   doc.setFontSize(8.5);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...C.white);
+  doc.setTextColor(...C.yellowSoft);
   doc.text('NET PAYABLE AMOUNT:', npX + 4, y + 4.5);
-  doc.setTextColor(...C.gold);
+  doc.setTextColor(...C.white);
   doc.text(rs(finalGrandTotal), PAGE_W - M - 4, y + 4.5, { align: 'right' });
 
   // ── Authorized Signatory (left side, dynamically aligned with Net Payable) ──

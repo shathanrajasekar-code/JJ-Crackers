@@ -1044,6 +1044,7 @@ export default function AdminPage() {
         } else if (target === 'slider') {
           setCurrentSlider((prev: any) => prev ? { ...prev, image_url: data.url } : prev);
         }
+        showSuccess('📸 Image uploaded successfully!');
       } else {
         alert('Upload failed: ' + (data.error || 'Unknown error'));
       }
@@ -3379,8 +3380,16 @@ export default function AdminPage() {
                       />
                     </div>
                     {currentProduct.image_url && (
-                      <div className="w-16 h-16 rounded-xl overflow-hidden border border-[#2A2A24] flex-shrink-0 bg-[#1C1C18]">
+                      <div className="relative group w-16 h-16 rounded-xl overflow-hidden border border-[#2A2A24] flex-shrink-0 bg-[#1C1C18]">
                         <img src={currentProduct.image_url} alt="" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                        <button
+                          type="button"
+                          onClick={() => setCurrentProduct({...currentProduct, image_url: ''})}
+                          className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 flex items-center justify-center text-rose-400 text-xs font-bold transition-opacity"
+                          title="Remove image"
+                        >
+                          ✕
+                        </button>
                       </div>
                     )}
                   </div>
