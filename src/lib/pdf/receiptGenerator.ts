@@ -523,81 +523,77 @@ const INVOICE_CSS = `
   /* Bottom Financial Summary Grid */
   .bottom-summary-grid {
     display: grid;
-    grid-template-columns: 1.15fr 1fr;
+    grid-template-columns: 1fr 1.15fr;
     gap: 18px;
     margin-top: 4px;
     margin-bottom: 16px;
+    align-items: stretch;
   }
 
-  .savings-card {
-    background: linear-gradient(135deg, #FFFDF5 0%, #FFF8E7 100%);
-    border: 1px solid #FDE68A;
+  .signatory-card {
+    background: #FFFFFF;
+    border: 1px solid var(--light-border);
     border-radius: 8px;
-    padding: 14px 16px;
-    position: relative;
-    overflow: hidden;
+    padding: 18px 20px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-  }
-
-  .savings-card::after {
-    content: "★";
-    position: absolute;
-    right: 14px;
-    top: 14px;
-    font-size: 54px;
-    color: rgba(212, 167, 44, 0.12);
-    font-weight: 900;
-    line-height: 1;
-    pointer-events: none;
-  }
-
-  .savings-badge {
-    display: inline-flex;
     align-items: center;
-    gap: 5px;
-    font-size: 10.5px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: #B45309;
+    text-align: center;
+    border-top: 3px solid var(--gold);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
   }
 
-  .savings-badge svg { width: 13px; height: 13px; fill: var(--gold); }
-
-  .savings-amount {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 26px;
+  .signatory-title {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
     font-weight: 800;
-    color: #92400E;
-    margin: 6px 0 3px;
-    letter-spacing: -0.5px;
+    letter-spacing: 1.2px;
+    color: var(--midnight);
+    text-transform: uppercase;
   }
 
-  .savings-meta {
-    font-size: 10px;
-    font-weight: 700;
-    color: #B45309;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+  .signatory-logo-wrap {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    padding: 2px;
+    box-shadow: 0 0 0 2.5px var(--gold), 0 4px 12px rgba(0,0,0,0.12);
     display: flex;
     align-items: center;
-    gap: 4px;
-    margin-bottom: 10px;
+    justify-content: center;
+    margin: 12px 0;
   }
 
-  .savings-meta svg { width: 12px; height: 12px; fill: #D97706; }
+  .signatory-logo-wrap img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
 
-  .factory-direct-note {
+  .signatory-brand {
+    font-family: 'Cinzel', serif;
+    font-size: 13.5px;
+    font-weight: 800;
+    color: var(--midnight);
+    letter-spacing: 0.8px;
+    line-height: 1.2;
+  }
+
+  .signatory-sub {
     font-size: 10.5px;
-    color: #78350F;
-    line-height: 1.45;
-    padding-top: 8px;
-    border-top: 1px dashed rgba(217, 119, 6, 0.25);
+    font-weight: 700;
+    color: #D4A72C;
+    letter-spacing: 0.6px;
+    margin-top: 2px;
   }
 
-  .factory-direct-note b { color: #451A03; font-weight: 700; }
+  .discount-highlight {
+    color: #16A34A !important;
+    font-weight: 800 !important;
+  }
 
   .totals-table-wrapper {
     display: flex;
@@ -846,6 +842,56 @@ const INVOICE_CSS = `
     border-top: 1px dashed #F1F5F9;
     padding-top: 4px;
     margin-top: auto;
+  }
+
+  .safety-center-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 20px;
+    margin: 12px 0 16px;
+    background: linear-gradient(135deg, #FFFDF5 0%, #FFF8E7 100%);
+    border: 1px solid #FDE68A;
+    border-radius: 10px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(212, 167, 44, 0.08);
+  }
+
+  .safety-logo-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    padding: 2px;
+    box-shadow: 0 0 0 2.5px var(--gold), 0 4px 12px rgba(0,0,0,0.12);
+    margin-bottom: 8px;
+  }
+
+  .safety-logo-circle img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .safety-brand-tag {
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 2.5px;
+    color: var(--midnight);
+    line-height: 1.2;
+  }
+
+  .safety-spark-sub {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    color: #D97706;
+    margin-top: 4px;
+    text-transform: uppercase;
   }
 
   .notice-panel {
@@ -1231,11 +1277,14 @@ function buildInvoiceHtml(data: ReceiptData): string {
               <span class="cust-label">City / PIN Code</span>
               <span class="cust-val">${escapeHtml(cityPinStr)}</span>
             </div>
-            ${customerAddress ? `
-            <div class="cust-field full-width">
-              <span class="cust-label">Delivery / Billing Address</span>
-              <span class="cust-val">${escapeHtml(customerAddress)}</span>
-            </div>` : ''}
+            <div class="cust-field">
+              <span class="cust-label">DELIVERY / BILLING ADDRESS</span>
+              <span class="cust-val">${escapeHtml(customerAddress || cityPinStr)}</span>
+            </div>
+            <div class="cust-field">
+              <span class="cust-label">APPLIED FESTIVAL DISCOUNT</span>
+              <span class="cust-val discount-highlight">${avgDiscount}% OFF (${formatRs(discountTotal)} Saved)</span>
+            </div>
           </div>
         </div>
         ` : ''}
@@ -1282,38 +1331,33 @@ function buildInvoiceHtml(data: ReceiptData): string {
         ${page.showSummary ? `
         <!-- FINANCIAL SUMMARY & TOTAL PAYABLE (STAYS TOGETHER) -->
         <div class="bottom-summary-grid">
-          <div class="savings-card">
-            <div class="savings-badge">
-              <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-              YOU SAVE ON THIS FESTIVE ORDER
+          <div class="signatory-card">
+            <div class="signatory-title">AUTHORIZED SIGNATORY</div>
+            <div class="signatory-logo-wrap">
+              <img src="${LOGO_DATA_URI}" alt="JJ Crackers Logo" />
             </div>
-            <div class="savings-amount">${formatRs(discountTotal)}</div>
-            <div class="savings-meta">
-              <svg viewBox="0 0 24 24"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
-              ${avgDiscount}% DIRECT SIVAKASI FACTORY OFFER APPLIED
-            </div>
-            <div class="factory-direct-note">
-              <b>DIRECT SIVAKASI FACTORY DISPATCH</b><br>
-              All fireworks are manufactured in Sivakasi under strict PESO quality guidelines. Carefully packed in moisture-resistant cartons for safe transport delivery.
+            <div class="signatory-footer">
+              <div class="signatory-brand">JJ CRACKERS</div>
+              <div class="signatory-sub">JEGAJOTHI CRACKERS</div>
             </div>
           </div>
 
           <div class="totals-table-wrapper">
             <table class="totals-table">
               <tr>
-                <td class="tot-label">Gross Amount (Actual MRP Total)</td>
+                <td class="tot-label">GROSS AMOUNT (ACTUAL MRP TOTAL)</td>
                 <td class="tot-val">${formatRs(grossAmount)}</td>
               </tr>
               <tr class="discount-row">
-                <td class="tot-label">Festival Discount (${avgDiscount}% OFF)</td>
+                <td class="tot-label">FESTIVAL DISCOUNT (${avgDiscount}% OFF)</td>
                 <td class="tot-val discount-val">-${formatRs(discountTotal)}</td>
               </tr>
               <tr>
-                <td class="tot-label">Net Product Value</td>
+                <td class="tot-label">NET PRODUCT VALUE</td>
                 <td class="tot-val bold">${formatRs(netValue)}</td>
               </tr>
               <tr>
-                <td class="tot-label">Packing &amp; Forwarding (3%)</td>
+                <td class="tot-label">PACKING &amp; FORWARDING (3%)</td>
                 <td class="tot-val">${formatRs(packing)}</td>
               </tr>
             </table>
@@ -1321,7 +1365,6 @@ function buildInvoiceHtml(data: ReceiptData): string {
             <div class="net-payable-bar">
               <div class="payable-label">
                 <span class="main">TOTAL PAYABLE AMOUNT</span>
-                <span class="sub">Inclusive of taxes &amp; packaging</span>
               </div>
               <div class="payable-val">${formatRs(netPayable)}</div>
             </div>
@@ -1434,6 +1477,15 @@ function buildInvoiceHtml(data: ReceiptData): string {
             <div class="safety-en-text">Dispose of spent fireworks in water buckets before discarding. Respect your neighbors.</div>
             <div class="safety-ta-text">பாதுகாப்பு விதிகளை பின்பற்றி பிறருக்கு இடையூறின்றி மகிழ்ச்சியுடன் கொண்டாடவும்.</div>
           </div>
+        </div>
+
+        <!-- Center Brand Visual -->
+        <div class="safety-center-brand">
+          <div class="safety-logo-circle">
+            <img src="${LOGO_DATA_URI}" alt="JJ CRACKERS" />
+          </div>
+          <div class="safety-brand-tag">CELEBRATE THE JOY</div>
+          <div class="safety-spark-sub">✦ PREMIUM SIVAKASI FIREWORKS ✦</div>
         </div>
 
         <!-- Terms Panel -->
