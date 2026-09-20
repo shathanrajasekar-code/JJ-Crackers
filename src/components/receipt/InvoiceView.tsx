@@ -1004,12 +1004,12 @@ export default function InvoiceView({ order, showActions = true }: InvoiceViewPr
   }
 
   .safety-logo-circle {
-    width: 60px;
-    height: 60px;
+    width: 84px;
+    height: 84px;
     border-radius: 50%;
     background: #FFFFFF;
-    padding: 2px;
-    box-shadow: 0 0 0 2.5px var(--gold), 0 4px 12px rgba(0,0,0,0.12);
+    padding: 3px;
+    box-shadow: 0 0 0 3px var(--gold), 0 4px 14px rgba(0,0,0,0.14);
     margin-bottom: 8px;
   }
 
@@ -1022,7 +1022,7 @@ export default function InvoiceView({ order, showActions = true }: InvoiceViewPr
 
   .safety-brand-tag {
     font-family: 'Cinzel', serif;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 800;
     letter-spacing: 2.5px;
     color: var(--midnight);
@@ -1030,7 +1030,7 @@ export default function InvoiceView({ order, showActions = true }: InvoiceViewPr
   }
 
   .safety-spark-sub {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 1.2px;
     color: #D97706;
@@ -1344,7 +1344,7 @@ export default function InvoiceView({ order, showActions = true }: InvoiceViewPr
                         </div>
                         <div className="cust-field">
                           <span className="cust-label">APPLIED FESTIVAL DISCOUNT</span>
-                          <span className="cust-val discount-highlight">{avgDiscount}% OFF ({formatRs(discountTotal)} Saved)</span>
+                          <span className="cust-val discount-highlight">{avgDiscount}% OFF</span>
                         </div>
                       </div>
                     </div>
@@ -1449,7 +1449,7 @@ export default function InvoiceView({ order, showActions = true }: InvoiceViewPr
               {/* Page Footer */}
               <div className="invoice-footer">
                 <div className="footer-left">
-                  <b>JJ CRACKERS</b> · Licensed Under Explosives Act, 1884 · Sivakasi Direct Factory Outlet
+                  <b>JJ CRACKERS</b> · Sivakasi Direct Factory Outlet
                 </div>
                 <div className="footer-right">
                   Page <b>{currentPageNum}</b> of <b>{totalPages}</b>
@@ -1542,16 +1542,7 @@ export default function InvoiceView({ order, showActions = true }: InvoiceViewPr
                 </div>
               </div>
 
-              {/* Center Brand Visual */}
-              <div className="safety-center-brand">
-                <div className="safety-logo-circle">
-                  <img src={LOGO_DATA_URI} alt="JJ CRACKERS" />
-                </div>
-                <div className="safety-brand-tag">CELEBRATE THE JOY</div>
-                <div className="safety-spark-sub">✦ PREMIUM SIVAKASI FIREWORKS ✦</div>
-              </div>
-
-              {/* Terms Panel */}
+              {/* Terms Panel (Moved to Center) */}
               <div className="notice-panel">
                 <div className="notice-header">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -1575,6 +1566,15 @@ export default function InvoiceView({ order, showActions = true }: InvoiceViewPr
                     <span className="ta">போக்குவரத்து மையத்தில் பார்சல்களைப் பெறும்போது பெட்டிகளின் எண்ணிக்கையை சரிபார்க்கவும்.</span>
                   </div>
                 </div>
+              </div>
+
+              {/* Center Brand Visual (Pushed Down, Bigger Logo) */}
+              <div className="safety-center-brand">
+                <div className="safety-logo-circle">
+                  <img src={LOGO_DATA_URI} alt="JJ CRACKERS" />
+                </div>
+                <div className="safety-brand-tag">CELEBRATE THE JOY</div>
+                <div className="safety-spark-sub">✦ PREMIUM SIVAKASI FIREWORKS ✦</div>
               </div>
 
               {/* Business Strip */}

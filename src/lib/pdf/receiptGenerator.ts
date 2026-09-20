@@ -860,12 +860,12 @@ const INVOICE_CSS = `
   }
 
   .safety-logo-circle {
-    width: 60px;
-    height: 60px;
+    width: 84px;
+    height: 84px;
     border-radius: 50%;
     background: #FFFFFF;
-    padding: 2px;
-    box-shadow: 0 0 0 2.5px var(--gold), 0 4px 12px rgba(0,0,0,0.12);
+    padding: 3px;
+    box-shadow: 0 0 0 3px var(--gold), 0 4px 14px rgba(0,0,0,0.14);
     margin-bottom: 8px;
   }
 
@@ -878,7 +878,7 @@ const INVOICE_CSS = `
 
   .safety-brand-tag {
     font-family: 'Cinzel', serif;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 800;
     letter-spacing: 2.5px;
     color: var(--midnight);
@@ -886,7 +886,7 @@ const INVOICE_CSS = `
   }
 
   .safety-spark-sub {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 1.2px;
     color: #D97706;
@@ -1283,7 +1283,7 @@ function buildInvoiceHtml(data: ReceiptData): string {
             </div>
             <div class="cust-field">
               <span class="cust-label">APPLIED FESTIVAL DISCOUNT</span>
-              <span class="cust-val discount-highlight">${avgDiscount}% OFF (${formatRs(discountTotal)} Saved)</span>
+              <span class="cust-val discount-highlight">${avgDiscount}% OFF</span>
             </div>
           </div>
         </div>
@@ -1384,7 +1384,7 @@ function buildInvoiceHtml(data: ReceiptData): string {
     <!-- FOOTER -->
     <div class="invoice-footer">
       <div class="footer-left">
-        <b>JJ CRACKERS</b> · Licensed Under Explosives Act, 1884 · Sivakasi Direct Factory Outlet
+        <b>JJ CRACKERS</b> · Sivakasi Direct Factory Outlet
       </div>
       <div class="footer-right">
         Page <b>${currentPageNum}</b> of <b>${totalPages}</b>
@@ -1479,16 +1479,7 @@ function buildInvoiceHtml(data: ReceiptData): string {
           </div>
         </div>
 
-        <!-- Center Brand Visual -->
-        <div class="safety-center-brand">
-          <div class="safety-logo-circle">
-            <img src="${LOGO_DATA_URI}" alt="JJ CRACKERS" />
-          </div>
-          <div class="safety-brand-tag">CELEBRATE THE JOY</div>
-          <div class="safety-spark-sub">✦ PREMIUM SIVAKASI FIREWORKS ✦</div>
-        </div>
-
-        <!-- Terms Panel -->
+        <!-- Terms Panel (Moved to Center) -->
         <div class="notice-panel">
           <div class="notice-header">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -1512,6 +1503,15 @@ function buildInvoiceHtml(data: ReceiptData): string {
               <span class="ta">போக்குவரத்து மையத்தில் பார்சல்களைப் பெறும்போது பெட்டிகளின் எண்ணிக்கையை சரிபார்க்கவும்.</span>
             </div>
           </div>
+        </div>
+
+        <!-- Center Brand Visual (Pushed Down, Bigger Logo) -->
+        <div class="safety-center-brand">
+          <div class="safety-logo-circle">
+            <img src="${LOGO_DATA_URI}" alt="JJ CRACKERS" />
+          </div>
+          <div class="safety-brand-tag">CELEBRATE THE JOY</div>
+          <div class="safety-spark-sub">✦ PREMIUM SIVAKASI FIREWORKS ✦</div>
         </div>
 
         <!-- Business Strip -->
